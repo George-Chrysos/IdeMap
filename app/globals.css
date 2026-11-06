@@ -1,0 +1,105 @@
+/* ============================================================
+   IdeMap — Global CSS (Tailwind v4)
+   ============================================================ */
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,400&family=Outfit:wght@300;400;500;600&display=swap");
+@import "tailwindcss";
+
+/* ---- Design Tokens (CSS variables) ---- */
+:root {
+  --void: #0d0f0e;
+  --hud-bg: rgba(15, 19, 21, 0.88);
+  --cyan: #2dd4bf;
+  --gold: #e5a93c;
+  --health-green: #2dd4bf;
+  --health-amber: #f59e0b;
+  --health-red: #ef4444;
+}
+
+/* ---- Tailwind v4 theme extensions ---- */
+@theme {
+  --font-fraunces: "Fraunces", Georgia, serif;
+  --font-outfit: "Outfit", system-ui, sans-serif;
+
+  --color-void: #0d0f0e;
+  --color-gold: #e5a93c;
+  --color-health-green: #2dd4bf;
+  --color-health-amber: #f59e0b;
+  --color-health-red: #ef4444;
+}
+
+/* ---- Base resets ---- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--void);
+  color: #e2e8f0;
+  font-family: "Outfit", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ---- Glassmorphism HUD panel ---- */
+.hud-panel {
+  background: rgba(15, 19, 21, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(45, 212, 191, 0.2);
+  border-radius: 1rem;
+}
+
+/* ---- HUD scrollbar ---- */
+.hud-scroll {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(45, 212, 191, 0.3) transparent;
+}
+.hud-scroll::-webkit-scrollbar { width: 4px; }
+.hud-scroll::-webkit-scrollbar-track { background: transparent; }
+.hud-scroll::-webkit-scrollbar-thumb {
+  background: rgba(45, 212, 191, 0.3);
+  border-radius: 2px;
+}
+
+/* ---- Planet glow pulse (triggered by JS) ---- */
+@keyframes glow-pulse {
+  0%   { filter: brightness(1) drop-shadow(0 0 8px currentColor); }
+  50%  { filter: brightness(2.2) drop-shadow(0 0 24px currentColor); }
+  100% { filter: brightness(1) drop-shadow(0 0 8px currentColor); }
+}
+.planet-glow-pulse {
+  animation: glow-pulse 0.35s ease-out forwards;
+}
+
+/* ---- Orbital arc drift ---- */
+@keyframes arc-drift {
+  0%   { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: -40; }
+}
+.arc-animated {
+  stroke-dasharray: 6 10;
+  animation: arc-drift 3s linear infinite;
+}
+
+/* ---- Strain ring pulse ---- */
+@keyframes strain-pulse {
+  0%, 100% { opacity: 0.5; }
+  50%       { opacity: 1; }
+}
+.strain-pulse {
+  animation: strain-pulse 1.8s ease-in-out infinite;
+}
+
+/* ---- Selection suppressor ---- */
+.no-select {
+  user-select: none;
+  -webkit-user-select: none;
+}

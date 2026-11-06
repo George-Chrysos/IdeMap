@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Idemap — 2D Orbital Solar System Atlas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    :root {
+      --void: #0D0F0E;
+      --hud-bg: rgba(15, 19, 21, 0.9);
+      --border-cyan: rgba(45, 212, 191, 0.24);
+      --cyan: #2DD4BF;
+      --gold: #E5A93C;
+    }
+    html { font-size: 16px; }
+    @media (min-width: 1280px) { html { font-size: 17px; } }
+    @media (min-width: 1536px) { html { font-size: 18px; } }
+    @media (min-width: 1920px) { html { font-size: 19.5px; } }
+    html, body { height: 100%; }
+    body {
+      background-color: var(--void);
+      color: #F1F5F9;
+      font-family: 'Outfit', sans-serif;
+      margin: 0;
+      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-font-smoothing: antialiased;
+    }
+    input, textarea, select { color-scheme: dark; user-select: text; -webkit-user-select: text; }
+    .font-fraunces { font-family: 'Fraunces', serif; }
+
+    /* Stationary HUD panels are the ONLY elements allowed to use backdrop-filter (GPU budget). */
+    .hud-panel {
+      background: var(--hud-bg);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid var(--border-cyan);
+      border-radius: 1rem;
+    }
+    .hud-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
+    .hud-scroll::-webkit-scrollbar-thumb { background: rgba(45, 212, 191, 0.3); border-radius: 2px; }
+
+    @keyframes glow-pulse {
+      0%   { filter: brightness(1) drop-shadow(0 0 8px currentColor); transform: scale(1); }
+      45%  { filter: brightness(1.9) drop-shadow(0 0 30px currentColor); transform: scale(1.08); }
+      100% { filter: brightness(1) drop-shadow(0 0 8px currentColor); transform: scale(1); }
+    }
+    .planet-glow-pulse { animation: glow-pulse 0.45s ease-out; }
+
+    @keyframes strain-pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+    .strain-pulse { animation: strain-pulse 1.8s ease-in-out infinite; }
+
+    @keyframes arc-drift { 0% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -32; } }
+    .arc-animated { stroke-dasharray: 6 10; animation: arc-drift 2.6s linear infinite; }
+
+    @keyframes spin-slow { to { transform: rotate(360deg); } }
+    .reticle { animation: spin-slow 14s linear infinite; }
+
+    /* Node telemetry pills: crisp readability with subtle hover elevation */
+    .node-pill { opacity: 0.92; transition: opacity .2s ease, transform .2s ease, border-color .2s ease; }
+    .node-inner:hover .node-pill, .is-selected .node-pill, .pill-always .node-pill { opacity: 1; border-color: rgba(45, 212, 191, 0.35); }
+
+    @keyframes toast-in { from { opacity: 0; transform: translate(-50%, 10px); } to { opacity: 1; transform: translate(-50%, 0); } }
+    .toast-show { animation: toast-in .25s ease-out; }
+
+    @keyframes fade-up { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+    .fade-up { animation: fade-up .25s ease-out; }
+
+    /* Responsive split */
+    .mob-only { display: none; }
+    @media (max-width: 767px) {
+      .desk-only { display: none !important; }
+      .mob-only { display: block; }
+    }
+    .safe-bottom { padding-bottom: max(10px, env(safe-area-inset-bottom)); }
+  </style>
+</head>
+<body class="relative w-screen h-screen">
+
+  <!-- Layer 0: Deep Space Background Canvas -->
+  <canvas id="spaceCanvas" class="absolute inset-0 w-full h-full pointer-events-none z-0"></canvas>
+
+  <!-- Layer 1: Orbital Arcs SVG (persistent nodes, mutated per frame) -->
+  <svg id="orbitalArcSvg" class="desk-only absolute inset-0 w-full h-full pointer-events-none z-10"></svg>
+
+  <!-- Layer 2: DOM Celestial Planet Nodes -->
+  <div id="planetCanvas" class="desk-only absolute inset-0 z-20 pointer-events-none"></div>
+
+  <!-- Layer 3: Desktop Top HUD -->
+  <header class="desk-only fixed top-6 left-6 z-40 flex flex-wrap items-center gap-3 pointer-events-none">
+    <div class="hud-panel px-5 py-3 flex items-center gap-3.5 pointer-events-auto shadow-2xl">
+      <button data-act="dive" data-id="" class="flex items-center gap-2.5 cursor-pointer group">
+        <div class="w-9 h-9 rounded-full bg-teal-400/10 border border-teal-400/35 flex items-center justify-center group-hover:border-teal-400 transition-colors">
+          <span class="text-teal-400 text-base">✦</span>
+        </div>
+        <span class="text-2xl font-semibold tracking-wide font-fraunces text-slate-100 group-hover:text-teal-300 transition-colors">Idemap</span>
+      </button>
+      <div class="h-5 w-[1px] bg-teal-400/20 mx-1"></div>
+      <nav id="breadcrumbNav" class="flex items-center gap-1.5"></nav>
+    </div>
+    <div class="hud-panel px-3.5 py-2.5 flex items-center gap-2.5 pointer-events-auto">
+      <button data-act="sync-cloud" id="btnCloudSync" class="px-3.5 py-1.5 rounded-full text-sm font-medium border border-teal-400/35 bg-teal-400/10 text-teal-200 hover:border-teal-400 transition-all cursor-pointer" title="Click to sync with Supabase database">☁️ Synced</button>
+      <button data-act="sound" id="btnSoundToggle" class="px-3.5 py-1.5 rounded-full text-sm font-medium border border-white/15 hover:border-teal-400/50 text-teal-300 transition-all cursor-pointer">🔊 Audio On</button>
+      <button data-act="reset" class="px-3.5 py-1.5 rounded-full text-sm font-medium border border-white/15 hover:border-red-400/50 text-slate-300 hover:text-red-300 transition-all cursor-pointer" title="Reset to the seeded demo universe">↺ Reset</button>
+    </div>
+  </header>
+
+  <!-- Layer 4: Desktop bottom-left compass -->
+  <div class="desk-only fixed bottom-6 left-6 z-30">
+    <div class="hud-panel px-5 py-3 flex items-center gap-4 text-sm text-slate-200">
+      <div class="flex items-center gap-2">
+        <span class="text-teal-400 text-base">🧭</span>
+        <span class="text-slate-300">Focus:</span>
+        <span id="compassFocusName" class="text-white font-semibold text-base font-fraunces">Life</span>
+      </div>
+      <span class="text-slate-600">|</span>
+      <button data-act="pause" id="btnPauseOrbit" class="px-3 py-1 rounded-full bg-white/5 hover:bg-teal-400/15 border border-white/15 text-slate-200 hover:text-teal-300 transition-all cursor-pointer font-medium">⏸ Pause Orbit</button>
+    </div>
+  </div>
+
+  <!-- Layer 5: Desktop Right Inspector Drawer (rendered by renderHUD) -->
+  <aside id="telemetryPanel" class="desk-only hud-panel fixed right-6 top-6 bottom-6 w-[400px] xl:w-[465px] 2xl:w-[515px] z-40 flex flex-col overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.8)]"></aside>
+
+  <!-- Mobile end-of-day check-in view (rendered by renderMobile) -->
+  <div id="mobileView" class="mob-only fixed inset-0 z-30 overflow-y-auto hud-scroll"></div>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed left-1/2 bottom-24 md:bottom-8 z-[70] hidden px-5 py-2.5 rounded-full bg-[#0B0E0F] border border-teal-400/35 text-base font-medium text-slate-100 shadow-[0_0_30px_rgba(45,212,191,0.25)] whitespace-nowrap" style="transform:translateX(-50%)"></div>
+
+  <!-- Planet Forge / Customize Modal -->
+  <div id="forgeModal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-50 hidden items-center justify-center p-4">
+    <div class="hud-panel p-6 w-full max-w-md space-y-4 fade-up">
+      <div class="flex justify-between items-center">
+        <div>
+          <p id="forgeTargetLabel" class="text-xs uppercase tracking-wider text-teal-400 font-semibold">Orbiting Life</p>
+          <h3 id="forgeModalTitle" class="text-2xl font-semibold text-slate-100 font-fraunces mt-0.5">Launch Celestial Node</h3>
+        </div>
+        <button data-act="close-modal" data-modal="forgeModal" class="w-9 h-9 rounded-full text-slate-300 hover:text-white hover:bg-white/5 cursor-pointer text-base">✕</button>
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-slate-300 mb-1">Planet Name</label>
+        <input id="inputForgeName" type="text" maxlength="40" placeholder="Sector / Planet name…" class="w-full bg-white/5 border border-slate-700 rounded-xl px-4 py-2.5 text-base text-slate-100 focus:outline-none focus:border-teal-400">
+      </div>
+      <div>
+        <div class="flex items-center justify-between mb-1.5">
+          <p class="text-xs font-medium text-slate-300">Emoji / Emblem</p>
+          <div class="flex items-center gap-1.5">
+            <span class="text-xs text-slate-400">Custom:</span>
+            <input id="inputForgeCustomIcon" type="text" maxlength="4" placeholder="🪐" class="w-12 bg-white/5 border border-slate-700 rounded-lg px-2 py-1 text-center text-base text-slate-100 focus:outline-none focus:border-teal-400">
+          </div>
+        </div>
+        <div id="forgeIcons" class="flex flex-wrap gap-1.5"></div>
+      </div>
+      <div>
+        <div class="flex items-center justify-between mb-1.5">
+          <p class="text-xs font-medium text-slate-300">Planet Color</p>
+          <label class="flex items-center gap-1.5 text-xs text-slate-400 cursor-pointer hover:text-slate-200">
+            <span>Custom hex:</span>
+            <input id="inputForgeCustomColor" type="color" value="#3B7A57" class="w-7 h-7 rounded cursor-pointer bg-transparent border-0 p-0">
+          </label>
+        </div>
+        <div id="forgeColors" class="flex flex-wrap gap-2"></div>
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button data-act="forge-confirm" id="btnForgeConfirm" class="flex-1 py-3 rounded-full text-base font-semibold text-neutral-900 cursor-pointer hover:brightness-110" style="background:var(--gold)">Launch into Orbit</button>
+        <button data-act="close-modal" data-modal="forgeModal" class="px-5 py-3 rounded-full text-base border border-slate-700 text-slate-200 cursor-pointer">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add / Edit Task Modal -->
+  <div id="taskModal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-50 hidden items-center justify-center p-4">
+    <div class="hud-panel p-6 w-full max-w-lg space-y-4 fade-up">
+      <div class="flex justify-between items-center">
+        <div>
+          <p class="text-xs uppercase tracking-wider text-teal-400 font-semibold">Mission Directive</p>
+          <h3 id="taskModalTitle" class="text-2xl font-semibold text-slate-100 font-fraunces mt-0.5">Add Task</h3>
+        </div>
+        <button data-act="close-modal" data-modal="taskModal" class="w-9 h-9 rounded-full text-slate-300 hover:text-white hover:bg-white/5 cursor-pointer text-base">✕</button>
+      </div>
+      <div class="space-y-3.5">
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Task title</label>
+          <input id="inputTaskTitle" type="text" maxlength="120" placeholder="What needs doing?" class="w-full bg-white/5 border border-slate-700 rounded-xl px-4 py-2.5 text-base text-slate-100 focus:outline-none focus:border-teal-400">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Planet</label>
+            <select id="selectTaskPlanet" class="w-full bg-[#121719] border border-slate-700 rounded-xl px-3 py-2.5 text-sm xl:text-base text-slate-100 focus:outline-none focus:border-teal-400"></select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Repeat / Recurrence</label>
+            <select id="selectTaskRecur" class="w-full bg-[#121719] border border-slate-700 rounded-xl px-3 py-2.5 text-sm xl:text-base text-slate-100 focus:outline-none focus:border-teal-400">
+              <option value="">One-time task</option>
+              <option value="daily">↻ Daily</option>
+              <option value="weekdays">↻ Weekdays (Mon–Fri)</option>
+              <option value="weekly">↻ Weekly</option>
+              <option value="monthly">↻ Monthly</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Difficulty</label>
+            <select id="selectTaskDiff" class="w-full bg-[#121719] border border-slate-700 rounded-xl px-3 py-2.5 text-sm xl:text-base text-slate-100 focus:outline-none focus:border-teal-400">
+              <option value="1">1 · Trivial (5 XP)</option>
+              <option value="2" selected>2 · Routine (20 XP)</option>
+              <option value="3">3 · Focused (45 XP)</option>
+              <option value="4">4 · Demanding (80 XP)</option>
+              <option value="5">5 · Epic (125 XP)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Due date</label>
+            <input id="inputTaskDue" type="date" class="w-full bg-[#121719] border border-slate-700 rounded-xl px-3 py-2 text-sm xl:text-base text-slate-100 focus:outline-none focus:border-teal-400">
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-1.5">
+          <button data-act="due-quick" data-days="0" class="px-3 py-1 rounded-full text-xs border border-white/15 text-slate-200 hover:border-teal-400/50 cursor-pointer">Today</button>
+          <button data-act="due-quick" data-days="1" class="px-3 py-1 rounded-full text-xs border border-white/15 text-slate-200 hover:border-teal-400/50 cursor-pointer">Tomorrow</button>
+          <button data-act="due-quick" data-days="7" class="px-3 py-1 rounded-full text-xs border border-white/15 text-slate-200 hover:border-teal-400/50 cursor-pointer">Next week</button>
+          <button data-act="due-quick" data-days="" class="px-3 py-1 rounded-full text-xs border border-white/15 text-slate-300 hover:border-teal-400/50 cursor-pointer">No date</button>
+        </div>
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button data-act="task-confirm" id="btnConfirmTask" class="flex-1 py-3 rounded-full text-base font-semibold text-neutral-900 cursor-pointer hover:brightness-110" style="background:var(--gold)">Add Task</button>
+        <button data-act="close-modal" data-modal="taskModal" class="px-5 py-3 rounded-full text-base border border-slate-700 text-slate-200 cursor-pointer">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // 0. Utilities
+    // =========================================================================
+    const DAY = 86400000;
+    const STORE_KEY = "idemap-atlas-v1";
+    function isoOf(ms) { const d = new Date(ms); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); }
+    const todayISO = () => isoOf(Date.now());
+    const addDays = (n) => isoOf(Date.now() + n * DAY);
+    const uid = (p) => `${p}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+    function esc(s) { return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+    const isMobile = () => window.innerWidth < 768;
+    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+    // =========================================================================
+    // 1. Audio Engine (procedural, zero assets)
+    // =========================================================================
+    let audioCtx = null;
+    function playTone(f, d = 0.16, g = 0.1, type = "sine") {
+      if (!STATE.soundOn) return;
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const o = audioCtx.createOscillator(), v = audioCtx.createGain();
+        o.type = type;
+        o.frequency.setValueAtTime(f, audioCtx.currentTime);
+        v.gain.setValueAtTime(g, audioCtx.currentTime);
+        v.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + d);
+        o.connect(v); v.connect(audioCtx.destination);
+        o.start(); o.stop(audioCtx.currentTime + d);
+      } catch (e) {}
+    }
+    const sfx = {
+      click: () => playTone(660, 0.06, 0.05, "triangle"),
+      dive: () => { playTone(280, 0.18, 0.09); setTimeout(() => playTone(420, 0.22, 0.07), 55); },
+      done: () => { playTone(523.25, 0.25); setTimeout(() => playTone(659.25, 0.3), 75); },
+      undo: () => playTone(330, 0.12, 0.06),
+      levelUp: () => [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => setTimeout(() => playTone(f, 0.35, 0.09), i * 90)),
+      del: () => { playTone(300, 0.14); setTimeout(() => playTone(200, 0.18), 55); },
+      add: () => playTone(440, 0.16),
+    };
+
+    // =========================================================================
+    // 2. State + localStorage persistence (P0) + Recurring task helpers
+    // =========================================================================
+    const RECUR_LABEL = {
+      daily: "↻ Daily",
+      weekdays: "↻ Weekdays",
+      weekly: "↻ Weekly",
+      monthly: "↻ Monthly",
+    };
+
+    function nextRecurringDate(currentDueISO, recur) {
+      const baseStr = currentDueISO && currentDueISO > todayISO() ? currentDueISO : todayISO();
+      const [y, m, d] = baseStr.split("-").map(Number);
+      const dt = new Date(y, m - 1, d, 12, 0, 0);
+      if (recur === "daily") {
+        dt.setDate(dt.getDate() + 1);
+      } else if (recur === "weekdays") {
+        do { dt.setDate(dt.getDate() + 1); } while (dt.getDay() === 0 || dt.getDay() === 6);
+      } else if (recur === "weekly") {
+        dt.setDate(dt.getDate() + 7);
+      } else if (recur === "monthly") {
+        dt.setMonth(dt.getMonth() + 1);
+      } else {
+        dt.setDate(dt.getDate() + 1);
+      }
+      return isoOf(dt.getTime());
+    }
+
+    function seedState() {
+      const now = Date.now();
+      const T = (title, diff, due, recur = "", streak = 0) => ({
+        id: uid("t"), title, diff, due, recur, streak, history: [],
+        done: false, doneAt: null, xpAwarded: 0,
+      });
+      const mk = (id, name, icon, color, parentId, childrenIds, xp, tasks) => ({
+        id, name, icon, color, parentId, childrenIds, xp, tasks,
+        strain: { fin: false, psy: false }, notes: [],
+        timeline: [{ id: uid("e"), type: "created", text: "Planet charted", at: now }], createdAt: now,
+      });
+      const planets = {
+        "planet-cultivation": mk("planet-cultivation", "Cultivation", "🌱", "#3B7A57", null, ["planet-training", "planet-reading"], 0, []),
+        "planet-home": mk("planet-home", "Home", "🏠", "#4A6FA5", null, [], 40, [T("Weekly farmers market & pantry restock", 1, addDays(1), "weekly", 1)]),
+        "planet-deloitte": mk("planet-deloitte", "Deloitte", "💼", "#6B4A8A", null, [], 120, [T("Finalize Q4 executive architecture deck", 4, addDays(2))]),
+        "planet-signal": mk("planet-signal", "Signal", "📡", "#2D7A8A", null, [], 60, [T("Ship telemetry pipeline v2 spec", 3, addDays(0))]),
+        "planet-bestplay": mk("planet-bestplay", "Best Play", "🎮", "#8A6B2D", null, [], 25, [T("Match film breakdown & tactical review", 2, addDays(3), "weekly", 1)]),
+        "planet-romantic": mk("planet-romantic", "Romantic", "❤️", "#8A2D5A", null, [], 80, [T("Reserve Friday candlelit dinner spot", 2, addDays(1))]),
+        "planet-social": mk("planet-social", "Social", "👥", "#2D5A8A", null, [], 15, [T("Host small dinner gathering", 2, addDays(-1))]),
+        "planet-training": mk("planet-training", "Training", "🏋️", "#C04A4A", "planet-cultivation", [], 90, [T("Zone 2 aerobic run — 5 km", 2, addDays(0), "weekly", 2)]),
+        "planet-reading": mk("planet-reading", "Reading", "📖", "#7A853B", "planet-cultivation", [], 30, [T("Read 25 pages before sleep", 1, addDays(0), "daily", 3)]),
+      };
+      return {
+        version: 2, planets,
+        rootIds: ["planet-cultivation", "planet-home", "planet-deloitte", "planet-signal", "planet-bestplay", "planet-romantic", "planet-social"],
+        life: { notes: [], timeline: [{ id: uid("e"), type: "created", text: "Life universe seeded", at: now }] },
+        soundOn: true, focusId: null,
+      };
+    }
+    function normalizeState(s) {
+      if (!s || !s.planets || !Array.isArray(s.rootIds)) return null;
+      Object.values(s.planets).forEach(p => {
+        (p.tasks || []).forEach(t => {
+          if (typeof t.recur !== "string") {
+            if (/25 pages/i.test(t.title)) { t.recur = "daily"; t.streak = t.streak || 3; }
+            else if (/farmers market|Zone 2/i.test(t.title)) { t.recur = "weekly"; t.streak = t.streak || 2; }
+            else t.recur = "";
+          }
+          if (typeof t.streak !== "number") t.streak = 0;
+          if (!Array.isArray(t.history)) t.history = [];
+        });
+      });
+      return s;
+    }
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORE_KEY);
+        if (raw) {
+          const s = normalizeState(JSON.parse(raw));
+          if (s) return s;
+        }
+      } catch (e) {}
+      return seedState();
+    }
+    let STATE = loadState();
+
+    // Supabase Cloud Persistence Engine
+    const SUPABASE_URL = "https://fzynqetgqohgeqsdnttm.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_h5qp70G8q8wVfI9QrFa7mw_hiflEA4i";
+    let syncTimer = null;
+    function setCloudStatus(text, tone = "ok") {
+      const btn = document.getElementById("btnCloudSync");
+      if (!btn) return;
+      btn.textContent = text;
+      btn.className = tone === "syncing"
+        ? "px-3.5 py-1.5 rounded-full text-sm font-medium border border-amber-400/45 bg-amber-400/10 text-amber-200 transition-all cursor-pointer"
+        : tone === "err"
+        ? "px-3.5 py-1.5 rounded-full text-sm font-medium border border-red-400/45 bg-red-500/10 text-red-200 transition-all cursor-pointer"
+        : "px-3.5 py-1.5 rounded-full text-sm font-medium border border-teal-400/35 bg-teal-400/10 text-teal-200 hover:border-teal-400 transition-all cursor-pointer";
+    }
+    async function saveToSupabase() {
+      setCloudStatus("⟳ Syncing…", "syncing");
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/sync_universe_state`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: SUPABASE_KEY,
+            Authorization: `Bearer ${SUPABASE_KEY}`,
+          },
+          body: JSON.stringify({ p_universe_id: "default", p_state: STATE }),
+        });
+        if (!res.ok) throw new Error("RPC failed");
+        setCloudStatus("☁️ Synced", "ok");
+      } catch (e) {
+        setCloudStatus("☁️ Local saved", "err");
+      }
+    }
+    async function loadFromSupabase() {
+      setCloudStatus("⟳ Loading…", "syncing");
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/universe_states?id=eq.default&select=id,state,updated_at`, {
+          headers: {
+            apikey: SUPABASE_KEY,
+            Authorization: `Bearer ${SUPABASE_KEY}`,
+          },
+          cache: "no-store",
+        });
+        if (!res.ok) throw new Error("Fetch failed");
+        const rows = await res.json();
+        const remote = Array.isArray(rows) && rows[0]?.state ? normalizeState(rows[0].state) : null;
+        if (remote) {
+          const remoteTs = remote.updatedAt || new Date(rows[0].updated_at || 0).getTime() || 0;
+          const localTs = STATE.updatedAt || 0;
+          if (remoteTs >= localTs) {
+            STATE = remote;
+            focusId = STATE.focusId && STATE.planets[STATE.focusId] ? STATE.focusId : null;
+            try { localStorage.setItem(STORE_KEY, JSON.stringify(STATE)); } catch (err) {}
+            healthCache.clear();
+            render();
+          } else {
+            await saveToSupabase();
+          }
+          setCloudStatus("☁️ Synced", "ok");
+        } else {
+          // Seed initial state into Supabase
+          STATE.updatedAt = Date.now();
+          await saveToSupabase();
+        }
+      } catch (e) {
+        setCloudStatus("☁️ Local mode", "err");
+      }
+    }
+
+    function save() {
+      STATE.updatedAt = Date.now();
+      try { localStorage.setItem(STORE_KEY, JSON.stringify(STATE)); } catch (e) {}
+      clearTimeout(syncTimer);
+      syncTimer = setTimeout(() => { saveToSupabase(); }, 300);
+    }
+
+    // UI-only state
+    let focusId = STATE.focusId && STATE.planets[STATE.focusId] ? STATE.focusId : null;
+    let selectedId = null;            // inspected orbiting planet (P1: inspect vs dive)
+    let hudTab = "missions";          // missions | notes | timeline
+    let showCompleted = false;
+    let mobView = "map";              // map | checkin
+    let orbitOffset = 0, orbitPaused = false, hoveringNode = false;
+
+    // =========================================================================
+    // 3. Tree helpers
+    // =========================================================================
+    const P = (id) => (id ? STATE.planets[id] : null);
+    const childIds = (id) => (id ? (P(id)?.childrenIds || []) : STATE.rootIds).filter(cid => P(cid));
+    function descendants(id) {
+      const out = [];
+      const walk = (ids) => ids.forEach(cid => { const p = P(cid); if (!p) return; out.push(cid); walk(p.childrenIds); });
+      walk(childIds(id));
+      return out;
+    }
+    function ancestorsChain(pid) { const out = []; let c = P(pid); while (c) { out.push(c); c = P(c.parentId); } return out; }
+    const lifeNode = () => ({
+      id: null,
+      name: STATE.life?.name || "Life",
+      icon: STATE.life?.icon || "☀️",
+      color: STATE.life?.color || "#0F766E",
+      childrenIds: STATE.rootIds,
+      tasks: [],
+      strain: { fin: false, psy: false },
+    });
+    const ownerOf = (id) => (id ? P(id) : STATE.life);
+
+    // =========================================================================
+    // 4. Mechanics (P1): task-driven health, strain as "gravity", monotonic subtree XP
+    // =========================================================================
+    function taskStats(p) {
+      const today = todayISO(); let overdue = 0, recent = 0, doneToday = 0, open = 0;
+      for (const t of p.tasks) {
+        if (Array.isArray(t.history)) {
+          for (const h of t.history) {
+            if (h.at && Date.now() - h.at < 7 * DAY) recent++;
+            if (h.at && isoOf(h.at) === today) doneToday++;
+          }
+        }
+        if (t.done) {
+          if (t.doneAt && Date.now() - t.doneAt < 7 * DAY) recent++;
+          if (t.doneAt && isoOf(t.doneAt) === today) doneToday++;
+        } else {
+          open++;
+          if (t.due && t.due < today) overdue++;
+        }
+      }
+      return { overdue, recent, doneToday, open };
+    }
+    const strainCount = (p) => (p?.strain?.fin ? 1 : 0) + (p?.strain?.psy ? 1 : 0);
+    // Each strain flag applies -15 pressure; every task completed TODAY neutralises 10 of it.
+    const strainPenalty = (p, st) => Math.max(0, 15 * strainCount(p) - 10 * st.doneToday);
+
+    const healthCache = new Map();
+    // H = base(85 for leaves | avg(children) for parents) + 5·min(3, done last 7d) − 15·overdue − net strain
+    function computeHealth(p) {
+      if (!p) {
+        const ids = childIds(null);
+        if (!ids.length) return 85;
+        return Math.round(ids.reduce((a, id) => a + computeHealth(P(id)), 0) / ids.length);
+      }
+      if (healthCache.has(p.id)) return healthCache.get(p.id);
+      const st = taskStats(p);
+      const kids = childIds(p.id);
+      const base = kids.length ? kids.reduce((a, id) => a + computeHealth(P(id)), 0) / kids.length : 85;
+      const s = Math.round(clamp(base + 5 * Math.min(3, st.recent) - 15 * st.overdue - strainPenalty(p, st), 0, 100));
+      healthCache.set(p.id, s);
+      return s;
+    }
+    const healthHex = (s) => (s >= 70 ? "#2DD4BF" : s >= 45 ? "#F59E0B" : "#EF4444");
+
+    // XP = diff² × 5 × (1 + 0.25 × active strains)  → 5 / 20 / 45 / 80 / 125 XP
+    const taskXP = (diff, strains) => Math.round(diff * diff * 5 * (1 + 0.25 * strains));
+    // Parent XP = own XP + all descendant XP → adding an empty planet can never lower a level.
+    const subtreeXP = (p) => (p.xp || 0) + descendants(p.id).reduce((a, id) => a + (P(id).xp || 0), 0);
+    const universeXP = () => descendants(null).reduce((a, id) => a + (P(id).xp || 0), 0);
+    const levelFromXP = (xp) => 1 + Math.floor(10 * Math.pow(Math.max(0, xp) / 100, 0.75)) / 10;
+    const xpForLevel = (L) => 100 * Math.pow(Math.max(0, L - 1), 4 / 3);
+    function levelInfo(xp) {
+      const lvl = levelFromXP(xp), whole = Math.floor(lvl);
+      const a = xpForLevel(whole), b = xpForLevel(whole + 1);
+      return { lvl, whole, pct: clamp(((xp - a) / (b - a)) * 100, 0, 100), toNext: Math.max(0, Math.ceil(b - xp)), xp };
+    }
+    const xpOf = (p) => (p && p.id ? subtreeXP(p) : universeXP());
+    const levelOf = (p) => levelFromXP(xpOf(p));
+
+    function logEvent(pid, type, text) {
+      const owner = ownerOf(pid); if (!owner) return;
+      owner.timeline = owner.timeline || [];
+      owner.timeline.unshift({ id: uid("e"), type, text, at: Date.now() });
+      if (owner.timeline.length > 120) owner.timeline.length = 120;
+    }
+
+    // =========================================================================
+    // 5. Mutations
+    // =========================================================================
+    function commit() { STATE.focusId = focusId; healthCache.clear(); save(); render(); }
+
+    function dive(id) {
+      if (id && !P(id)) id = null;
+      sfx.dive();
+      focusId = id; selectedId = null; showCompleted = false; hoveringNode = false;
+      commit();
+    }
+    function select(id) {
+      if (id === selectedId) return;
+      sfx.click();
+      selectedId = id;
+      updateSelectionVisuals();
+      renderHUD();
+    }
+
+    function toggleTask(pid, tid) {
+      const p = P(pid); const t = p?.tasks.find(x => x.id === tid); if (!t) return;
+      const chain = ancestorsChain(pid);
+      const before = chain.map(c => Math.floor(levelOf(c)));
+      const uBefore = Math.floor(levelFromXP(universeXP()));
+
+      if (t.recur) {
+        // Recurring task: award XP, increment streak, log cycle, and advance due date
+        const strains = strainCount(p);
+        const gain = taskXP(t.diff, strains);
+        t.history = Array.isArray(t.history) ? t.history : [];
+        const prevDue = t.due || todayISO();
+        t.due = nextRecurringDate(t.due, t.recur);
+        t.streak = (t.streak || 0) + 1;
+        t.history.unshift({ at: Date.now(), xp: gain, prevDue });
+        if (t.history.length > 60) t.history.length = 60;
+        p.xp = (p.xp || 0) + gain;
+        logEvent(pid, "done", `Cycled ${RECUR_LABEL[t.recur] || "↻"} “${t.title}” (🔥 ${t.streak}) · +${gain} XP`);
+        sfx.done();
+        const ups = chain.filter((c, i) => Math.floor(levelOf(c)) > before[i]);
+        const uUp = Math.floor(levelFromXP(universeXP())) > uBefore;
+        if (ups.length || uUp) {
+          ups.forEach(c => logEvent(c.id, "levelup", `Reached Level ${Math.floor(levelOf(c))}`));
+          if (uUp) logEvent(null, "levelup", `Life reached Level ${Math.floor(levelFromXP(universeXP()))}`);
+          setTimeout(sfx.levelUp, 260);
+          toast(`⬆ ${ups[0] ? ups[0].name : "Life"} reached Level ${Math.floor(ups[0] ? levelOf(ups[0]) : levelFromXP(universeXP()))}!`, "#E5A93C");
+        } else {
+          toast(`↻ +${gain} XP · 🔥 ${t.streak} streak · next due ${t.due}`);
+        }
+        commit();
+        pulse(pid);
+        return;
+      }
+
+      if (!t.done) {
+        const strains = strainCount(p);
+        const gain = taskXP(t.diff, strains);
+        t.done = true; t.doneAt = Date.now(); t.xpAwarded = gain;
+        p.xp = (p.xp || 0) + gain;
+        logEvent(pid, "done", `Completed “${t.title}” · +${gain} XP`);
+        sfx.done();
+        const ups = chain.filter((c, i) => Math.floor(levelOf(c)) > before[i]);
+        const uUp = Math.floor(levelFromXP(universeXP())) > uBefore;
+        if (ups.length || uUp) {
+          ups.forEach(c => logEvent(c.id, "levelup", `Reached Level ${Math.floor(levelOf(c))}`));
+          if (uUp) logEvent(null, "levelup", `Life reached Level ${Math.floor(levelFromXP(universeXP()))}`);
+          setTimeout(sfx.levelUp, 260);
+          toast(`⬆ ${ups[0] ? ups[0].name : "Life"} reached Level ${Math.floor(ups[0] ? levelOf(ups[0]) : levelFromXP(universeXP()))}!`, "#E5A93C");
+        } else {
+          toast(`+${gain} XP · ${p.name}${strains ? " · resilience bonus" : ""}`);
+        }
+      } else {
+        p.xp = Math.max(0, (p.xp || 0) - (t.xpAwarded || 0));
+        t.done = false; t.doneAt = null; t.xpAwarded = 0;
+        logEvent(pid, "undo", `Reopened “${t.title}”`);
+        sfx.undo();
+      }
+      commit();
+      pulse(pid);
+    }
+
+    function undoRecurringCycle(pid, tid) {
+      const p = P(pid); const t = p?.tasks.find(x => x.id === tid);
+      if (!t || !Array.isArray(t.history) || !t.history.length) return;
+      const last = t.history.shift();
+      p.xp = Math.max(0, (p.xp || 0) - (last.xp || 0));
+      t.streak = Math.max(0, (t.streak || 1) - 1);
+      if (last.prevDue) t.due = last.prevDue;
+      logEvent(pid, "undo", `Undid cycle on “${t.title}”`);
+      sfx.undo();
+      commit();
+    }
+
+    function deleteTask(pid, tid) {
+      const p = P(pid); if (!p) return;
+      const t = p.tasks.find(x => x.id === tid); if (!t) return;
+      p.tasks = p.tasks.filter(x => x.id !== tid);
+      logEvent(pid, "deleted", `Removed task “${t.title}”`);
+      sfx.del();
+      commit();
+    }
+
+    function deletePlanet(id) {
+      const target = P(id); if (!target) return;
+      const sub = descendants(id).length;
+      const msg = `Delete “${target.name}”${sub ? ` and its ${sub} satellite${sub > 1 ? "s" : ""}` : ""}? All tasks and notes inside will be lost.`;
+      if (!window.confirm(msg)) return;
+      const parentId = target.parentId;
+      if (parentId && P(parentId)) P(parentId).childrenIds = P(parentId).childrenIds.filter(c => c !== id);
+      else STATE.rootIds = STATE.rootIds.filter(r => r !== id);
+      [id, ...descendants(id)].forEach(did => delete STATE.planets[did]);
+      logEvent(parentId, "deleted", `Planet “${target.name}” removed from orbit`);
+      if (!P(focusId)) focusId = parentId && P(parentId) ? parentId : null;
+      if (!P(selectedId)) selectedId = null;
+      sfx.del();
+      toast(`“${target.name}” removed`, "#EF4444");
+      commit();
+    }
+
+    function toggleStrain(id, kind) {
+      const p = P(id); if (!p) return;
+      p.strain[kind] = !p.strain[kind];
+      const label = kind === "fin" ? "Financial strain" : "Psychological strain";
+      logEvent(id, "strain", `${label} ${p.strain[kind] ? "flagged" : "cleared"}`);
+      if (p.strain[kind]) toast(`High gravity on ${p.name} · tasks here earn bonus XP`, "#F59E0B");
+      sfx.click();
+      commit();
+    }
+
+    function addNote(id, text) {
+      const owner = ownerOf(id); if (!owner || !text.trim()) return;
+      owner.notes = owner.notes || [];
+      owner.notes.unshift({ id: uid("n"), text: text.trim(), at: Date.now() });
+      logEvent(id, "note", "Note added");
+      sfx.add();
+      commit();
+    }
+    function deleteNote(id, nid) {
+      const owner = ownerOf(id); if (!owner) return;
+      owner.notes = (owner.notes || []).filter(n => n.id !== nid);
+      commit();
+    }
+
+    // =========================================================================
+    // 6. Desktop Spatial Scene (P0: persistent SVG nodes, transform-only per frame)
+    // =========================================================================
+    const svgEl = document.getElementById("orbitalArcSvg");
+    const domContainer = document.getElementById("planetCanvas");
+    const SVGNS = "http://www.w3.org/2000/svg";
+    let scene = { focusEl: null, wbEl: null, kidEls: {}, kids: [], orbit: null, wbPath: null, arcs: [] };
+
+    function geom() {
+      const w = window.innerWidth, h = window.innerHeight;
+      const panel = w >= 1536 ? 545 : w >= 1280 ? 495 : 425;
+      const cx = Math.round((w - panel) / 2);
+      const cy = Math.round(h / 2 + 16);
+      const radius = Math.round(clamp(Math.min(w - panel - 90, h - 175) * 0.4, 175, 450));
+      const scale = clamp(Math.min(w / 1400, h / 880), 0.9, 1.35);
+      return { w, h, cx, cy, radius, scale };
+    }
+
+    function createNode(pl, size, kind) {
+      const isFocus = kind === "focus", isParent = kind === "wayback";
+      const score = computeHealth(pl.id ? pl : null), hex = healthHex(score);
+      const lvl = levelOf(pl.id ? pl : null);
+      const kids = childIds(pl.id);
+      const hasMoons = kind === "child" && kids.length > 0;
+      const pad = isFocus ? 18 : hasMoons ? 24 : 14;
+      const r = size / 2 + (isFocus ? 9 : 7);
+      const circ = 2 * Math.PI * r, filled = (score / 100) * circ;
+      const svgDim = size + pad * 2, c = svgDim / 2, sw = isFocus ? 3.5 : 2.75;
+      const strained = pl.id && strainCount(pl) > 0;
+      const titlePx = Math.round(size * (isFocus ? 0.22 : isParent ? 0.25 : 0.235));
+      const pillPx = isFocus ? 14 : 13;
+
+      const moons = hasMoons ? kids.slice(0, 10).map((cid, i, arr) => {
+        const a = ((-90 + i * (360 / arr.length)) * Math.PI) / 180;
+        const mh = healthHex(computeHealth(P(cid)));
+        return `<circle cx="${c + Math.cos(a) * (r + 11)}" cy="${c + Math.sin(a) * (r + 11)}" r="4" fill="${mh}" style="filter:drop-shadow(0 0 5px ${mh})"><title>${esc(P(cid).name)}</title></circle>`;
+      }).join("") : "";
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "absolute left-0 top-0 pointer-events-auto cursor-pointer will-change-transform";
+      wrapper.innerHTML = `
+        <div class="node-inner relative flex items-center justify-center transition-transform duration-200 ${isFocus ? "hover:scale-[1.03] pill-always" : "hover:scale-110"} ${isParent ? "pill-always" : ""}" style="width:${size}px;height:${size}px;">
+          <div class="absolute rounded-full pointer-events-none" style="width:${size * 1.85}px;height:${size * 1.85}px;top:${-size * 0.425}px;left:${-size * 0.425}px;background:radial-gradient(circle, ${pl.color}55 0%, transparent 70%);"></div>
+          ${kind === "child" ? `<div class="reticle-wrap absolute pointer-events-none" style="inset:${-pad - 6}px;display:none"><div class="reticle w-full h-full rounded-full border border-dashed border-amber-300/80"></div></div>` : ""}
+          <svg class="absolute pointer-events-none overflow-visible" width="${svgDim}" height="${svgDim}" style="top:${-pad}px;left:${-pad}px;">
+            ${isFocus ? `<circle cx="${c}" cy="${c}" r="${r + 8}" fill="none" stroke="rgba(45,212,191,0.18)" stroke-dasharray="3 7"/>` : ""}
+            <circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="${sw}"/>
+            <circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${hex}" stroke-width="${sw}"
+                    stroke-dasharray="${filled} ${circ - filled}" stroke-dashoffset="${circ / 4}" stroke-linecap="round"
+                    style="filter:drop-shadow(0 0 6px ${hex}88)"/>
+            ${strained ? `<circle class="strain-pulse" cx="${c}" cy="${c}" r="${r}" fill="none" stroke="#EF4444" stroke-width="${sw + 0.8}" stroke-dasharray="${circ * 0.12 * strainCount(pl)} ${circ}" stroke-dashoffset="${-circ * 0.1}" stroke-linecap="round" style="filter:drop-shadow(0 0 8px #EF4444)"/>` : ""}
+            ${moons}
+          </svg>
+          <div class="planet-disc w-full h-full rounded-full flex items-center justify-center text-white"
+               style="color:${pl.color};background:radial-gradient(circle at 32% 28%, ${pl.color}ee, ${pl.color} 70%, #0D0F0E 140%);font-size:${Math.round(size * 0.39)}px;box-shadow:0 0 24px ${pl.color}66, inset 0 2px 4px rgba(255,255,255,0.25), inset 0 -3px 6px rgba(0,0,0,0.4);">
+            <span style="filter:none">${esc(pl.icon)}</span>
+          </div>
+          <div class="absolute top-full flex flex-col items-center pointer-events-none left-1/2 -translate-x-1/2 whitespace-nowrap z-30" style="margin-top:${Math.max(9, pad - 3)}px">
+            <span class="font-fraunces text-white whitespace-nowrap tracking-wide" style="font-size:${titlePx}px;font-weight:${isFocus ? 600 : 500};text-shadow:0 2px 12px #000, 0 0 4px #000;">
+              ${isParent ? "← " : ""}${esc(pl.name)}
+            </span>
+            <div class="node-pill mt-1 flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#0B0E0F]/95 border border-white/15 font-medium" style="font-size:${pillPx}px">
+              <span class="font-semibold" style="color:${hex}">${score}%</span>
+              <span class="text-slate-500">·</span>
+              <span class="text-amber-300 font-semibold">Lv ${lvl.toFixed(1)}</span>
+              ${kids.length && !isFocus ? `<span class="text-slate-500">·</span><span class="text-teal-300">${kids.length} in orbit</span>` : ""}
+            </div>
+          </div>
+        </div>`;
+      wrapper.addEventListener("mouseenter", () => { hoveringNode = true; });
+      wrapper.addEventListener("mouseleave", () => { hoveringNode = false; });
+      return wrapper;
+    }
+
+    function rebuildScene() {
+      domContainer.innerHTML = "";
+      svgEl.innerHTML = "";
+      scene = { focusEl: null, wbEl: null, kidEls: {}, kids: [], orbit: null, wbPath: null, arcs: [] };
+      if (isMobile()) return;
+      const g = geom();
+      const fp = P(focusId);
+      const kids = childIds(focusId);
+      scene.kids = kids;
+      const s = g.scale;
+
+      // SVG skeleton, created once per scene and mutated per frame
+      const orbit = document.createElementNS(SVGNS, "circle");
+      orbit.setAttribute("fill", "none"); orbit.setAttribute("stroke", "rgba(45,212,191,0.14)"); orbit.setAttribute("stroke-width", "1.25");
+      svgEl.appendChild(orbit); scene.orbit = orbit;
+      if (fp) {
+        const wp = document.createElementNS(SVGNS, "path");
+        wp.setAttribute("fill", "none"); wp.setAttribute("stroke", "rgba(234,179,8,0.26)"); wp.setAttribute("stroke-width", "1.75");
+        wp.setAttribute("class", "arc-animated");
+        svgEl.appendChild(wp); scene.wbPath = wp;
+      }
+      kids.forEach((cid, i) => {
+        const a = document.createElementNS(SVGNS, "path");
+        a.setAttribute("fill", "none");
+        a.setAttribute("stroke", i % 2 === 0 ? "rgba(45,212,191,0.28)" : "rgba(234,179,8,0.22)");
+        a.setAttribute("stroke-width", "1.5");
+        a.setAttribute("class", "arc-animated");
+        svgEl.appendChild(a); scene.arcs.push(a);
+      });
+
+      // Wayback parent
+      if (fp) {
+        const par = P(fp.parentId) || lifeNode();
+        const el = createNode(par, Math.round(64 * s), "wayback");
+        el.addEventListener("click", (e) => { e.stopPropagation(); dive(fp.parentId || null); });
+        domContainer.appendChild(el); scene.wbEl = el;
+      }
+      // Focus centre
+      const center = createNode(fp || lifeNode(), Math.round(114 * s), "focus");
+      center.addEventListener("click", (e) => { e.stopPropagation(); select(null); });
+      domContainer.appendChild(center); scene.focusEl = center;
+
+      // Orbiting children: click = inspect, click again = dive
+      kids.forEach(cid => {
+        const el = createNode(P(cid), Math.round(78 * s), "child");
+        el.addEventListener("click", (e) => {
+          e.stopPropagation();
+          if (selectedId === cid) dive(cid); else select(cid);
+        });
+        domContainer.appendChild(el); scene.kidEls[cid] = el;
+      });
+
+      if (!kids.length) {
+        const hint = document.createElement("div");
+        hint.className = "absolute left-0 top-0 pointer-events-auto";
+        hint.dataset.role = "empty-hint";
+        hint.innerHTML = `<button data-act="add-sat" data-id="${focusId || ""}" class="px-4 py-2.5 rounded-full border border-dashed border-amber-400/50 bg-[#0B0E0F] text-amber-300 text-sm hover:border-amber-300 cursor-pointer">✨ No satellites yet · launch the first one</button>`;
+        domContainer.appendChild(hint); scene.hintEl = hint;
+      }
+      hoveringNode = false;
+      updateSelectionVisuals();
+      updateOrbitalPositions();
+    }
+
+    function place(el, x, y) { el.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%)`; }
+
+    function updateOrbitalPositions() {
+      if (!scene.orbit) return;
+      const { cx, cy, radius } = geom();
+      if (scene.focusEl) place(scene.focusEl, cx, cy);
+      scene.orbit.setAttribute("cx", cx); scene.orbit.setAttribute("cy", cy); scene.orbit.setAttribute("r", radius);
+      if (scene.hintEl) place(scene.hintEl, cx, cy + radius * 0.75);
+
+      const wbX = Math.max(95, Math.round(cx - radius * 1.12));
+      const wbY = Math.max(130, Math.round(cy - radius * 0.8));
+      if (scene.wbEl) place(scene.wbEl, wbX, wbY);
+      if (scene.wbPath) scene.wbPath.setAttribute("d", `M ${wbX} ${wbY} Q ${cx - radius * 0.7} ${wbY + (cy - wbY) * 0.65} ${cx} ${cy}`);
+
+      const n = scene.kids.length;
+      for (let i = 0; i < n; i++) {
+        const angle = -90 + (360 / n) * i + orbitOffset;
+        const rad = (angle * Math.PI) / 180;
+        const ex = cx + Math.cos(rad) * radius, ey = cy + Math.sin(rad) * radius;
+        const el = scene.kidEls[scene.kids[i]];
+        if (el) place(el, ex, ey);
+        const mx = (cx + ex) / 2, my = (cy + ey) / 2;
+        const pRad = ((angle + 90) * Math.PI) / 180;
+        const cpx = mx + Math.cos(pRad) * (radius * 0.34), cpy = my + Math.sin(pRad) * (radius * 0.34);
+        scene.arcs[i].setAttribute("d", `M ${cx} ${cy} Q ${cpx} ${cpy} ${ex} ${ey}`);
+      }
+    }
+
+    function updateSelectionVisuals() {
+      Object.entries(scene.kidEls).forEach(([id, el]) => {
+        const sel = id === selectedId;
+        el.querySelector(".node-inner").classList.toggle("is-selected", sel);
+        const ret = el.querySelector(".reticle-wrap"); if (ret) ret.style.display = sel ? "block" : "none";
+        el.style.zIndex = sel ? "5" : "";
+      });
+    }
+
+    function pulse(pid) {
+      for (const p of ancestorsChain(pid)) {
+        const el = p.id === focusId ? scene.focusEl : scene.kidEls[p.id];
+        if (el) {
+          const disc = el.querySelector(".planet-disc");
+          disc.classList.remove("planet-glow-pulse"); void disc.offsetWidth; disc.classList.add("planet-glow-pulse");
+          return;
+        }
+      }
+      if (scene.focusEl && !focusId) {
+        const disc = scene.focusEl.querySelector(".planet-disc");
+        disc.classList.remove("planet-glow-pulse"); void disc.offsetWidth; disc.classList.add("planet-glow-pulse");
+      }
+    }
+
+    // =========================================================================
+    // 7. Shared HUD fragments (desktop + mobile)
+    // =========================================================================
+    function dueLabel(t) {
+      if (t.done) return t.doneAt ? `<span class="text-slate-400">Done ${isoOf(t.doneAt) === todayISO() ? "today" : isoOf(t.doneAt)}</span>` : "";
+      if (!t.due) return `<span class="text-slate-400">No date</span>`;
+      const diff = Math.round((new Date(t.due) - new Date(todayISO())) / DAY);
+      if (diff < 0) return `<span class="text-red-300 font-semibold">Overdue ${-diff}d</span>`;
+      if (diff === 0) return `<span class="text-amber-300 font-semibold">Today</span>`;
+      if (diff === 1) return `<span class="text-slate-200">Tomorrow</span>`;
+      return `<span class="text-slate-300">in ${diff}d</span>`;
+    }
+
+    function taskGroups(tid) {
+      const today = todayISO(), items = [];
+      if (tid) P(tid).tasks.forEach(t => items.push({ t, p: P(tid), scope: "here" }));
+      descendants(tid).forEach(id => P(id).tasks.forEach(t => items.push({ t, p: P(id), scope: "orbit" })));
+      const byDue = (a, b) => (a.t.due || "9999").localeCompare(b.t.due || "9999");
+      const isOver = (x) => x.t.due && x.t.due < today;
+      const open = items.filter(x => !x.t.done);
+      return {
+        overdue: open.filter(isOver).sort(byDue),
+        here: open.filter(x => x.scope === "here" && !isOver(x)).sort(byDue),
+        orbit: open.filter(x => x.scope === "orbit" && !isOver(x)).sort(byDue),
+        done: items.filter(x => x.t.done).sort((a, b) => (b.t.doneAt || 0) - (a.t.doneAt || 0)),
+        openCount: open.length, overdueCount: open.filter(isOver).length,
+        hereCount: open.filter(x => x.scope === "here").length, orbitCount: open.filter(x => x.scope === "orbit").length,
+      };
+    }
+
+    function taskRow(x, mobile, showPlanet = true) {
+      const { t, p } = x;
+      const cb = mobile ? "w-7 h-7 text-sm" : "w-6 h-6 text-xs";
+      const btn = mobile ? "w-9 h-9 text-sm" : "w-8 h-8 text-sm";
+      const cycledToday = t.recur && Array.isArray(t.history) && t.history[0] && isoOf(t.history[0].at) === todayISO();
+      const recurBadge = t.recur ? `<span class="px-2 py-0.5 rounded-full bg-teal-400/15 border border-teal-400/35 text-teal-200 font-medium">${RECUR_LABEL[t.recur] || "↻ Repeat"}${t.streak ? ` · 🔥 ${t.streak}` : ""}</span><span class="text-slate-600">·</span>` : "";
+      const cycledBadge = cycledToday ? `<span class="px-2 py-0.5 rounded-full bg-emerald-400/15 border border-emerald-400/40 text-emerald-300 font-medium">✓ Cycled today</span><span class="text-slate-600">·</span>` : "";
+      return `
+        <div class="group flex items-center gap-3.5 ${mobile ? "p-3.5" : "p-3.5"} rounded-xl bg-white/[0.035] border ${cycledToday ? "border-teal-400/35" : "border-white/10"} hover:border-teal-400/35 transition-colors ${t.done ? "opacity-55" : ""}">
+          <button data-act="toggle" data-pid="${p.id}" data-tid="${t.id}" title="${t.recur ? "Complete cycle & advance due date" : t.done ? "Reopen task" : "Complete task"}"
+                  class="${cb} flex-shrink-0 rounded-md border flex items-center justify-center cursor-pointer transition-all ${t.done ? "bg-teal-400 border-teal-400 text-[#0D0F0E] font-bold" : cycledToday ? "border-teal-400 bg-teal-400/20 text-teal-200 hover:bg-teal-400/30" : "border-slate-400 hover:border-teal-400 hover:bg-teal-400/10 text-teal-300"}">${t.done ? "✓" : t.recur ? "↻" : ""}</button>
+          <div class="flex-1 min-w-0">
+            <p class="${mobile ? "text-base" : "text-[15px] xl:text-base"} font-medium text-slate-100 leading-snug ${t.done ? "line-through text-slate-400" : ""}">${esc(t.title)}</p>
+            <div class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-300">
+              ${showPlanet ? `<span style="color:${p.color}" class="brightness-150 font-medium">${esc(p.icon)} ${esc(p.name)}</span><span class="text-slate-600">·</span>` : ""}
+              ${recurBadge}
+              ${cycledBadge}
+              <span class="text-amber-300/90" title="Difficulty ${t.diff}">${"◆".repeat(t.diff)}<span class="text-slate-700">${"◆".repeat(5 - t.diff)}</span></span>
+              <span class="text-slate-600">·</span>
+              ${dueLabel(t)}
+              ${t.done && t.xpAwarded ? `<span class="text-slate-600">·</span><span class="text-teal-300 font-medium">+${t.xpAwarded} XP</span>` : ""}
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5 flex-shrink-0">
+            ${cycledToday ? `<button data-act="undo-cycle" data-pid="${p.id}" data-tid="${t.id}" title="Undo today's cycle" class="${btn} rounded-lg bg-white/5 hover:bg-amber-400/20 border border-white/15 hover:border-amber-400/40 text-amber-300 transition-all cursor-pointer">↺</button>` : ""}
+            <button data-act="edit-task" data-pid="${p.id}" data-tid="${t.id}" title="Edit task" aria-label="Edit task"
+                    class="${btn} rounded-lg bg-white/5 hover:bg-teal-400/20 border border-white/15 hover:border-teal-400/40 text-slate-200 hover:text-teal-300 transition-all cursor-pointer">✎</button>
+            <button data-act="del-task" data-pid="${p.id}" data-tid="${t.id}" title="Delete task" aria-label="Delete task"
+                    class="${btn} rounded-lg bg-white/5 hover:bg-red-500/20 border border-white/15 hover:border-red-400/40 text-slate-200 hover:text-red-300 transition-all cursor-pointer">🗑</button>
+          </div>
+        </div>`;
+    }
+
+    function missionsHTML(tid, mobile) {
+      const g = taskGroups(tid);
+      const sec = (title, cls, arr, showPlanet) => arr.length ? `
+        <div class="space-y-2.5">
+          <p class="text-xs font-semibold uppercase tracking-wider ${cls}">${title} · ${arr.length}</p>
+          ${arr.map(x => taskRow(x, mobile, showPlanet)).join("")}
+        </div>` : "";
+      let html = sec("⚠ Overdue", "text-red-300", g.overdue, true)
+        + sec("Here", "text-teal-300", g.here, false)
+        + sec("In orbit", "text-slate-300", g.orbit, true);
+      if (!g.openCount) html += `<div class="p-6 rounded-xl border border-dashed border-white/15 text-center text-sm text-slate-300">All clear in this sector ✦<br><span class="text-slate-400 text-xs">Add a task to keep momentum up.</span></div>`;
+      if (g.done.length) html += `
+        <div>
+          <button data-act="toggle-completed" class="w-full flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-slate-400 hover:text-slate-200 py-1.5 cursor-pointer">
+            <span>Completed · ${g.done.length}</span><span>${showCompleted ? "▾" : "▸"}</span>
+          </button>
+          ${showCompleted ? `<div class="space-y-2.5 mt-2">${g.done.slice(0, 30).map(x => taskRow(x, mobile, true)).join("")}</div>` : ""}
+        </div>`;
+      return html;
+    }
+
+    function strainBlock(target) {
+      if (!target) return "";
+      const n = strainCount(target), st = taskStats(target);
+      const need = Math.max(0, Math.ceil((15 * n) / 10) - st.doneToday);
+      const chip = (kind, label, on) => `<button data-act="strain" data-id="${target.id}" data-kind="${kind}"
+          class="px-3.5 py-1.5 rounded-full text-xs font-medium border transition-all cursor-pointer ${on ? "bg-red-500/20 border-red-500/70 text-red-200 font-semibold shadow-[0_0_12px_rgba(239,68,68,0.3)]" : "border-slate-600 text-slate-300 hover:border-slate-400 hover:text-white"}">${label}</button>`;
+      return `
+        <div class="flex flex-wrap items-center gap-2 mt-3.5">
+          ${chip("fin", "$ Financial strain", target.strain.fin)}
+          ${chip("psy", "🧠 Psyche strain", target.strain.psy)}
+        </div>
+        ${n ? `<p class="mt-2.5 text-xs leading-snug text-amber-200/90">High gravity · tasks here earn <b>${100 + 25 * n}% XP</b>. ${need ? `${need} more win${need > 1 ? "s" : ""} today neutralise the drag.` : "Drag neutralised for today ✓"}</p>` : ""}`;
+    }
+
+    function notesHTML(id, mobile) {
+      const owner = ownerOf(id); const notes = owner?.notes || [];
+      const inputId = mobile ? "noteInputMob" : "noteInputDesk";
+      return `
+        <div class="space-y-2.5">
+          <textarea id="${inputId}" rows="3" placeholder="Capture context, decisions, reflections…" class="w-full bg-white/5 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm xl:text-base text-slate-100 focus:outline-none focus:border-teal-400 resize-none"></textarea>
+          <div class="flex justify-end"><button data-act="add-note" data-id="${id || ""}" data-input="${inputId}" class="px-4 py-1.5 rounded-full text-xs xl:text-sm font-semibold text-[#0D0F0E] cursor-pointer hover:brightness-110" style="background:var(--gold)">+ Add note</button></div>
+        </div>
+        ${notes.length ? notes.map(nt => `
+          <div class="p-3.5 rounded-xl bg-white/[0.035] border border-white/10">
+            <p class="text-sm xl:text-base text-slate-100 whitespace-pre-wrap leading-snug">${esc(nt.text)}</p>
+            <div class="mt-2 flex items-center justify-between text-xs text-slate-400">
+              <span>${new Date(nt.at).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}</span>
+              <button data-act="del-note" data-id="${id || ""}" data-nid="${nt.id}" class="hover:text-red-300 cursor-pointer">Delete</button>
+            </div>
+          </div>`).join("") : `<p class="text-sm text-slate-400 text-center py-4">No notes yet.</p>`}`;
+    }
+
+    const EVENT_ICON = { created: "✦", done: "✓", undo: "↺", levelup: "⬆", strain: "⚠", note: "✎", deleted: "🗑", renamed: "✎", added: "+" };
+    function timelineHTML(id) {
+      const owners = [{ owner: ownerOf(id), name: id ? P(id).name : "Life" }, ...descendants(id).map(d => ({ owner: P(d), name: P(d).name }))];
+      const events = owners.flatMap(o => (o.owner?.timeline || []).map(e => ({ ...e, pName: o.name }))).sort((a, b) => b.at - a.at).slice(0, 60);
+      if (!events.length) return `<p class="text-sm text-slate-400 text-center py-4">No events yet.</p>`;
+      return `<div class="relative pl-6"><div class="absolute left-[8px] top-1 bottom-1 w-px bg-teal-400/20"></div>
+        ${events.map(e => `
+          <div class="relative pb-3.5">
+            <span class="absolute -left-6 top-0.5 w-[18px] h-[18px] rounded-full bg-[#0D0F0E] border ${e.type === "levelup" ? "border-amber-400 text-amber-300" : e.type === "strain" ? "border-red-400 text-red-300" : "border-teal-400/40 text-teal-300"} text-[10px] flex items-center justify-center">${EVENT_ICON[e.type] || "•"}</span>
+            <p class="text-sm text-slate-100 leading-snug">${esc(e.text)}</p>
+            <p class="text-xs text-slate-400 mt-0.5">${esc(e.pName)} · ${new Date(e.at).toLocaleString([], { dateStyle: "short", timeStyle: "short" })}</p>
+          </div>`).join("")}</div>`;
+    }
+
+    function gaugeSVG(score, size = 72, stroke = 5.5) {
+      const hex = healthHex(score), r = size / 2 - stroke, c = 2 * Math.PI * r;
+      return `
+        <div class="relative flex-shrink-0 flex items-center justify-center" style="width:${size}px;height:${size}px">
+          <svg width="${size}" height="${size}" class="-rotate-90">
+            <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="${stroke}"/>
+            <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${hex}" stroke-width="${stroke}" stroke-linecap="round"
+                    stroke-dasharray="${(score / 100) * c} ${c}" style="filter:drop-shadow(0 0 6px ${hex}88);transition:stroke-dasharray .6s cubic-bezier(.22,1,.36,1)"/>
+          </svg>
+          <div class="absolute flex flex-col items-center leading-none">
+            <span class="font-bold" style="color:${hex};font-size:${Math.round(size * 0.29)}px">${score}</span>
+            <span class="text-[9px] uppercase tracking-widest text-slate-300 mt-0.5 font-medium">health</span>
+          </div>
+        </div>`;
+    }
+
+    // =========================================================================
+    // 8. Desktop renderers
+    // =========================================================================
+    function renderTopBar() {
+      const fp = P(focusId);
+      const rootName = STATE.life?.name || "Life";
+      const chain = [{ id: null, name: rootName }, ...ancestorsChain(focusId).reverse().map(p => ({ id: p.id, name: p.name }))];
+      document.getElementById("breadcrumbNav").innerHTML = chain.map((item, idx) => `
+        ${idx > 0 ? '<span class="text-slate-500 text-sm">›</span>' : ""}
+        <button data-act="dive" data-id="${item.id ?? ""}" class="px-3.5 py-1 rounded-full text-sm font-medium cursor-pointer ${idx === chain.length - 1 ? "bg-teal-400/15 border border-teal-400/45 text-teal-200 font-semibold" : "text-slate-300 hover:text-white border border-transparent"}">${esc(item.name)}</button>
+      `).join("");
+      document.getElementById("btnSoundToggle").textContent = STATE.soundOn ? "🔊 Audio On" : "🔇 Muted";
+      document.getElementById("compassFocusName").textContent = fp ? fp.name : rootName;
+    }
+
+    function renderHUD() {
+      const panel = document.getElementById("telemetryPanel");
+      const target = selectedId ? P(selectedId) : P(focusId);
+      const tid = target ? target.id : null;
+      const node = target || lifeNode();
+      const inspecting = !!selectedId && !!target;
+      const score = computeHealth(target);
+      const li = levelInfo(xpOf(target));
+      const kids = childIds(tid);
+      const g = taskGroups(tid);
+      const parentName = target ? (P(target.parentId)?.name || "Life") : "";
+      const subtitle = inspecting ? `Inspecting · orbiting ${esc(parentName)}` : target ? `Focused · orbiting ${esc(parentName)}` : "Solar system core · overview";
+      const notesCount = (ownerOf(tid)?.notes || []).length;
+
+      const actions = inspecting
+        ? `<button data-act="dive" data-id="${tid}" class="px-3.5 py-1.5 rounded-full text-xs xl:text-sm font-semibold text-[#0D0F0E] cursor-pointer hover:scale-105 transition-transform" style="background:var(--gold)">Dive in →</button>
+           <button data-act="edit-planet" data-id="${tid}" title="Customize planet (name, color, emoji)" class="w-9 h-9 rounded-full bg-white/5 hover:bg-teal-400/20 border border-white/15 hover:border-teal-400/45 text-slate-200 hover:text-teal-300 text-sm cursor-pointer transition-colors">✎</button>
+           <button data-act="del-planet" data-id="${tid}" title="Delete planet" class="w-9 h-9 rounded-full bg-red-500/15 hover:bg-red-500/25 border border-red-500/35 text-red-300 text-sm cursor-pointer">🗑</button>
+           <button data-act="clear-select" title="Close inspector" class="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 border border-white/15 text-slate-200 text-sm cursor-pointer">✕</button>`
+        : target
+        ? `<button data-act="edit-planet" data-id="${tid}" title="Customize planet (name, color, emoji)" class="w-9 h-9 rounded-full bg-white/5 hover:bg-teal-400/20 border border-white/15 hover:border-teal-400/45 text-slate-200 hover:text-teal-300 text-sm cursor-pointer transition-colors">✎</button>
+           <button data-act="del-planet" data-id="${tid}" title="Delete planet" class="w-9 h-9 rounded-full bg-red-500/15 hover:bg-red-500/25 border border-red-500/35 text-red-300 text-sm cursor-pointer">🗑</button>
+           <button data-act="dive" data-id="${target.parentId || ""}" class="px-3.5 py-1.5 rounded-full bg-white/5 hover:bg-teal-400/15 border border-white/15 text-xs xl:text-sm text-slate-200 hover:text-teal-300 cursor-pointer font-medium">← Back</button>`
+        : `<button data-act="edit-planet" data-id="" title="Customize core (name, color, emoji)" class="w-9 h-9 rounded-full bg-white/5 hover:bg-teal-400/20 border border-white/15 hover:border-teal-400/45 text-slate-200 hover:text-teal-300 text-sm cursor-pointer transition-colors">✎</button>`;
+
+      const tab = (key, label) => `<button data-act="tab" data-tab="${key}" class="flex-1 py-2 rounded-full text-xs xl:text-sm font-medium transition-all cursor-pointer ${hudTab === key ? "bg-teal-400/15 border border-teal-400/45 text-teal-200 font-semibold" : "text-slate-300 hover:text-white border border-transparent"}">${label}</button>`;
+
+      panel.innerHTML = `
+        <div class="flex items-center justify-between gap-2 px-5 py-4 border-b border-teal-400/15 bg-white/[0.015] ${inspecting ? "shadow-[inset_0_-1px_0_rgba(229,169,60,0.35)]" : ""}">
+          <div class="flex items-center gap-3 min-w-0">
+            <button data-act="edit-planet" data-id="${tid || ""}" title="Click to customize color & emoji" class="w-11 h-11 rounded-full flex items-center justify-center text-xl flex-shrink-0 cursor-pointer hover:scale-105 transition-transform" style="background:${node.color};box-shadow:0 0 16px ${node.color}88">${esc(node.icon)}</button>
+            <div class="min-w-0">
+              <h2 class="text-2xl font-semibold text-white font-fraunces truncate">${esc(node.name)}</h2>
+              <p class="text-xs xl:text-sm ${inspecting ? "text-amber-300 font-medium" : "text-slate-300"} truncate">${subtitle}</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5 flex-shrink-0">${actions}</div>
+        </div>
+
+        <div class="px-5 py-4 border-b border-teal-400/15">
+          <div class="flex items-center gap-4">
+            ${gaugeSVG(score)}
+            <div class="flex-1 min-w-0">
+              <div class="flex items-baseline justify-between">
+                <span class="text-2xl font-semibold text-amber-300 leading-none">Lv ${li.lvl.toFixed(1)}</span>
+                <span class="text-xs text-slate-300 font-medium">${li.toNext} XP to Lv ${li.whole + 1}</span>
+              </div>
+              <div class="mt-2.5 h-2 rounded-full bg-white/10 overflow-hidden">
+                <div class="h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-300 transition-all duration-700" style="width:${li.pct}%"></div>
+              </div>
+              <div class="mt-2.5 flex items-center gap-2 text-xs xl:text-sm">
+                <span class="uppercase tracking-wider text-teal-300 font-semibold">Now</span>
+                <span class="text-slate-200">${g.hereCount} here · ${g.orbitCount} in orbit</span>
+                ${g.overdueCount ? `<span class="text-red-300 font-medium">· ${g.overdueCount} overdue</span>` : ""}
+              </div>
+            </div>
+          </div>
+          ${strainBlock(target)}
+        </div>
+
+        <div class="px-5 py-3.5 border-b border-teal-400/15">
+          <div class="flex items-center justify-between mb-2.5">
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-300">Satellites · ${kids.length}</span>
+            <button data-act="add-sat" data-id="${tid || ""}" class="px-3 py-1 rounded-full text-xs font-semibold bg-amber-400/15 hover:bg-amber-400/25 text-amber-200 border border-amber-400/35 cursor-pointer">+ Add satellite</button>
+          </div>
+          ${kids.length ? `<div class="flex gap-2 overflow-x-auto pb-1 hud-scroll">${kids.map(cid => {
+            const cp = P(cid), h = computeHealth(cp);
+            return `<button data-act="dive" data-id="${cid}" title="Dive into ${esc(cp.name)}" class="px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-teal-400/15 border border-white/15 text-xs xl:text-sm text-slate-100 flex items-center gap-2 flex-shrink-0 cursor-pointer">
+              <span class="w-2 h-2 rounded-full" style="background:${healthHex(h)};box-shadow:0 0 6px ${healthHex(h)}"></span>
+              <span>${esc(cp.icon)}</span><span class="font-fraunces">${esc(cp.name)}</span><span class="text-teal-300">→</span></button>`;
+          }).join("")}</div>` : `<p class="text-xs xl:text-sm text-slate-400">No satellites in orbit.</p>`}
+        </div>
+
+        <div class="px-5 pt-3 pb-2 flex items-center gap-1.5">
+          ${tab("missions", `Missions${g.openCount ? ` · ${g.openCount}` : ""}`)}
+          ${tab("notes", `Notes${notesCount ? ` · ${notesCount}` : ""}`)}
+          ${tab("timeline", "Timeline")}
+        </div>
+        ${hudTab === "missions" ? `<div class="px-5 pb-1.5 flex justify-end"><button data-act="add-task" data-pid="${tid || ""}" class="px-3.5 py-1.5 rounded-full text-xs xl:text-sm font-semibold text-[#0D0F0E] hover:scale-105 transition-all cursor-pointer shadow-[0_0_15px_rgba(229,169,60,0.25)]" style="background:var(--gold)">+ Add task</button></div>` : ""}
+        <div class="flex-1 overflow-y-auto hud-scroll px-5 pb-5 pt-2 space-y-4">
+          ${hudTab === "missions" ? missionsHTML(tid, false) : hudTab === "notes" ? notesHTML(tid, false) : timelineHTML(tid)}
+        </div>`;
+    }
+
+    // =========================================================================
+    // 9. Mobile renderer (P3): thumb-zone end-of-day check-in
+    // =========================================================================
+    function renderMobile() {
+      const root = document.getElementById("mobileView");
+      if (!isMobile()) { root.innerHTML = ""; return; }
+      const scrollY = root.scrollTop;
+      const fp = P(focusId);
+      const node = fp || lifeNode();
+      const score = computeHealth(fp);
+      const li = levelInfo(xpOf(fp));
+      const kids = childIds(focusId);
+      const chain = [{ id: null, name: "Life" }, ...ancestorsChain(focusId).reverse().map(p => ({ id: p.id, name: p.name }))];
+      const crumbs = chain.slice(-2);
+
+      const top = `
+        <div class="sticky top-0 z-10 px-4 pt-3 pb-3 bg-[#0D0F0E]/95 border-b border-teal-400/10 flex items-center gap-3">
+          <button data-act="dive" data-id="" class="flex items-center gap-1.5 flex-shrink-0 cursor-pointer"><span class="text-teal-400">✦</span><span class="font-fraunces font-semibold text-lg">Idemap</span></button>
+          <div class="flex-1 min-w-0 flex items-center gap-1 text-xs text-slate-300 overflow-hidden">
+            ${chain.length > 2 ? '<span class="text-slate-600">…›</span>' : ""}
+            ${crumbs.map((c, i) => `${i ? '<span class="text-slate-600">›</span>' : ""}<button data-act="dive" data-id="${c.id ?? ""}" class="truncate px-1.5 py-1 rounded ${i === crumbs.length - 1 ? "text-teal-200 font-medium" : ""}">${esc(c.name)}</button>`).join("")}
+          </div>
+          <button data-act="sound" class="w-9 h-9 rounded-full border border-white/10 text-sm flex-shrink-0">${STATE.soundOn ? "🔊" : "🔇"}</button>
+        </div>`;
+
+      let body = "";
+      if (mobView === "map") {
+        body = `
+          ${fp ? `<button data-act="dive" data-id="${fp.parentId || ""}" class="text-sm text-slate-300 py-2">← Return to ${esc(P(fp.parentId)?.name || "Life")}</button>` : ""}
+          <div class="hud-panel p-4">
+            <div class="flex items-center gap-3">
+              <button data-act="edit-planet" data-id="${fp ? fp.id : ""}" title="Customize planet" class="w-14 h-14 rounded-full flex items-center justify-center text-2xl flex-shrink-0" style="background:radial-gradient(circle at 32% 28%, ${node.color}ee, ${node.color} 70%, #0D0F0E 140%);box-shadow:0 0 22px ${node.color}77">${esc(node.icon)}</button>
+              <div class="flex-1 min-w-0">
+                <h2 class="font-fraunces text-2xl font-semibold truncate">${esc(node.name)}</h2>
+                <p class="text-xs text-slate-300">Lv ${li.lvl.toFixed(1)} · ${li.toNext} XP to Lv ${li.whole + 1}</p>
+              </div>
+              ${gaugeSVG(score, 58, 4.5)}
+            </div>
+            <div class="mt-3 h-1.5 rounded-full bg-white/10 overflow-hidden"><div class="h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-300" style="width:${li.pct}%"></div></div>
+            ${strainBlock(fp)}
+            <div class="mt-3 flex justify-end gap-2">
+              <button data-act="edit-planet" data-id="${fp ? fp.id : ""}" class="px-3.5 py-2 rounded-full text-xs bg-white/5 border border-white/15 text-slate-200">✎ Customize</button>
+              ${fp ? `<button data-act="del-planet" data-id="${fp.id}" class="px-3.5 py-2 rounded-full text-xs bg-red-500/10 border border-red-500/30 text-red-300">🗑 Delete planet</button>` : ""}
+            </div>
+          </div>
+
+          <p class="mt-5 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-300">Orbiting satellites · ${kids.length}</p>
+          <div class="space-y-2">
+            ${kids.map(cid => {
+              const cp = P(cid), h = computeHealth(cp), hex = healthHex(h), st = taskGroups(cid);
+              return `<button data-act="dive" data-id="${cid}" class="w-full min-h-[64px] flex items-center gap-3 p-3 rounded-2xl bg-white/[0.03] border border-white/10 active:bg-teal-400/10 text-left">
+                <div class="relative w-11 h-11 rounded-full flex items-center justify-center text-lg flex-shrink-0" style="background:${cp.color};box-shadow:0 0 0 2px #0D0F0E, 0 0 0 4px ${hex}">${esc(cp.icon)}</div>
+                <div class="flex-1 min-w-0">
+                  <p class="font-fraunces text-base text-slate-100 truncate">${esc(cp.name)}</p>
+                  <p class="text-xs text-slate-300"><span style="color:${hex}">${h}%</span> · Lv ${levelOf(cp).toFixed(1)} · ${st.openCount ? `${st.openCount} open${st.overdueCount ? ` · <span class="text-red-300">${st.overdueCount} overdue</span>` : ""}` : "All clear"}</p>
+                </div>
+                <span class="text-teal-400 text-lg">›</span>
+              </button>`;
+            }).join("")}
+            <button data-act="add-sat" data-id="${focusId || ""}" class="w-full min-h-[52px] rounded-2xl border border-dashed border-amber-400/40 text-amber-300 text-sm">✨ New satellite in ${esc(node.name)}</button>
+          </div>
+
+          <div class="mt-5 mb-2 flex items-center justify-between">
+            <p class="text-xs font-semibold uppercase tracking-wider text-slate-300">Missions in sector</p>
+            <button data-act="add-task" data-pid="${focusId || ""}" class="px-3 py-1.5 rounded-full text-xs font-semibold text-[#0D0F0E]" style="background:var(--gold)">+ Task</button>
+          </div>
+          <div class="space-y-4">${missionsHTML(focusId, true)}</div>`;
+      } else {
+        const today = todayISO();
+        const all = descendants(null).flatMap(id => P(id).tasks.map(t => ({ t, p: P(id) })));
+        const open = all.filter(x => !x.t.done);
+        const doneToday = all.filter(x => (x.t.done && x.t.doneAt && isoOf(x.t.doneAt) === today) || (Array.isArray(x.t.history) && x.t.history.some(h => isoOf(h.at) === today)));
+        const xpToday = all.reduce((a, x) => {
+          let sum = (x.t.done && x.t.doneAt && isoOf(x.t.doneAt) === today) ? (x.t.xpAwarded || 0) : 0;
+          if (Array.isArray(x.t.history)) sum += x.t.history.filter(h => isoOf(h.at) === today).reduce((s, h) => s + (h.xp || 0), 0);
+          return a + sum;
+        }, 0);
+        const overdue = open.filter(x => x.t.due && x.t.due < today);
+        const dueToday = open.filter(x => x.t.due === today);
+        const later = open.filter(x => !x.t.due || x.t.due > today).sort((a, b) => (a.t.due || "9999").localeCompare(b.t.due || "9999"));
+        const ul = levelInfo(universeXP());
+        const sec = (title, cls, arr) => arr.length ? `<p class="mt-5 mb-2 text-xs font-semibold uppercase tracking-wider ${cls}">${title} · ${arr.length}</p><div class="space-y-2">${arr.map(x => taskRow(x, true, true)).join("")}</div>` : "";
+        body = `
+          <div class="hud-panel p-4">
+            <p class="text-xs uppercase tracking-wider text-teal-400/90 font-semibold">End-of-day check-in</p>
+            <h2 class="font-fraunces text-2xl font-semibold mt-0.5">${new Date().toLocaleDateString([], { weekday: "long", month: "short", day: "numeric" })}</h2>
+            <div class="mt-3 grid grid-cols-3 gap-2 text-center">
+              <div class="rounded-xl bg-white/[0.03] border border-white/5 py-2"><p class="text-xl font-semibold text-teal-300">${doneToday.length}</p><p class="text-[11px] uppercase tracking-wider text-slate-400">done today</p></div>
+              <div class="rounded-xl bg-white/[0.03] border border-white/5 py-2"><p class="text-xl font-semibold text-amber-300">+${xpToday}</p><p class="text-[11px] uppercase tracking-wider text-slate-400">xp today</p></div>
+              <div class="rounded-xl bg-white/[0.03] border border-white/5 py-2"><p class="text-xl font-semibold" style="color:${healthHex(computeHealth(null))}">${computeHealth(null)}</p><p class="text-[11px] uppercase tracking-wider text-slate-400">life health</p></div>
+            </div>
+            <p class="mt-3 text-xs text-slate-300">Life Lv ${ul.lvl.toFixed(1)} · ${ul.toNext} XP to Lv ${ul.whole + 1}</p>
+          </div>
+          ${sec("⚠ Overdue", "text-red-300", overdue)}
+          ${sec("Due today", "text-amber-300", dueToday)}
+          ${sec("Upcoming", "text-slate-300", later)}
+          ${!open.length ? `<div class="mt-5 p-6 rounded-2xl border border-dashed border-white/10 text-center text-sm text-slate-300">Every orbit is clear. Rest well ✦</div>` : ""}
+          ${doneToday.length ? sec("Completed / cycled today", "text-teal-300", doneToday) : ""}
+          <div class="mt-6 text-center"><button data-act="reset" class="text-xs text-slate-400 underline">Reset demo universe</button></div>`;
+      }
+
+      const navBtn = (view, icon, label) => `<button data-act="mob-view" data-view="${view}" class="flex-1 flex flex-col items-center justify-center gap-0.5 min-h-[52px] rounded-xl ${mobView === view ? "text-teal-300 bg-teal-400/10" : "text-slate-400"}"><span class="text-lg leading-none">${icon}</span><span class="text-xs">${label}</span></button>`;
+      root.innerHTML = `
+        ${top}
+        <div class="px-4 pt-3 pb-28">${body}</div>
+        <nav class="fixed bottom-0 inset-x-0 z-20 px-3 pt-2 safe-bottom bg-[#0B0E0F]/95 border-t border-teal-400/15 flex gap-2">
+          ${navBtn("map", "🪐", "Orbit")}
+          ${navBtn("checkin", "✅", "Check-in")}
+          <button data-act="add-task" data-pid="${focusId || ""}" class="flex-1 flex flex-col items-center justify-center gap-0.5 min-h-[52px] rounded-xl text-[#0D0F0E] font-semibold" style="background:var(--gold)"><span class="text-lg leading-none">＋</span><span class="text-xs">Task</span></button>
+        </nav>`;
+      root.scrollTop = scrollY;
+    }
+
+    function render() {
+      healthCache.clear();
+      rebuildScene();
+      renderTopBar();
+      renderHUD();
+      renderMobile();
+    }
+
+    // =========================================================================
+    // 10. Modals
+    // =========================================================================
+    const FORGE_ICONS = ["✨", "🌱", "🏠", "💼", "📡", "🎮", "❤️", "👥", "🏋️", "📖", "💰", "🧘", "🎨", "✈️", "🧠", "🎵", "☀️", "🪐", "⚡", "🔬", "🍳", "🏔️", "🛠️", "🎯"];
+    const FORGE_COLORS = ["#0F766E", "#3B7A57", "#4A6FA5", "#6B4A8A", "#2D7A8A", "#8A6B2D", "#8A2D5A", "#C04A4A", "#7A853B", "#2D5A8A", "#B45309", "#4F46E5"];
+    let forge = { parentId: null, editId: undefined, icon: "✨", color: "#3B7A57" };
+    function openModal(id) { const m = document.getElementById(id); m.classList.remove("hidden"); m.classList.add("flex"); }
+    function closeModal(id) { const m = document.getElementById(id); m.classList.add("hidden"); m.classList.remove("flex"); }
+    function renderForgePickers() {
+      document.getElementById("forgeIcons").innerHTML = FORGE_ICONS.map(i => `<button data-act="forge-icon" data-v="${i}" class="w-9 h-9 rounded-lg text-lg cursor-pointer border ${forge.icon === i ? "border-teal-400 bg-teal-400/15" : "border-white/10 bg-white/5 hover:border-white/30"}">${i}</button>`).join("");
+      document.getElementById("forgeColors").innerHTML = FORGE_COLORS.map(c => `<button data-act="forge-color" data-v="${c}" class="w-8 h-8 rounded-full cursor-pointer ${forge.color.toLowerCase() === c.toLowerCase() ? "ring-2 ring-offset-2 ring-offset-[#0F1315] ring-teal-300" : ""}" style="background:${c}"></button>`).join("");
+      const customIconEl = document.getElementById("inputForgeCustomIcon");
+      if (customIconEl && document.activeElement !== customIconEl) customIconEl.value = forge.icon;
+      const customColorEl = document.getElementById("inputForgeCustomColor");
+      if (customColorEl) customColorEl.value = /^#[0-9a-fA-F]{6}$/.test(forge.color) ? forge.color : "#3B7A57";
+    }
+    function openForge(parentId) {
+      forge = { parentId, editId: undefined, icon: "✨", color: FORGE_COLORS[Math.floor(Math.random() * FORGE_COLORS.length)] };
+      document.getElementById("forgeTargetLabel").textContent = `Orbiting ${parentId ? P(parentId).name : (STATE.life?.name || "Life")}`;
+      document.getElementById("forgeModalTitle").textContent = "Launch Celestial Node";
+      document.getElementById("btnForgeConfirm").textContent = "Launch into Orbit";
+      document.getElementById("inputForgeName").value = "";
+      renderForgePickers();
+      openModal("forgeModal");
+      setTimeout(() => document.getElementById("inputForgeName").focus(), 30);
+    }
+    function openEditPlanet(id) {
+      const target = id ? P(id) : lifeNode();
+      if (!target) return;
+      forge = {
+        parentId: target.parentId || null,
+        editId: id || null, // null means editing root Life core
+        icon: target.icon || "✨",
+        color: target.color || "#3B7A57",
+      };
+      const parentName = id ? (P(target.parentId)?.name || STATE.life?.name || "Life") : "Solar System Core";
+      document.getElementById("forgeTargetLabel").textContent = id ? `Orbiting ${parentName}` : parentName;
+      document.getElementById("forgeModalTitle").textContent = "Customize Planet";
+      document.getElementById("btnForgeConfirm").textContent = "Save Changes";
+      document.getElementById("inputForgeName").value = target.name || "";
+      renderForgePickers();
+      openModal("forgeModal");
+      setTimeout(() => document.getElementById("inputForgeName").focus(), 30);
+    }
+    function confirmForge() {
+      const name = document.getElementById("inputForgeName").value.trim();
+      if (!name) { document.getElementById("inputForgeName").focus(); return; }
+      const customIconVal = document.getElementById("inputForgeCustomIcon")?.value.trim();
+      const finalIcon = customIconVal || forge.icon || "✨";
+      const finalColor = forge.color || "#3B7A57";
+
+      if (forge.editId !== undefined) {
+        if (forge.editId === null) {
+          STATE.life = STATE.life || { notes: [], timeline: [] };
+          STATE.life.name = name;
+          STATE.life.icon = finalIcon;
+          STATE.life.color = finalColor;
+          logEvent(null, "renamed", `Customized core to ${finalIcon} “${name}”`);
+        } else {
+          const pl = P(forge.editId);
+          if (pl) {
+            pl.name = name;
+            pl.icon = finalIcon;
+            pl.color = finalColor;
+            logEvent(pl.id, "renamed", `Customized planet to ${finalIcon} “${name}”`);
+          }
+        }
+        closeModal("forgeModal");
+        sfx.add();
+        toast(`✦ Updated ${finalIcon} ${name}`);
+        commit();
+        return;
+      }
+
+      const id = uid("planet"), parentId = forge.parentId && P(forge.parentId) ? forge.parentId : null;
+      STATE.planets[id] = { id, name, icon: finalIcon, color: finalColor, parentId, childrenIds: [], xp: 0, tasks: [], strain: { fin: false, psy: false }, notes: [], timeline: [{ id: uid("e"), type: "created", text: "Planet charted", at: Date.now() }], createdAt: Date.now() };
+      if (parentId) P(parentId).childrenIds.push(id); else STATE.rootIds.push(id);
+      logEvent(parentId, "added", `Satellite “${name}” launched into orbit`);
+      closeModal("forgeModal");
+      sfx.add();
+      toast(`🚀 ${name} launched into orbit`);
+      commit();
+    }
+
+    let editingTask = null; // { pid, tid } | null
+    function openTaskModal(defaultPid, edit = null) {
+      editingTask = edit;
+      const sel = document.getElementById("selectTaskPlanet");
+      const order = descendants(null);
+      if (!order.length) { toast("Create a planet first", "#F59E0B"); openForge(null); return; }
+      sel.innerHTML = order.map(pid => {
+        const depth = ancestorsChain(pid).length - 1;
+        return `<option value="${pid}">${"\u00A0\u00A0".repeat(depth)}${esc(P(pid).icon)} ${esc(P(pid).name)}</option>`;
+      }).join("");
+      const title = document.getElementById("inputTaskTitle"),
+            diff = document.getElementById("selectTaskDiff"),
+            due = document.getElementById("inputTaskDue"),
+            recur = document.getElementById("selectTaskRecur");
+      if (edit) {
+        const t = P(edit.pid).tasks.find(x => x.id === edit.tid);
+        document.getElementById("taskModalTitle").textContent = "Edit Task";
+        document.getElementById("btnConfirmTask").textContent = "Save changes";
+        title.value = t.title; sel.value = edit.pid; diff.value = String(t.diff); due.value = t.due || ""; recur.value = t.recur || "";
+      } else {
+        document.getElementById("taskModalTitle").textContent = "Add Task";
+        document.getElementById("btnConfirmTask").textContent = "Add task";
+        title.value = ""; diff.value = "2"; due.value = todayISO(); recur.value = "";
+        sel.value = defaultPid && P(defaultPid) ? defaultPid : (focusId && P(focusId) ? focusId : order[0]);
+      }
+      openModal("taskModal");
+      setTimeout(() => title.focus(), 30);
+    }
+    function confirmTask() {
+      const title = document.getElementById("inputTaskTitle").value.trim();
+      const pid = document.getElementById("selectTaskPlanet").value;
+      const diff = parseInt(document.getElementById("selectTaskDiff").value, 10) || 2;
+      const due = document.getElementById("inputTaskDue").value || "";
+      const recur = document.getElementById("selectTaskRecur").value || "";
+      if (!title) { document.getElementById("inputTaskTitle").focus(); return; }
+      if (!P(pid)) return;
+      if (editingTask) {
+        const oldP = P(editingTask.pid), t = oldP?.tasks.find(x => x.id === editingTask.tid);
+        if (t) {
+          Object.assign(t, { title, diff, due, recur });
+          if (editingTask.pid !== pid) {
+            oldP.tasks = oldP.tasks.filter(x => x.id !== t.id);
+            if (t.done && t.xpAwarded) { oldP.xp = Math.max(0, (oldP.xp || 0) - t.xpAwarded); P(pid).xp = (P(pid).xp || 0) + t.xpAwarded; }
+            P(pid).tasks.push(t);
+          }
+          logEvent(pid, "renamed", `Edited task “${title}”`);
+        }
+      } else {
+        P(pid).tasks.push({ id: uid("t"), title, diff, due, recur, streak: 0, history: [], done: false, doneAt: null, xpAwarded: 0 });
+        logEvent(pid, "added", `Added ${recur ? (RECUR_LABEL[recur] + " ") : ""}task “${title}”`);
+      }
+      closeModal("taskModal");
+      editingTask = null;
+      sfx.add();
+      commit();
+    }
+
+    // =========================================================================
+    // 11. Toast
+    // =========================================================================
+    let toastTimer = null;
+    function toast(text, color = "#2DD4BF") {
+      const el = document.getElementById("toast");
+      el.textContent = text;
+      el.style.borderColor = color + "66";
+      el.style.boxShadow = `0 0 30px ${color}33`;
+      el.classList.remove("hidden", "toast-show"); void el.offsetWidth; el.classList.add("toast-show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => el.classList.add("hidden"), 2400);
+    }
+
+    // =========================================================================
+    // 12. Delegated event handling
+    // =========================================================================
+    document.addEventListener("click", (e) => {
+      const el = e.target.closest("[data-act]");
+      if (!el) {
+        // Click on empty space clears the inspector selection
+        if (selectedId && (e.target === document.body || e.target.id === "spaceCanvas")) { selectedId = null; updateSelectionVisuals(); renderHUD(); }
+        return;
+      }
+      const d = el.dataset;
+      switch (d.act) {
+        case "dive": dive(d.id || null); break;
+        case "clear-select": selectedId = null; updateSelectionVisuals(); renderHUD(); break;
+        case "toggle": toggleTask(d.pid, d.tid); break;
+        case "undo-cycle": undoRecurringCycle(d.pid, d.tid); break;
+        case "edit-task": openTaskModal(null, { pid: d.pid, tid: d.tid }); break;
+        case "del-task": deleteTask(d.pid, d.tid); break;
+        case "add-task": openTaskModal(d.pid || null); break;
+        case "add-sat": openForge(d.id || null); break;
+        case "edit-planet": openEditPlanet(d.id || null); break;
+        case "del-planet": deletePlanet(d.id); break;
+        case "strain": toggleStrain(d.id, d.kind); break;
+        case "tab": hudTab = d.tab; renderHUD(); break;
+        case "toggle-completed": showCompleted = !showCompleted; renderHUD(); renderMobile(); break;
+        case "mob-view": mobView = d.view; renderMobile(); document.getElementById("mobileView").scrollTop = 0; break;
+        case "add-note": { const inp = document.getElementById(d.input); if (inp && inp.value.trim()) addNote(d.id || null, inp.value); break; }
+        case "del-note": deleteNote(d.id || null, d.nid); break;
+        case "sound": STATE.soundOn = !STATE.soundOn; save(); renderTopBar(); renderMobile(); if (STATE.soundOn) sfx.click(); break;
+        case "sync-cloud": saveToSupabase().then(() => toast("☁️ Synced with Supabase")); break;
+        case "pause": orbitPaused = !orbitPaused; el.textContent = orbitPaused ? "▶ Resume Orbit" : "⏸ Pause Orbit"; break;
+        case "reset":
+          if (window.confirm("Reset Idemap to the seeded demo universe? All your changes will be lost.")) {
+            STATE = seedState(); focusId = null; selectedId = null; save(); healthCache.clear(); render(); toast("Universe reset");
+          }
+          break;
+        case "close-modal": closeModal(d.modal); break;
+        case "forge-icon": forge.icon = d.v; renderForgePickers(); break;
+        case "forge-color": forge.color = d.v; renderForgePickers(); break;
+        case "forge-confirm": confirmForge(); break;
+        case "task-confirm": confirmTask(); break;
+        case "due-quick": document.getElementById("inputTaskDue").value = d.days === "" ? "" : addDays(parseInt(d.days, 10)); break;
+      }
+    });
+
+    document.getElementById("inputForgeCustomIcon")?.addEventListener("input", (e) => {
+      const val = e.target.value.trim();
+      if (val) { forge.icon = val; renderForgePickers(); }
+    });
+    document.getElementById("inputForgeCustomColor")?.addEventListener("input", (e) => {
+      if (e.target.value) { forge.color = e.target.value; renderForgePickers(); }
+    });
+
+    document.addEventListener("keydown", (e) => {
+      const forgeOpen = !document.getElementById("forgeModal").classList.contains("hidden");
+      const taskOpen = !document.getElementById("taskModal").classList.contains("hidden");
+      if (e.key === "Escape") {
+        if (forgeOpen) closeModal("forgeModal");
+        else if (taskOpen) closeModal("taskModal");
+        else if (selectedId) { selectedId = null; updateSelectionVisuals(); renderHUD(); }
+      }
+      if (e.key === "Enter" && !e.shiftKey && e.target.tagName !== "TEXTAREA") {
+        if (forgeOpen) { e.preventDefault(); confirmForge(); }
+        else if (taskOpen) { e.preventDefault(); confirmTask(); }
+      }
+    });
+
+    // Close modals by clicking the dimmed backdrop
+    ["forgeModal", "taskModal"].forEach(id => document.getElementById(id).addEventListener("click", (e) => { if (e.target.id === id) closeModal(id); }));
+
+    // =========================================================================
+    // 13. Background starfield + animation loop
+    // =========================================================================
+    const bgCanvas = document.getElementById("spaceCanvas");
+    const bgCtx = bgCanvas.getContext("2d");
+    let stars = [];
+    let wasMobile = isMobile();
+    function initStars() {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      bgCanvas.width = window.innerWidth * dpr; bgCanvas.height = window.innerHeight * dpr;
+      bgCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const count = Math.min(240, Math.floor((window.innerWidth * window.innerHeight) / 7000));
+      stars = Array.from({ length: count }, () => ({
+        x: Math.random() * window.innerWidth, y: Math.random() * window.innerHeight,
+        r: Math.random() * 1.4 + 0.3, o: Math.random() * 0.5 + 0.15, s: Math.random() * 0.02 + 0.005,
+      }));
+    }
+    let resizeTimer = null;
+    window.addEventListener("resize", () => {
+      initStars();
+      const m = isMobile();
+      if (m !== wasMobile) { wasMobile = m; render(); return; }
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => { if (!isMobile()) rebuildScene(); }, 150);
+    });
+    initStars();
+
+    let tick = 0, lastT = performance.now();
+    function animateLoop(now) {
+      const dt = Math.min(64, (now || performance.now()) - lastT); lastT = now || performance.now();
+      tick += 1;
+      if (!orbitPaused && !hoveringNode && !selectedId) orbitOffset = (orbitOffset + dt * 0.0033) % 360;
+      const w = window.innerWidth, h = window.innerHeight;
+      const mobile = isMobile();
+      const { cx, cy } = mobile ? { cx: w / 2, cy: h * 0.3 } : geom();
+
+      bgCtx.fillStyle = "#0D0F0E";
+      bgCtx.fillRect(0, 0, w, h);
+      const grad = bgCtx.createRadialGradient(cx, cy, 10, cx, cy, Math.max(w, h) * 0.48);
+      grad.addColorStop(0, "rgba(45, 212, 191, 0.07)");
+      grad.addColorStop(0.5, "rgba(45, 212, 191, 0.02)");
+      grad.addColorStop(1, "transparent");
+      bgCtx.fillStyle = grad;
+      bgCtx.fillRect(0, 0, w, h);
+      for (const st of stars) {
+        const a = st.o * (0.65 + 0.35 * Math.sin(tick * st.s + st.x));
+        bgCtx.beginPath();
+        bgCtx.arc(st.x, st.y, st.r, 0, Math.PI * 2);
+        bgCtx.fillStyle = `rgba(226,232,240,${a})`;
+        bgCtx.fill();
+      }
+      if (!mobile) updateOrbitalPositions();
+      requestAnimationFrame(animateLoop);
+    }
+
+    render();
+    loadFromSupabase();
+    requestAnimationFrame(animateLoop);
+  </script>
+</body>
+</html>
