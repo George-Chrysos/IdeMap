@@ -1667,22 +1667,103 @@
       requestAnimationFrame(animateLoop);
     }
 
+    async function consumeOAuthCallbackFromUrl() {
+      if (!sbClient) return false;
+      const wins = [window];
+      try {
+        if (window.top && window.top !== window && window.top.location) wins.unshift(window.top);
+      } catch (e) {}
+
+      for (const w of wins) {
+        try {
+          const rawHash = w.location.hash || "";
+          const rawSearch = w.location.search || "";
+          if (rawHash && rawHash.length > 1) {
+            const hp = new URLSearchParams(rawHash.replace(/^#/, ""));
+            const errDesc = hp.get("error_description") || hp.get("error");
+            if (errDesc) {
+              showAuthError(esc(errDesc));
+              w.history.replaceState(null, "", w.location.pathname);
+              return false;
+            }
+            const access_token = hp.get("access_token");
+            const refresh_token = hp.get("refresh_token");
+            if (access_token && refresh_token) {
+              const { data, error } = await sbClient.auth.setSession({ access_token, refresh_token });
+              w.history.replaceState(null, "", w.location.pathname);
+              if (!error && data?.session?.user) {
+                currentUser = data.session.user;
+                activeAccessToken = data.session.access_token || SUPABASE_KEY;
+                updateAuthUI();
+                STATE = loadState();
+                focusId = null; selectedId = null;
+                render();
+                await loadFromSupabase();
+                toast(`✦ Welcome, ${currentUser.user_metadata?.full_name || currentUser.email || "Explorer"}!`);
+                return true;
+              }
+            }
+          }
+          if (rawSearch && rawSearch.length > 1) {
+            const sp = new URLSearchParams(rawSearch);
+            const errDesc = sp.get("error_description") || sp.get("error");
+            if (errDesc) {
+              showAuthError(esc(errDesc));
+              w.history.replaceState(null, "", w.location.pathname);
+              return false;
+            }
+            const code = sp.get("code");
+            if (code) {
+              const { data, error } = await sbClient.auth.exchangeCodeForSession(code);
+              w.history.replaceState(null, "", w.location.pathname);
+              if (!error && data?.session?.user) {
+                currentUser = data.session.user;
+                activeAccessToken = data.session.access_token || SUPABASE_KEY;
+                updateAuthUI();
+                STATE = loadState();
+                focusId = null; selectedId = null;
+                render();
+                await loadFromSupabase();
+                toast(`✦ Welcome, ${currentUser.user_metadata?.full_name || currentUser.email || "Explorer"}!`);
+                return true;
+              }
+            }
+          }
+        } catch (e) {}
+      }
+      return false;
+    }
+
     async function initAuth() {
       if (!sbClient) {
         updateAuthUI();
         return;
       }
       sbClient.auth.onAuthStateChange((event, session) => {
+        const hadUser = !!currentUser;
         currentUser = session?.user || null;
         activeAccessToken = session?.access_token || SUPABASE_KEY;
         updateAuthUI();
-        if (currentUser) {
+        if (currentUser && (!hadUser || event === "SIGNED_IN")) {
           STATE = loadState();
           focusId = null; selectedId = null;
           render();
           loadFromSupabase();
         }
       });
+
+      window.addEventListener("hashchange", () => { consumeOAuthCallbackFromUrl(); });
+      try {
+        if (window.top && window.top !== window) {
+          window.top.addEventListener("hashchange", () => { consumeOAuthCallbackFromUrl(); });
+        }
+      } catch (e) {}
+
+      // 1. Check if Google OAuth redirected back with #access_token or ?code on top window or iframe
+      const handledCallback = await consumeOAuthCallbackFromUrl();
+      if (handledCallback) return;
+
+      // 2. Otherwise check existing persisted Supabase session
       const { data } = await sbClient.auth.getSession();
       if (data?.session?.user) {
         currentUser = data.session.user;
