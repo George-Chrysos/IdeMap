@@ -373,7 +373,8 @@
       };
       return {
         version: 3,
-        updatedAt: now,
+        updatedAt: 0,
+        _isDefaultSeed: true,
         planets,
         rootIds: ["planet-home", "planet-business", "planet-social", "planet-hobbies"],
         life: { name: "Life", icon: "☀️", color: "#0F766E", notes: [], timeline: [{ id: uid("e"), type: "created", text: "Life universe seeded", at: now }] },
@@ -545,8 +546,11 @@
         if (remote) {
           const remoteTs = remote.updatedAt || new Date(rows[0].updated_at || 0).getTime() || 0;
           const localTs = STATE.updatedAt || 0;
-          if (remoteTs >= localTs) {
+          const hasLocalCustomData = !STATE._isDefaultSeed && !!localStorage.getItem(storeKey());
+          // Always adopt remote unless local has explicit user modifications newer than remote
+          if (!hasLocalCustomData || remoteTs >= localTs) {
             STATE = remote;
+            STATE._isDefaultSeed = false;
             focusId = STATE.focusId && STATE.planets[STATE.focusId] ? STATE.focusId : null;
             try { localStorage.setItem(storeKey(), JSON.stringify(STATE)); } catch (err) {}
             healthCache.clear();
@@ -556,8 +560,17 @@
           }
           setCloudStatus("☁️ Synced", "ok");
         } else {
-          // Seed initial 4-planet state into Supabase for this user
-          STATE = loadState();
+          // No remote state yet for this user: check if there's any local storage data to migrate
+          let fallbackState = null;
+          try {
+            const userRaw = localStorage.getItem(storeKey());
+            const defaultRaw = localStorage.getItem(BASE_STORE_KEY);
+            const parsed = userRaw ? JSON.parse(userRaw) : (defaultRaw ? JSON.parse(defaultRaw) : null);
+            if (parsed) fallbackState = normalizeState(parsed);
+          } catch (e) {}
+
+          STATE = fallbackState || seedState();
+          STATE._isDefaultSeed = false;
           STATE.updatedAt = Date.now();
           focusId = null; selectedId = null;
           render();
@@ -569,6 +582,7 @@
     }
 
     function save() {
+      STATE._isDefaultSeed = false;
       STATE.updatedAt = Date.now();
       try { localStorage.setItem(storeKey(), JSON.stringify(STATE)); } catch (e) {}
       clearTimeout(syncTimer);
