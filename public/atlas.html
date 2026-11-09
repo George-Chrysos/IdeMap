@@ -39,9 +39,10 @@
     /* Stationary HUD panels are the ONLY elements allowed to use backdrop-filter (GPU budget). */
     .hud-panel {
       background: var(--hud-bg);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
+      backdrop-filter: blur(18px) saturate(160%);
+      -webkit-backdrop-filter: blur(18px) saturate(160%);
       border: 1px solid var(--border-cyan);
+      box-shadow: 0 16px 44px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.14);
       border-radius: 1rem;
     }
     .hud-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
@@ -113,25 +114,25 @@
   <div id="planetCanvas" class="absolute inset-0 z-20 pointer-events-none"></div>
 
   <!-- Mobile Floating Glass Header -->
-  <header id="mobileHeader" class="mob-only fixed top-0 inset-x-0 z-40 px-3.5 pt-3 pb-2.5 bg-[#0B0E0F]/85 backdrop-blur-2xl border-b border-white/10 safe-top flex items-center justify-between shadow-lg pointer-events-auto">
-    <div class="flex items-center gap-2 min-w-0">
+  <header id="mobileHeader" class="mob-only fixed top-0 inset-x-0 z-40 px-3.5 pt-3 pb-2.5 bg-[#0B0E0F]/85 backdrop-blur-2xl border-b border-white/10 safe-top flex items-center justify-between gap-2 shadow-lg pointer-events-auto">
+    <div class="flex items-center gap-1.5 min-w-0 flex-1">
       <button data-act="dive" data-id="" class="flex items-center gap-1.5 flex-shrink-0 cursor-pointer">
-        <div class="w-8 h-8 rounded-full bg-teal-400/15 border border-teal-400/40 flex items-center justify-center">
-          <span class="text-teal-300 text-sm">✦</span>
+        <div class="w-8 h-8 rounded-full bg-teal-400/15 border border-teal-400/40 flex items-center justify-center leading-none">
+          <span class="text-teal-300 text-sm leading-none">✦</span>
         </div>
-        <span class="font-fraunces font-semibold text-lg text-white">Idemap</span>
+        <span class="font-fraunces font-semibold text-lg text-white leading-snug">Idemap</span>
       </button>
-      <div id="mobBreadcrumbs" class="flex items-center gap-1 text-xs text-slate-300 overflow-hidden truncate"></div>
+      <div id="mobBreadcrumbs" class="flex items-center gap-1 text-xs text-slate-300 min-w-0 overflow-hidden"></div>
     </div>
-    <div class="flex items-center gap-2 flex-shrink-0">
-      <button data-act="sync-cloud" id="mobBtnCloudSync" class="px-2.5 py-1 rounded-full text-xs font-medium border border-teal-400/35 bg-teal-400/10 text-teal-200 transition-all cursor-pointer" title="Click to sync cloud universe">☁️ Synced</button>
-      <button data-act="sound" id="mobBtnSound" class="w-7 h-7 rounded-full border border-white/15 text-xs flex items-center justify-center text-slate-200 cursor-pointer">🔊</button>
-      <button data-act="auth-btn" id="mobBtnAuth" class="px-2.5 py-1 rounded-full text-xs font-medium border border-amber-400/40 bg-amber-400/10 text-amber-200 cursor-pointer">👤</button>
+    <div class="flex items-center gap-1.5 flex-shrink-0">
+      <button data-act="sync-cloud" id="mobBtnCloudSync" class="px-2.5 py-1 rounded-full text-[11px] font-medium border border-teal-400/35 bg-teal-400/10 text-teal-200 transition-all cursor-pointer whitespace-nowrap" title="Click to sync cloud universe">☁️ Synced</button>
+      <button data-act="sound" id="mobBtnSound" class="w-7 h-7 rounded-full border border-white/15 text-xs flex items-center justify-center text-slate-200 cursor-pointer leading-none">🔊</button>
+      <button data-act="auth-btn" id="mobBtnAuth" class="px-2.5 py-1 rounded-full text-[11px] font-medium border border-amber-400/40 bg-amber-400/10 text-amber-200 cursor-pointer whitespace-nowrap">👤</button>
     </div>
   </header>
 
   <!-- Layer 3: Desktop Top HUD -->
-  <header class="desk-only fixed top-6 left-6 z-40 flex flex-wrap items-center gap-3 pointer-events-none">
+  <header class="desk-only fixed top-6 left-6 right-[440px] xl:right-[505px] 2xl:right-[555px] z-40 flex flex-wrap items-center gap-3 pointer-events-none">
     <div class="hud-panel px-5 py-3 flex items-center gap-3.5 pointer-events-auto shadow-2xl">
       <button data-act="dive" data-id="" class="flex items-center gap-2.5 cursor-pointer group">
         <div class="w-9 h-9 rounded-full bg-teal-400/10 border border-teal-400/35 flex items-center justify-center group-hover:border-teal-400 transition-colors">
@@ -887,10 +888,13 @@
       const w = window.innerWidth, h = window.innerHeight;
       const mob = isMobile();
       if (mob) {
+        const topSafe = 64;
+        const bottomReserved = 296;
+        const availH = Math.max(210, h - topSafe - bottomReserved);
         const cx = Math.round(w / 2);
-        const cy = Math.round(h * 0.31);
-        const radius = Math.round(clamp(Math.min(w * 0.38, h * 0.19), 82, 145));
-        const scale = clamp(w / 400, 0.72, 0.95);
+        const cy = Math.round(topSafe + availH * 0.46);
+        const radius = Math.round(clamp(Math.min(w * 0.33, availH * 0.41), 76, 128));
+        const scale = clamp(Math.min(w / 400, availH / 340), 0.70, 0.92);
         return { w, h, cx, cy, radius, scale };
       }
       const panel = w >= 1536 ? 545 : w >= 1280 ? 495 : 425;
@@ -915,6 +919,8 @@
       const mob = isMobile();
       const titlePx = Math.round(size * (mob ? (isFocus ? 0.20 : 0.22) : (isFocus ? 0.22 : isParent ? 0.25 : 0.235)));
       const pillPx = mob ? 11 : (isFocus ? 14 : 13);
+      const labelMarginTop = Math.max(11, pad + (hasMoons ? 4 : -1));
+      const maxLabelW = mob ? (isFocus ? 150 : 116) : (isFocus ? 210 : 165);
 
       const moons = hasMoons ? kids.slice(0, 10).map((cid, i, arr) => {
         const a = ((-90 + i * (360 / arr.length)) * Math.PI) / 180;
@@ -937,19 +943,19 @@
             ${strained ? `<circle class="strain-pulse" cx="${c}" cy="${c}" r="${r}" fill="none" stroke="#EF4444" stroke-width="${sw + 0.8}" stroke-dasharray="${circ * 0.12 * strainCount(pl)} ${circ}" stroke-dashoffset="${-circ * 0.1}" stroke-linecap="round" style="filter:drop-shadow(0 0 8px #EF4444)"/>` : ""}
             ${moons}
           </svg>
-          <div class="planet-disc w-full h-full rounded-full flex items-center justify-center text-white"
+          <div class="planet-disc w-full h-full rounded-full flex items-center justify-center leading-none select-none text-white"
                style="color:${pl.color};background:radial-gradient(circle at 32% 28%, ${pl.color}ee, ${pl.color} 70%, #0D0F0E 140%);font-size:${Math.round(size * 0.39)}px;box-shadow:0 0 24px ${pl.color}66, inset 0 2px 4px rgba(255,255,255,0.25), inset 0 -3px 6px rgba(0,0,0,0.4);">
-            <span style="filter:none">${esc(pl.icon)}</span>
+            <span class="inline-flex items-center justify-center leading-none translate-y-[0.5px]" style="filter:none">${esc(pl.icon)}</span>
           </div>
-          <div class="absolute top-full flex flex-col items-center pointer-events-none left-1/2 -translate-x-1/2 whitespace-nowrap z-30" style="margin-top:${Math.max(9, pad - 3)}px">
-            <span class="font-fraunces text-white whitespace-nowrap tracking-wide" style="font-size:${titlePx}px;font-weight:${isFocus ? 600 : 500};text-shadow:0 2px 12px #000, 0 0 4px #000;">
+          <div class="absolute top-full flex flex-col items-center pointer-events-none left-1/2 -translate-x-1/2 whitespace-nowrap z-30" style="margin-top:${labelMarginTop}px">
+            <span class="font-fraunces text-white truncate leading-snug pb-0.5 tracking-wide" style="max-width:${maxLabelW}px;font-size:${titlePx}px;font-weight:${isFocus ? 600 : 500};text-shadow:0 2px 12px #000, 0 0 4px #000;">
               ${isParent ? "← " : ""}${esc(pl.name)}
             </span>
-            <div class="node-pill mt-1 flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#0B0E0F]/95 border border-white/15 font-medium" style="font-size:${pillPx}px">
+            <div class="node-pill mt-0.5 flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#0B0E0F]/95 border border-white/15 font-medium shadow-[0_4px_14px_rgba(0,0,0,0.65)]" style="font-size:${pillPx}px">
               <span class="font-semibold" style="color:${hex}">${score}%</span>
-              <span class="text-slate-500">·</span>
+              <span class="text-slate-400">·</span>
               <span class="text-amber-300 font-semibold">Lv ${lvl.toFixed(1)}</span>
-              ${kids.length && !isFocus ? `<span class="text-slate-500">·</span><span class="text-teal-300">${kids.length} in orbit</span>` : ""}
+              ${kids.length && !isFocus ? `<span class="text-slate-400">·</span><span class="text-teal-300">${kids.length} in orbit</span>` : ""}
             </div>
           </div>
         </div>`;
@@ -1033,14 +1039,15 @@
     function updateOrbitalPositions() {
       if (!scene.orbit) return;
       const { cx, cy, radius } = geom();
+      const mob = isMobile();
       if (scene.focusEl) place(scene.focusEl, cx, cy);
       scene.orbit.setAttribute("cx", cx); scene.orbit.setAttribute("cy", cy); scene.orbit.setAttribute("r", radius);
       if (scene.hintEl) place(scene.hintEl, cx, cy + radius * 0.75);
 
-      const wbX = Math.max(95, Math.round(cx - radius * 1.12));
-      const wbY = Math.max(130, Math.round(cy - radius * 0.8));
+      const wbX = mob ? Math.max(46, Math.round(cx - radius * 0.94)) : Math.max(95, Math.round(cx - radius * 1.15));
+      const wbY = mob ? Math.max(88, Math.round(cy - radius * 0.92)) : Math.max(125, Math.round(cy - radius * 0.82));
       if (scene.wbEl) place(scene.wbEl, wbX, wbY);
-      if (scene.wbPath) scene.wbPath.setAttribute("d", `M ${wbX} ${wbY} Q ${cx - radius * 0.7} ${wbY + (cy - wbY) * 0.65} ${cx} ${cy}`);
+      if (scene.wbPath) scene.wbPath.setAttribute("d", `M ${wbX} ${wbY} Q ${cx - radius * (mob ? 0.55 : 0.7)} ${wbY + (cy - wbY) * 0.65} ${cx} ${cy}`);
 
       const n = scene.kids.length;
       for (let i = 0; i < n; i++) {
@@ -1212,6 +1219,7 @@
 
     function gaugeSVG(score, size = 72, stroke = 5.5) {
       const hex = healthHex(score), r = size / 2 - stroke, c = 2 * Math.PI * r;
+      const compact = size < 58;
       return `
         <div class="relative flex-shrink-0 flex items-center justify-center" style="width:${size}px;height:${size}px">
           <svg width="${size}" height="${size}" class="-rotate-90">
@@ -1220,8 +1228,8 @@
                     stroke-dasharray="${(score / 100) * c} ${c}" style="filter:drop-shadow(0 0 6px ${hex}88);transition:stroke-dasharray .6s cubic-bezier(.22,1,.36,1)"/>
           </svg>
           <div class="absolute flex flex-col items-center leading-none">
-            <span class="font-bold" style="color:${hex};font-size:${Math.round(size * 0.29)}px">${score}</span>
-            <span class="text-[9px] uppercase tracking-widest text-slate-300 mt-0.5 font-medium">health</span>
+            <span class="font-bold" style="color:${hex};font-size:${Math.round(size * (compact ? 0.27 : 0.29))}px">${score}</span>
+            <span class="${compact ? "text-[8px]" : "text-[9px]"} uppercase tracking-widest text-slate-300 mt-0.5 font-medium">health</span>
           </div>
         </div>`;
     }
@@ -1236,16 +1244,16 @@
       const deskNav = document.getElementById("breadcrumbNav");
       if (deskNav) {
         deskNav.innerHTML = chain.map((item, idx) => `
-          ${idx > 0 ? '<span class="text-slate-500 text-sm">›</span>' : ""}
-          <button data-act="dive" data-id="${item.id ?? ""}" class="px-3.5 py-1 rounded-full text-sm font-medium cursor-pointer ${idx === chain.length - 1 ? "bg-teal-400/15 border border-teal-400/45 text-teal-200 font-semibold" : "text-slate-300 hover:text-white border border-transparent"}">${esc(item.name)}</button>
+          ${idx > 0 ? '<span class="text-slate-400 text-sm">›</span>' : ""}
+          <button data-act="dive" data-id="${item.id ?? ""}" class="px-3.5 py-1 rounded-full text-sm font-medium cursor-pointer truncate max-w-[160px] ${idx === chain.length - 1 ? "bg-teal-400/15 border border-teal-400/45 text-teal-200 font-semibold" : "text-slate-300 hover:text-white border border-transparent"}">${esc(item.name)}</button>
         `).join("");
       }
       const mobNav = document.getElementById("mobBreadcrumbs");
       if (mobNav) {
         const lastTwo = chain.slice(-2);
         mobNav.innerHTML = lastTwo.map((item, idx) => `
-          ${idx > 0 ? '<span class="text-slate-600">›</span>' : ""}
-          <button data-act="dive" data-id="${item.id ?? ""}" class="truncate px-1.5 py-0.5 rounded text-xs ${idx === lastTwo.length - 1 ? "text-teal-200 font-semibold" : "text-slate-400"}">${esc(item.name)}</button>
+          ${idx > 0 ? '<span class="text-slate-500 shrink-0">›</span>' : ""}
+          <button data-act="dive" data-id="${item.id ?? ""}" class="truncate max-w-[96px] min-w-0 px-1.5 py-0.5 rounded text-xs cursor-pointer ${idx === lastTwo.length - 1 ? "text-teal-200 font-semibold" : "text-slate-300"}">${esc(item.name)}</button>
         `).join("");
       }
       const btnSound = document.getElementById("btnSoundToggle");
@@ -1284,11 +1292,11 @@
       const tab = (key, label) => `<button data-act="tab" data-tab="${key}" class="flex-1 py-2 rounded-full text-xs xl:text-sm font-medium transition-all cursor-pointer ${hudTab === key ? "bg-teal-400/15 border border-teal-400/45 text-teal-200 font-semibold" : "text-slate-300 hover:text-white border border-transparent"}">${label}</button>`;
 
       panel.innerHTML = `
-        <div class="flex items-center justify-between gap-2 px-5 py-4 border-b border-teal-400/15 bg-white/[0.015] ${inspecting ? "shadow-[inset_0_-1px_0_rgba(229,169,60,0.35)]" : ""}">
+        <div class="flex items-center justify-between gap-2 px-5 py-4 border-b border-teal-400/15 bg-white/[0.015] ${inspecting ? "shadow-[inset_0_-1px_0_rgba(229,169,60,0.35)]" : ""}" style="background-image:radial-gradient(150px circle at 14% 25%, ${node.color}24, transparent 78%)">
           <div class="flex items-center gap-3 min-w-0">
-            <button data-act="edit-planet" data-id="${tid || ""}" title="Click to customize color & emoji" class="w-11 h-11 rounded-full flex items-center justify-center text-xl flex-shrink-0 cursor-pointer hover:scale-105 transition-transform" style="background:${node.color};box-shadow:0 0 16px ${node.color}88">${esc(node.icon)}</button>
+            <button data-act="edit-planet" data-id="${tid || ""}" title="Click to customize color & emoji" class="w-11 h-11 rounded-full flex items-center justify-center leading-none select-none text-xl flex-shrink-0 cursor-pointer hover:scale-105 transition-transform" style="background:${node.color};box-shadow:0 0 16px ${node.color}88">${esc(node.icon)}</button>
             <div class="min-w-0">
-              <h2 class="text-2xl font-semibold text-white font-fraunces truncate">${esc(node.name)}</h2>
+              <h2 class="text-2xl font-semibold text-white font-fraunces truncate leading-snug pb-0.5">${esc(node.name)}</h2>
               <p class="text-xs xl:text-sm ${inspecting ? "text-amber-300 font-medium" : "text-slate-300"} truncate">${subtitle}</p>
             </div>
           </div>
@@ -1365,33 +1373,34 @@
         const g = taskGroups(tid);
         const kids = childIds(tid);
         
-        const previewTasks = [...g.overdue, ...g.here].slice(0, 2);
+        const previewLimit = window.innerHeight < 730 ? 1 : 2;
+        const previewTasks = [...g.overdue, ...g.here].slice(0, previewLimit);
         const tasksPreviewHTML = previewTasks.length ? previewTasks.map(x => `
-          <div class="flex items-center gap-2.5 p-2 rounded-xl bg-white/[0.04] border border-white/10 text-xs">
-            <button data-act="toggle-task" data-id="${x.t.id}" class="w-5 h-5 rounded-full border border-teal-400/40 flex items-center justify-center text-[10px] text-teal-300 flex-shrink-0 cursor-pointer">○</button>
-            <span class="flex-1 truncate text-slate-100 font-medium">${esc(x.t.title)}</span>
+          <div class="flex items-center gap-2.5 p-2 rounded-xl bg-white/[0.04] border border-white/10 text-xs min-w-0">
+            <button data-act="toggle-task" data-id="${x.t.id}" class="w-6 h-6 rounded-full border border-teal-400/45 flex items-center justify-center text-xs text-teal-300 flex-shrink-0 cursor-pointer active:scale-95">○</button>
+            <span class="flex-1 min-w-0 truncate text-slate-100 font-medium">${esc(x.t.title)}</span>
             <span class="text-[11px] font-semibold text-amber-300 flex-shrink-0">+${x.t.diff * 10} XP</span>
           </div>
-        `).join("") : `<p class="text-xs text-slate-400 py-1">No active missions in this sector.</p>`;
+        `).join("") : `<p class="text-xs text-slate-300 py-1">No active missions in this sector.</p>`;
 
         body = `
-          <div class="fixed inset-x-3 bottom-[76px] z-30 glass-surface rounded-2xl p-4 shadow-2xl pointer-events-auto border border-white/15 safe-bottom fade-up">
+          <div class="fixed inset-x-3 bottom-[74px] z-30 glass-surface rounded-2xl p-3.5 shadow-2xl pointer-events-auto border border-white/15 safe-bottom fade-up" style="background-image:radial-gradient(140px circle at 15% 20%, ${node.color}24, transparent 78%)">
             <div class="w-10 h-1 rounded-full bg-white/20 mx-auto mb-2 flex-shrink-0"></div>
-            <div class="flex items-center gap-3">
-              <button data-act="edit-planet" data-id="${target ? target.id : ""}" title="Customize planet" class="w-12 h-12 rounded-full flex items-center justify-center text-2xl flex-shrink-0 cursor-pointer shadow-lg" style="background:radial-gradient(circle at 32% 28%, ${node.color}ee, ${node.color} 70%, #0D0F0E 140%);box-shadow:0 0 20px ${node.color}77">${esc(node.icon)}</button>
+            <div class="flex items-center gap-3 min-w-0">
+              <button data-act="edit-planet" data-id="${target ? target.id : ""}" title="Customize planet" class="w-11 h-11 rounded-full flex items-center justify-center leading-none select-none text-xl flex-shrink-0 cursor-pointer shadow-lg" style="background:radial-gradient(circle at 32% 28%, ${node.color}ee, ${node.color} 70%, #0D0F0E 140%);box-shadow:0 0 20px ${node.color}77">${esc(node.icon)}</button>
               <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2">
-                  <h3 class="font-fraunces text-xl font-semibold text-white truncate">${esc(node.name)}</h3>
-                  ${target ? `<button data-act="edit-planet" data-id="${target.id}" class="text-xs text-slate-400 hover:text-teal-300 cursor-pointer">✎</button>` : ""}
+                <div class="flex items-center gap-2 min-w-0">
+                  <h3 class="font-fraunces text-xl font-semibold text-white truncate leading-snug pb-0.5">${esc(node.name)}</h3>
+                  ${target ? `<button data-act="edit-planet" data-id="${target.id}" class="text-xs text-slate-300 hover:text-teal-300 cursor-pointer shrink-0">✎</button>` : ""}
                 </div>
-                <p class="text-xs text-slate-300">Lv ${li.lvl.toFixed(1)} · ${li.toNext} XP to next · <span style="color:${healthHex(score)}">${score}%</span></p>
+                <p class="text-xs text-slate-300 truncate">Lv ${li.lvl.toFixed(1)} · ${li.toNext} XP to next · <span class="font-semibold" style="color:${healthHex(score)}">${score}%</span></p>
               </div>
               ${gaugeSVG(score, 52, 4.5)}
             </div>
-            <div class="mt-2.5 h-1.5 rounded-full bg-white/10 overflow-hidden">
+            <div class="mt-2 h-1.5 rounded-full bg-white/10 overflow-hidden">
               <div class="h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-300" style="width:${li.pct}%"></div>
             </div>
-            <div class="mt-3 pt-2 border-t border-white/10 space-y-1.5">
+            <div class="mt-2.5 pt-2 border-t border-white/10 space-y-1.5">
               <div class="flex items-center justify-between text-xs font-semibold text-slate-300">
                 <span class="uppercase tracking-wider">Sector Tasks · ${g.openCount}</span>
                 <button data-act="mob-view" data-view="missions" class="text-teal-300 hover:underline cursor-pointer">Full Missions →</button>
@@ -1399,7 +1408,7 @@
               ${g.overdueCount ? `<div class="px-2.5 py-1 rounded-lg bg-red-500/15 border border-red-500/30 text-[11px] text-red-200 font-medium flex items-center justify-between"><span>⚠ ${g.overdueCount} overdue</span><button data-act="mob-view" data-view="missions" class="underline">View</button></div>` : ""}
               ${tasksPreviewHTML}
             </div>
-            <div class="mt-3 pt-2 border-t border-white/10 flex items-center gap-2">
+            <div class="mt-2.5 pt-2 border-t border-white/10 flex items-center gap-2">
               <button data-act="add-sat" data-id="${focusId || ""}" class="flex-1 py-1.5 px-3 rounded-full text-xs font-medium border border-dashed border-amber-400/50 bg-amber-400/10 text-amber-200 cursor-pointer">+ Satellite</button>
               <button data-act="mob-view" data-view="missions" class="flex-1 py-1.5 px-3 rounded-full text-xs font-semibold text-neutral-900 cursor-pointer shadow-md" style="background:var(--gold)">Sector Missions</button>
             </div>
@@ -1417,13 +1426,13 @@
         body = `
           <div class="px-4 pt-16 pb-28 space-y-4 fade-up">
             ${fp ? `<button data-act="dive" data-id="${fp.parentId || ""}" class="text-xs text-teal-300 font-medium py-1 flex items-center gap-1 cursor-pointer">← Return to ${esc(P(fp.parentId)?.name || "Life")}</button>` : ""}
-            <div class="hud-panel glass-surface p-4">
-              <div class="flex items-center gap-3">
-                <button data-act="edit-planet" data-id="${fp ? fp.id : ""}" title="Customize planet" class="w-14 h-14 rounded-full flex items-center justify-center text-2xl flex-shrink-0 cursor-pointer shadow-lg" style="background:radial-gradient(circle at 32% 28%, ${node.color}ee, ${node.color} 70%, #0D0F0E 140%);box-shadow:0 0 22px ${node.color}77">${esc(node.icon)}</button>
+            <div class="hud-panel glass-surface p-4" style="background-image:radial-gradient(150px circle at 15% 20%, ${node.color}24, transparent 78%)">
+              <div class="flex items-center gap-3 min-w-0">
+                <button data-act="edit-planet" data-id="${fp ? fp.id : ""}" title="Customize planet" class="w-14 h-14 rounded-full flex items-center justify-center leading-none select-none text-2xl flex-shrink-0 cursor-pointer shadow-lg" style="background:radial-gradient(circle at 32% 28%, ${node.color}ee, ${node.color} 70%, #0D0F0E 140%);box-shadow:0 0 22px ${node.color}77">${esc(node.icon)}</button>
                 <div class="flex-1 min-w-0">
-                  <div class="flex items-center gap-2">
-                    <h2 class="font-fraunces text-2xl font-semibold truncate text-white">${esc(node.name)}</h2>
-                    ${fp ? `<button data-act="edit-planet" data-id="${fp.id}" class="text-xs text-slate-400 hover:text-teal-300 cursor-pointer">✎</button>` : ""}
+                  <div class="flex items-center gap-2 min-w-0">
+                    <h2 class="font-fraunces text-2xl font-semibold truncate leading-snug pb-0.5 text-white">${esc(node.name)}</h2>
+                    ${fp ? `<button data-act="edit-planet" data-id="${fp.id}" class="text-xs text-slate-300 hover:text-teal-300 cursor-pointer shrink-0">✎</button>` : ""}
                   </div>
                   <p class="text-xs text-slate-300">Lv ${li.lvl.toFixed(1)} · ${li.toNext} XP to next Lv</p>
                 </div>
@@ -1446,25 +1455,25 @@
               </div>
               ${kids.length ? `<div class="space-y-2 mt-2">${kids.map(cid => {
                 const cp = P(cid), h = computeHealth(cp), hex = healthHex(h), st = taskGroups(cid);
-                return `<button data-act="dive" data-id="${cid}" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/[0.04] border border-white/10 active:bg-teal-400/15 text-left cursor-pointer">
-                  <div class="relative w-10 h-10 rounded-full flex items-center justify-center text-lg flex-shrink-0" style="background:${cp.color};box-shadow:0 0 0 2px #0D0F0E, 0 0 0 4px ${hex}">${esc(cp.icon)}</div>
+                return `<button data-act="dive" data-id="${cid}" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/[0.04] border border-white/10 active:bg-teal-400/15 text-left cursor-pointer min-w-0">
+                  <div class="relative w-10 h-10 rounded-full flex items-center justify-center leading-none select-none text-lg flex-shrink-0" style="background:${cp.color};box-shadow:0 0 0 2px #0D0F0E, 0 0 0 4px ${hex}">${esc(cp.icon)}</div>
                   <div class="flex-1 min-w-0">
-                    <p class="font-fraunces text-base text-slate-100 truncate">${esc(cp.name)}</p>
-                    <p class="text-xs text-slate-300"><span style="color:${hex}">${h}%</span> · Lv ${levelOf(cp).toFixed(1)} · ${st.openCount ? `${st.openCount} open${st.overdueCount ? ` · <span class="text-red-300">${st.overdueCount} overdue</span>` : ""}` : "All clear"}</p>
+                    <p class="font-fraunces text-base text-slate-100 truncate leading-snug pb-0.5">${esc(cp.name)}</p>
+                    <p class="text-xs text-slate-300 truncate"><span class="font-semibold" style="color:${hex}">${h}%</span> · Lv ${levelOf(cp).toFixed(1)} · ${st.openCount ? `${st.openCount} open${st.overdueCount ? ` · <span class="text-red-300">${st.overdueCount} overdue</span>` : ""}` : "All clear"}</p>
                   </div>
-                  <span class="text-teal-400 text-lg">›</span>
+                  <span class="text-teal-400 text-lg shrink-0">›</span>
                 </button>`;
-              }).join("")}</div>` : `<p class="text-xs text-slate-400 py-1">No orbiting satellites in this sector.</p>`}
+              }).join("")}</div>` : `<p class="text-xs text-slate-300 py-1">No orbiting satellites in this sector.</p>`}
             </div>
 
             <div class="hud-panel glass-surface p-4">
-              <div class="flex items-center justify-between mb-3 border-b border-white/10 pb-2">
-                <div class="flex items-center gap-2">
-                  <button data-act="tab" data-tab="missions" class="px-3 py-1 rounded-full text-xs font-semibold cursor-pointer ${hudTab === "missions" ? "bg-teal-400/20 text-teal-200 border border-teal-400/40" : "text-slate-400"}">Missions (${g.openCount})</button>
-                  <button data-act="tab" data-tab="notes" class="px-3 py-1 rounded-full text-xs font-semibold cursor-pointer ${hudTab === "notes" ? "bg-teal-400/20 text-teal-200 border border-teal-400/40" : "text-slate-400"}">Notes (${notesCount})</button>
-                  <button data-act="tab" data-tab="timeline" class="px-3 py-1 rounded-full text-xs font-semibold cursor-pointer ${hudTab === "timeline" ? "bg-teal-400/20 text-teal-200 border border-teal-400/40" : "text-slate-400"}">Timeline</button>
+              <div class="flex flex-wrap items-center justify-between gap-2 mb-3 border-b border-white/10 pb-2.5">
+                <div class="flex items-center gap-1.5 min-w-0">
+                  <button data-act="tab" data-tab="missions" class="px-2.5 py-1 rounded-full text-[11px] font-semibold cursor-pointer whitespace-nowrap ${hudTab === "missions" ? "bg-teal-400/20 text-teal-200 border border-teal-400/40" : "text-slate-300 hover:text-white"}">Missions (${g.openCount})</button>
+                  <button data-act="tab" data-tab="notes" class="px-2.5 py-1 rounded-full text-[11px] font-semibold cursor-pointer whitespace-nowrap ${hudTab === "notes" ? "bg-teal-400/20 text-teal-200 border border-teal-400/40" : "text-slate-300 hover:text-white"}">Notes (${notesCount})</button>
+                  <button data-act="tab" data-tab="timeline" class="px-2.5 py-1 rounded-full text-[11px] font-semibold cursor-pointer whitespace-nowrap ${hudTab === "timeline" ? "bg-teal-400/20 text-teal-200 border border-teal-400/40" : "text-slate-300 hover:text-white"}">Timeline</button>
                 </div>
-                ${hudTab === "missions" ? `<button data-act="add-task" data-pid="${focusId || ""}" class="px-3 py-1 rounded-full text-xs font-semibold text-neutral-900 cursor-pointer shadow-md" style="background:var(--gold)">+ Task</button>` : ""}
+                ${hudTab === "missions" ? `<button data-act="add-task" data-pid="${focusId || ""}" class="px-3 py-1 rounded-full text-xs font-semibold text-neutral-900 cursor-pointer shadow-md shrink-0" style="background:var(--gold)">+ Task</button>` : ""}
               </div>
               <div>
                 ${hudTab === "missions" ? missionsHTML(focusId, true) : hudTab === "notes" ? notesHTML(focusId, true) : timelineHTML(focusId)}
@@ -1492,11 +1501,11 @@
           <div class="px-4 pt-16 pb-28 space-y-4 fade-up">
             <div class="hud-panel glass-surface p-4">
               <p class="text-xs uppercase tracking-wider text-teal-400 font-semibold">End-of-day check-in</p>
-              <h2 class="font-fraunces text-2xl font-semibold mt-0.5 text-white">${new Date().toLocaleDateString([], { weekday: "long", month: "short", day: "numeric" })}</h2>
+              <h2 class="font-fraunces text-2xl font-semibold mt-0.5 leading-snug pb-0.5 text-white">${new Date().toLocaleDateString([], { weekday: "long", month: "short", day: "numeric" })}</h2>
               <div class="mt-3 grid grid-cols-3 gap-2 text-center">
-                <div class="rounded-xl bg-white/[0.04] border border-white/10 py-2.5"><p class="text-xl font-semibold text-teal-300">${doneToday.length}</p><p class="text-[10px] uppercase tracking-wider text-slate-400">done today</p></div>
-                <div class="rounded-xl bg-white/[0.04] border border-white/10 py-2.5"><p class="text-xl font-semibold text-amber-300">+${xpToday}</p><p class="text-[10px] uppercase tracking-wider text-slate-400">xp earned</p></div>
-                <div class="rounded-xl bg-white/[0.04] border border-white/10 py-2.5"><p class="text-xl font-semibold" style="color:${healthHex(computeHealth(null))}">${computeHealth(null)}%</p><p class="text-[10px] uppercase tracking-wider text-slate-400">life health</p></div>
+                <div class="rounded-xl bg-white/[0.04] border border-white/10 py-2.5"><p class="text-xl font-semibold text-teal-300">${doneToday.length}</p><p class="text-[10px] uppercase tracking-wider text-slate-300">done today</p></div>
+                <div class="rounded-xl bg-white/[0.04] border border-white/10 py-2.5"><p class="text-xl font-semibold text-amber-300">+${xpToday}</p><p class="text-[10px] uppercase tracking-wider text-slate-300">xp earned</p></div>
+                <div class="rounded-xl bg-white/[0.04] border border-white/10 py-2.5"><p class="text-xl font-semibold" style="color:${healthHex(computeHealth(null))}">${computeHealth(null)}%</p><p class="text-[10px] uppercase tracking-wider text-slate-300">life health</p></div>
               </div>
               <p class="mt-3 text-xs text-slate-300">Life Lv ${ul.lvl.toFixed(1)} · ${ul.toNext} XP to Lv ${ul.whole + 1}</p>
               <div class="mt-2 h-1.5 rounded-full bg-white/10 overflow-hidden"><div class="h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-300" style="width:${ul.pct}%"></div></div>
@@ -1515,9 +1524,9 @@
           <div class="px-4 pt-16 pb-28 space-y-4 fade-up">
             <div class="hud-panel glass-surface p-5">
               <div class="flex items-center gap-3">
-                <div class="w-14 h-14 rounded-full bg-teal-400/15 border border-teal-400/40 flex items-center justify-center text-2xl shadow-lg">👤</div>
+                <div class="w-14 h-14 rounded-full bg-teal-400/15 border border-teal-400/40 flex items-center justify-center leading-none select-none text-2xl shadow-lg">👤</div>
                 <div class="flex-1 min-w-0">
-                  <h2 class="font-fraunces text-xl font-semibold text-white truncate">${esc(userName)}</h2>
+                  <h2 class="font-fraunces text-xl font-semibold text-white truncate leading-snug pb-0.5">${esc(userName)}</h2>
                   <p class="text-xs text-slate-300 truncate">${esc(userEmail)}</p>
                   <span class="inline-block mt-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${currentUser ? "bg-teal-400/20 text-teal-300 border border-teal-400/40" : "bg-amber-400/20 text-amber-300 border border-amber-400/40"}">${currentUser ? "Google Account Connected" : "Guest Mode (Local)"}</span>
                 </div>
