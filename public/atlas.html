@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0D0F0E">
+  <link rel="manifest" href="/manifest.json">
   <title>Idemap — 2D Orbital Solar System Atlas</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -140,15 +142,16 @@
       <div id="mobBreadcrumbs" class="flex items-center gap-1 text-xs text-slate-300 min-w-0 overflow-hidden"></div>
     </div>
     <div class="flex items-center gap-1.5 flex-shrink-0">
-      <button data-act="sync-cloud" id="mobBtnCloudSync" class="px-2.5 py-1 rounded-full text-[11px] font-medium border border-teal-400/35 bg-teal-400/10 text-teal-200 transition-all cursor-pointer whitespace-nowrap" title="Persistence status">💾 Local Mode</button>
+      <button data-act="open-cmd" class="w-7 h-7 rounded-full border border-teal-400/35 bg-teal-400/10 text-xs flex items-center justify-center text-teal-200 cursor-pointer leading-none" title="Quick Add & Search">🔍</button>
+      <button data-act="sync-cloud" id="mobBtnCloudSync" class="px-2 py-1 rounded-full text-[11px] font-medium border border-teal-400/35 bg-teal-400/10 text-teal-200 transition-all cursor-pointer whitespace-nowrap" title="Persistence status">💾 Local</button>
       <button data-act="sound" id="mobBtnSound" class="w-7 h-7 rounded-full border border-white/15 text-xs flex items-center justify-center text-slate-200 cursor-pointer leading-none">🔊</button>
-      <button data-act="auth-btn" id="mobBtnAuth" class="px-2.5 py-1 rounded-full text-[11px] font-medium border border-amber-400/40 bg-amber-400/10 text-amber-200 cursor-pointer whitespace-nowrap">👤</button>
+      <button data-act="auth-btn" id="mobBtnAuth" class="px-2 py-1 rounded-full text-[11px] font-medium border border-amber-400/40 bg-amber-400/10 text-amber-200 cursor-pointer whitespace-nowrap">👤</button>
     </div>
   </header>
 
   <!-- Layer 3: Desktop Top HUD -->
-  <header class="desk-only fixed top-6 left-6 right-[440px] xl:right-[505px] 2xl:right-[555px] z-40 flex flex-wrap items-center gap-3 pointer-events-none">
-    <div class="hud-panel h-12 px-4 flex items-center gap-3.5 pointer-events-auto shadow-2xl">
+  <header class="desk-only fixed top-6 left-6 right-[440px] xl:right-[505px] 2xl:right-[555px] z-40 flex flex-wrap items-center gap-2.5 pointer-events-none">
+    <div class="hud-panel h-12 px-4 flex items-center gap-3 pointer-events-auto shadow-2xl">
       <button data-act="dive" data-id="" class="flex items-center gap-2.5 cursor-pointer group">
         <div class="w-8 h-8 rounded-full bg-teal-400/10 border border-teal-400/35 flex items-center justify-center group-hover:border-teal-400 transition-colors">
           <span class="text-teal-400 text-sm leading-none">✦</span>
@@ -159,12 +162,27 @@
       <nav id="breadcrumbNav" class="flex items-center gap-1.5"></nav>
     </div>
     <div class="hud-panel h-12 px-3 flex items-center gap-2 pointer-events-auto relative">
-      <button data-act="sync-cloud" id="btnCloudSync" class="px-3.5 py-1.5 rounded-full text-sm font-medium border border-teal-400/35 bg-teal-400/10 text-teal-200 hover:border-teal-400 transition-all cursor-pointer" title="Persistence status">💾 Local Mode</button>
-      <button data-act="sound" id="btnSoundToggle" class="px-3.5 py-1.5 rounded-full text-sm font-medium border border-white/15 hover:border-teal-400/50 text-teal-300 transition-all cursor-pointer">🔊 Audio On</button>
-      <button data-act="auth-btn" id="btnAuthUser" class="px-3.5 py-1.5 rounded-full text-sm font-medium border border-amber-400/40 bg-amber-400/10 hover:bg-amber-400/20 text-amber-200 transition-all cursor-pointer">👤 Sign In</button>
+      <button data-act="open-today" id="btnTodayFocus" class="px-3 py-1.5 rounded-full text-xs xl:text-sm font-semibold border border-amber-400/45 bg-amber-400/15 hover:bg-amber-400/25 text-amber-200 transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap" title="Curated priority missions right now (Shortcut: T)">
+        <span>⚡</span><span>Today</span><span id="badgeTodayCount" class="px-1.5 py-0.2 rounded-full bg-amber-400/30 text-amber-100 text-[11px]">0</span>
+      </button>
+      <button data-act="open-checkin" id="btnDeskCheckin" class="px-3 py-1.5 rounded-full text-xs xl:text-sm font-medium border border-teal-400/35 bg-teal-400/10 hover:bg-teal-400/20 text-teal-200 transition-all cursor-pointer whitespace-nowrap" title="Daily Check-in & Star Constellation (Shortcut: C)">🌙 Check-in</button>
+      <button data-act="open-cmd" class="px-3 py-1.5 rounded-full text-xs xl:text-sm font-medium border border-white/15 bg-white/5 hover:border-teal-400/45 text-slate-200 hover:text-teal-200 transition-all cursor-pointer whitespace-nowrap" title="Quick-Add & Global Search (Ctrl+K / ⌘K)">⌘K Search</button>
+      <button data-act="sync-cloud" id="btnCloudSync" class="px-3 py-1.5 rounded-full text-xs xl:text-sm font-medium border border-teal-400/35 bg-teal-400/10 text-teal-200 hover:border-teal-400 transition-all cursor-pointer whitespace-nowrap" title="Persistence status">💾 Local Mode</button>
+      <button data-act="sound" id="btnSoundToggle" class="px-3 py-1.5 rounded-full text-xs xl:text-sm font-medium border border-white/15 hover:border-teal-400/50 text-teal-300 transition-all cursor-pointer whitespace-nowrap">🔊</button>
+      <button data-act="auth-btn" id="btnAuthUser" class="px-3 py-1.5 rounded-full text-xs xl:text-sm font-medium border border-amber-400/40 bg-amber-400/10 hover:bg-amber-400/20 text-amber-200 transition-all cursor-pointer whitespace-nowrap">👤 Sign In</button>
       <div class="relative">
         <button data-act="top-menu" id="btnTopMenu" class="w-8 h-8 rounded-full border border-white/15 hover:border-teal-400/50 text-slate-300 hover:text-white flex items-center justify-center transition-all cursor-pointer text-sm leading-none" title="More options" aria-label="More options">⋯</button>
-        <div id="topOverflowMenu" class="hidden absolute right-0 top-full mt-2 w-48 hud-panel p-1.5 z-50 shadow-2xl">
+        <div id="topOverflowMenu" class="hidden absolute right-0 top-full mt-2 w-56 hud-panel p-1.5 z-50 shadow-2xl space-y-1">
+          <button data-act="open-tether" data-id="" class="w-full px-3 py-2 rounded-lg text-xs font-medium text-left text-teal-200 hover:bg-teal-400/15 flex items-center gap-2 cursor-pointer transition-colors">
+            <span>🔗</span><span>Shared Planets & Partner Tether</span>
+          </button>
+          <button data-act="open-cosmetics" data-id="" class="w-full px-3 py-2 rounded-lg text-xs font-medium text-left text-amber-200 hover:bg-amber-400/15 flex items-center gap-2 cursor-pointer transition-colors">
+            <span>🎨</span><span>Planet Auras, Moons & Audio</span>
+          </button>
+          <button data-act="toggle-push" class="w-full px-3 py-2 rounded-lg text-xs font-medium text-left text-slate-200 hover:bg-white/10 flex items-center gap-2 cursor-pointer transition-colors">
+            <span>🔔</span><span id="lblPushMenu">Enable Daily Push Reminder</span>
+          </button>
+          <div class="h-px bg-white/10 my-1"></div>
           <button data-act="reset" class="w-full px-3 py-2 rounded-lg text-xs font-medium text-left text-red-300 hover:bg-red-500/15 flex items-center gap-2 cursor-pointer transition-colors" title="Reset to the 4 empty seed planets">
             <span>↺</span><span>Reset to Seed Planets</span>
           </button>
@@ -348,6 +366,70 @@
     </div>
   </div>
 
+  <!-- Supernova Level-Up & Gravitational Breakthrough Banner -->
+  <div id="supernovaBanner" class="fixed top-20 left-1/2 -translate-x-1/2 z-[80] hidden pointer-events-none">
+    <div id="supernovaBannerInner" class="hud-panel glass-surface px-6 py-4 rounded-2xl border border-amber-400/60 shadow-[0_0_60px_rgba(229,169,60,0.45)] flex items-center gap-4 fade-up"></div>
+  </div>
+
+  <!-- Command Deck Modal (⌘K / Ctrl+K: Natural Language Quick-Add & Global Search) -->
+  <div id="cmdModal" class="fixed inset-0 bg-black/75 backdrop-blur-md z-50 hidden items-start sm:items-center justify-center p-3 sm:p-4 pt-16 sm:pt-4">
+    <div class="hud-panel glass-surface p-0 w-full max-w-xl max-h-[82vh] rounded-2xl flex flex-col overflow-hidden fade-up border border-teal-400/35 shadow-[0_0_70px_rgba(45,212,191,0.2)]">
+      <div class="p-4 border-b border-white/10 flex items-center gap-3 bg-white/[0.02]">
+        <span class="text-teal-300 text-lg leading-none">⌘</span>
+        <input id="inputCmdQuery" type="text" placeholder="Search orbits, or type: Call partner tomorrow !3 @Signal #daily" class="flex-1 bg-transparent text-base text-white placeholder-slate-400 focus:outline-none">
+        <button data-act="close-modal" data-modal="cmdModal" class="px-2.5 py-1 rounded-lg bg-white/5 border border-white/15 text-xs text-slate-300 hover:text-white cursor-pointer">Esc</button>
+      </div>
+      <div id="cmdQuickAddPreview" class="hidden px-4 py-3 border-b border-amber-400/25 bg-amber-400/[0.07]"></div>
+      <div id="cmdResultsList" class="p-3 overflow-y-auto flex-1 hud-scroll space-y-2 max-h-[52vh]"></div>
+      <div class="px-4 py-2.5 border-t border-white/10 bg-[#0B0E0F]/95 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
+        <span><b class="text-slate-200">Syntax:</b> <code class="text-amber-300">!1..!5</code> difficulty · <code class="text-teal-300">@Planet</code> target · <code class="text-emerald-300">today / tomorrow</code> · <code class="text-purple-300">#daily / #weekly</code></span>
+        <span><kbd class="px-1.5 py-0.5 rounded bg-white/10 text-slate-200">Enter</kbd> to execute</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Today Focus & Desktop Check-in / Constellation Modal -->
+  <div id="todayCheckinModal" class="fixed inset-0 bg-black/75 backdrop-blur-md z-50 hidden items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="hud-panel glass-surface p-0 w-full sm:max-w-2xl max-h-[90vh] sm:max-h-[86vh] rounded-t-3xl sm:rounded-2xl flex flex-col overflow-hidden fade-up">
+      <div class="p-4 sm:p-5 border-b border-white/10 flex items-center justify-between gap-3 flex-shrink-0">
+        <div class="flex items-center gap-2">
+          <button data-act="switch-focus-tab" data-tab="today" id="tabBtnTodayFocus" class="px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold cursor-pointer transition-all">⚡ Today Focus</button>
+          <button data-act="switch-focus-tab" data-tab="checkin" id="tabBtnDeskCheckin" class="px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold cursor-pointer transition-all">🌙 Daily Check-in & Constellation</button>
+        </div>
+        <button data-act="close-modal" data-modal="todayCheckinModal" class="w-9 h-9 rounded-full text-slate-300 hover:text-white hover:bg-white/10 cursor-pointer text-base flex items-center justify-center">✕</button>
+      </div>
+      <div id="todayCheckinBody" class="p-5 sm:p-6 overflow-y-auto flex-1 hud-scroll space-y-5 safe-bottom"></div>
+    </div>
+  </div>
+
+  <!-- Shared Solar System / Partner Tether Modal -->
+  <div id="tetherModal" class="fixed inset-0 bg-black/75 backdrop-blur-md z-50 hidden items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="hud-panel glass-surface p-0 w-full sm:max-w-lg max-h-[90vh] sm:max-h-[86vh] rounded-t-3xl sm:rounded-2xl flex flex-col overflow-hidden fade-up">
+      <div class="p-5 pb-3.5 border-b border-white/10 flex items-center justify-between flex-shrink-0">
+        <div>
+          <p class="text-xs uppercase tracking-wider text-teal-400 font-semibold">Binary Co-Orbit Protocol</p>
+          <h3 class="text-xl sm:text-2xl font-semibold text-white font-fraunces mt-0.5">Tethered Partner Planet</h3>
+        </div>
+        <button data-act="close-modal" data-modal="tetherModal" class="w-9 h-9 rounded-full text-slate-300 hover:text-white hover:bg-white/10 cursor-pointer text-base flex items-center justify-center">✕</button>
+      </div>
+      <div id="tetherModalBody" class="p-5 sm:p-6 overflow-y-auto flex-1 hud-scroll space-y-5 safe-bottom"></div>
+    </div>
+  </div>
+
+  <!-- Health Breakdown, Moon Companion & Cosmetics Modal -->
+  <div id="cosmeticsModal" class="fixed inset-0 bg-black/75 backdrop-blur-md z-50 hidden items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="hud-panel glass-surface p-0 w-full sm:max-w-lg max-h-[90vh] sm:max-h-[86vh] rounded-t-3xl sm:rounded-2xl flex flex-col overflow-hidden fade-up">
+      <div class="p-5 pb-3.5 border-b border-white/10 flex items-center justify-between flex-shrink-0">
+        <div>
+          <p class="text-xs uppercase tracking-wider text-amber-300 font-semibold">Telemetry & Cosmic Unlocks</p>
+          <h3 id="cosmeticsModalTitle" class="text-xl sm:text-2xl font-semibold text-white font-fraunces mt-0.5">Planet Health, Moons & Auras</h3>
+        </div>
+        <button data-act="close-modal" data-modal="cosmeticsModal" class="w-9 h-9 rounded-full text-slate-300 hover:text-white hover:bg-white/10 cursor-pointer text-base flex items-center justify-center">✕</button>
+      </div>
+      <div id="cosmeticsModalBody" class="p-5 sm:p-6 overflow-y-auto flex-1 hud-scroll space-y-5 safe-bottom"></div>
+    </div>
+  </div>
+
   <script>
     // =========================================================================
     // 0. Utilities
@@ -367,31 +449,55 @@
     const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
     // =========================================================================
-    // 1. Audio Engine (procedural, zero assets)
+    // 1. Audio & Haptics Engine (4 Procedural Soundscapes, zero external assets)
     // =========================================================================
     let audioCtx = null;
-    function playTone(f, d = 0.16, g = 0.1, type = "sine") {
+    function haptic(pattern = 15) {
+      try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (e) {}
+    }
+    const SOUND_THEMES = {
+      crystal: { label: "Crystalline Chimes", icon: "💎", wave: "sine", pitchMul: 1.0 },
+      retro:   { label: "8-Bit Starlight",    icon: "🕹️", wave: "square", pitchMul: 1.15 },
+      space:   { label: "Deep Space Synth",   icon: "🌌", wave: "triangle", pitchMul: 0.72 },
+      harp:    { label: "Celestial Harp",     icon: "🎵", wave: "sine", pitchMul: 1.25 },
+    };
+    function playTone(f, d = 0.16, g = 0.1, type = null) {
       if (!STATE.soundOn) return;
       try {
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         if (audioCtx.state === "suspended") audioCtx.resume();
+        const theme = SOUND_THEMES[STATE.soundTheme || "crystal"] || SOUND_THEMES.crystal;
         const o = audioCtx.createOscillator(), v = audioCtx.createGain();
-        o.type = type;
-        o.frequency.setValueAtTime(f, audioCtx.currentTime);
-        v.gain.setValueAtTime(g, audioCtx.currentTime);
+        o.type = type || theme.wave;
+        const freq = f * theme.pitchMul;
+        o.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        const gainVal = o.type === "square" ? g * 0.45 : g;
+        v.gain.setValueAtTime(gainVal, audioCtx.currentTime);
         v.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + d);
         o.connect(v); v.connect(audioCtx.destination);
         o.start(); o.stop(audioCtx.currentTime + d);
       } catch (e) {}
     }
     const sfx = {
-      click: () => playTone(660, 0.06, 0.05, "triangle"),
-      dive: () => { playTone(280, 0.18, 0.09); setTimeout(() => playTone(420, 0.22, 0.07), 55); },
-      done: () => { playTone(523.25, 0.25); setTimeout(() => playTone(659.25, 0.3), 75); },
-      undo: () => playTone(330, 0.12, 0.06),
-      levelUp: () => [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => setTimeout(() => playTone(f, 0.35, 0.09), i * 90)),
-      del: () => { playTone(300, 0.14); setTimeout(() => playTone(200, 0.18), 55); },
-      add: () => playTone(440, 0.16),
+      click: () => { haptic(8); playTone(660, 0.06, 0.05); },
+      dive: () => { haptic(15); playTone(280, 0.18, 0.09); setTimeout(() => playTone(420, 0.22, 0.07), 55); },
+      done: () => { haptic([15, 30, 25]); playTone(523.25, 0.25); setTimeout(() => playTone(659.25, 0.3), 75); },
+      breakthrough: () => {
+        haptic([30, 40, 80]);
+        [196, 293.66, 392, 587.33, 783.99].forEach((f, i) => setTimeout(() => playTone(f, 0.38, 0.11), i * 70));
+      },
+      undo: () => { haptic(10); playTone(330, 0.12, 0.06); },
+      levelUp: () => {
+        haptic([40, 60, 110]);
+        [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((f, i) => setTimeout(() => playTone(f, 0.38, 0.09), i * 85));
+      },
+      del: () => { haptic(20); playTone(300, 0.14); setTimeout(() => playTone(200, 0.18), 55); },
+      add: () => { haptic(12); playTone(440, 0.16); },
+    };
+
+    const userDisplayName = () => {
+      if (!currentUser) return "You";
+      return currentUser.user_metadata?.full_name || currentUser.email?.split("@")[0] || "Explorer";
     };
 
     // =========================================================================
@@ -426,7 +532,7 @@
       const now = Date.now();
       const mk = (id, name, icon, color) => ({
         id, name, icon, color, parentId: null, childrenIds: [], xp: 0, tasks: [],
-        strain: { fin: false, psy: false }, notes: [],
+        strain: { fin: false, psy: false }, notes: [], auraSkin: "classic",
         timeline: [{ id: uid("e"), type: "created", text: "Planet charted", at: now }], createdAt: now,
       });
       const planets = {
@@ -441,8 +547,10 @@
         _isDefaultSeed: true,
         planets,
         rootIds: ["planet-home", "planet-business", "planet-social", "planet-hobbies"],
-        life: { name: "Life", icon: "☀️", color: "#0F766E", notes: [], timeline: [{ id: uid("e"), type: "created", text: "Life universe seeded", at: now }] },
+        life: { name: "Life", icon: "☀️", color: "#0F766E", auraSkin: "classic", notes: [], timeline: [{ id: uid("e"), type: "created", text: "Life universe seeded", at: now }] },
         soundOn: true,
+        soundTheme: "crystal",
+        pushEnabled: false,
         focusId: null,
       };
     }
@@ -452,7 +560,10 @@
       if ((s.version || 1) < 3 && s.planets["planet-deloitte"] && s.planets["planet-cultivation"]) {
         return null;
       }
+      if (!s.soundTheme) s.soundTheme = "crystal";
+      if (typeof s.pushEnabled !== "boolean") s.pushEnabled = false;
       Object.values(s.planets).forEach(p => {
+        if (!p.auraSkin) p.auraSkin = "classic";
         (p.tasks || []).forEach(t => {
           if (typeof t.recur !== "string") t.recur = "";
           if (typeof t.streak !== "number") t.streak = 0;
@@ -582,6 +693,133 @@
       updateAuthUI();
     }
 
+    function canEditPlanet(p) {
+      if (!p || !p.tetherCode) return true;
+      if (currentUser && p.tetherOwnerId === currentUser.id) return true;
+      return p.tetherRoleMode !== "viewer";
+    }
+
+    async function pushTetheredPlanet(p) {
+      if (!currentUser?.id || !p || !p.tetherCode || !canEditPlanet(p)) return null;
+      try {
+        p.tetherUpdatedAt = Date.now();
+        const payload = {
+          id: p.id,
+          name: p.name,
+          icon: p.icon,
+          color: p.color,
+          auraSkin: p.auraSkin || "classic",
+          xp: p.xp || 0,
+          strain: p.strain || { fin: false, psy: false },
+          tasks: p.tasks || [],
+          notes: p.notes || [],
+          timeline: (p.timeline || []).slice(0, 60),
+          updatedAt: p.tetherUpdatedAt,
+        };
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/upsert_shared_planet`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: SUPABASE_KEY,
+            Authorization: `Bearer ${activeAccessToken || SUPABASE_KEY}`,
+          },
+          body: JSON.stringify({
+            p_share_code: p.tetherCode,
+            p_planet_id: p.id,
+            p_owner_name: p.tetherOwnerName || userDisplayName(),
+            p_planet_data: payload,
+            p_role_mode: p.tetherRoleMode || "editor",
+          }),
+        });
+        if (!res.ok) return null;
+        const row = await res.json();
+        if (row) {
+          p.tetherOwnerId = row.owner_id;
+          p.tetherOwnerName = row.owner_name;
+          p.tetherRoleMode = row.role_mode;
+          p.tetherCollabs = row.collaborators || [];
+        }
+        return row;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    async function pullAllTetheredPlanets() {
+      if (!currentUser?.id) return;
+      try {
+        const uid = currentUser.id;
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/shared_planets?or=(owner_id.eq.${uid},member_ids.cs.{${uid}})&select=*`, {
+          headers: {
+            apikey: SUPABASE_KEY,
+            Authorization: `Bearer ${activeAccessToken || SUPABASE_KEY}`,
+          },
+          cache: "no-store",
+        });
+        if (!res.ok) return;
+        const rows = await res.json();
+        if (!Array.isArray(rows)) return;
+        let changed = false;
+        for (const row of rows) {
+          const pd = row.planet_data || {};
+          let localP = Object.values(STATE.planets).find(x => x.tetherCode === row.share_code) || STATE.planets[row.planet_id];
+          if (!localP) {
+            const newId = STATE.planets[row.planet_id] ? uid("planet") : row.planet_id;
+            localP = {
+              id: newId,
+              name: pd.name || "Shared Planet",
+              icon: pd.icon || "📡",
+              color: pd.color || "#2D7A8A",
+              auraSkin: pd.auraSkin || "classic",
+              parentId: null,
+              childrenIds: [],
+              xp: pd.xp || 0,
+              tasks: pd.tasks || [],
+              strain: pd.strain || { fin: false, psy: false },
+              notes: pd.notes || [],
+              timeline: pd.timeline || [],
+              tetherCode: row.share_code,
+              tetherOwnerId: row.owner_id,
+              tetherOwnerName: row.owner_name,
+              tetherRoleMode: row.role_mode,
+              tetherCollabs: row.collaborators || [],
+              tetherUpdatedAt: pd.updatedAt || 0,
+              createdAt: Date.now(),
+            };
+            STATE.planets[newId] = localP;
+            if (!STATE.rootIds.includes(newId)) STATE.rootIds.push(newId);
+            changed = true;
+          } else {
+            localP.tetherCode = row.share_code;
+            localP.tetherOwnerId = row.owner_id;
+            localP.tetherOwnerName = row.owner_name;
+            localP.tetherRoleMode = row.role_mode;
+            localP.tetherCollabs = row.collaborators || [];
+            const remoteTs = pd.updatedAt || new Date(row.updated_at || 0).getTime() || 0;
+            const localTs = localP.tetherUpdatedAt || 0;
+            if (remoteTs > localTs) {
+              localP.name = pd.name || localP.name;
+              localP.icon = pd.icon || localP.icon;
+              localP.color = pd.color || localP.color;
+              localP.auraSkin = pd.auraSkin || localP.auraSkin || "classic";
+              localP.xp = typeof pd.xp === "number" ? pd.xp : localP.xp;
+              localP.strain = pd.strain || localP.strain;
+              localP.tasks = Array.isArray(pd.tasks) ? pd.tasks : localP.tasks;
+              localP.notes = Array.isArray(pd.notes) ? pd.notes : localP.notes;
+              localP.timeline = Array.isArray(pd.timeline) ? pd.timeline : localP.timeline;
+              localP.tetherUpdatedAt = remoteTs;
+              changed = true;
+            }
+          }
+        }
+        if (changed) {
+          try { localStorage.setItem(storeKey(), JSON.stringify(STATE)); } catch (e) {}
+          healthCache.clear();
+          render();
+        }
+      } catch (e) {}
+    }
+
     async function saveToSupabase() {
       if (!currentUser || !currentUser.id) {
         setCloudStatus("💾 Local only", "ok");
@@ -589,6 +827,11 @@
       }
       setCloudStatus("⟳ Syncing…", "syncing");
       try {
+        // Also push any tethered planets owned or edited by this user
+        const tethered = Object.values(STATE.planets).filter(p => p.tetherCode && canEditPlanet(p));
+        for (const tp of tethered) {
+          await pushTetheredPlanet(tp);
+        }
         const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/sync_universe_state`, {
           method: "POST",
           headers: {
@@ -637,6 +880,7 @@
           } else {
             await saveToSupabase();
           }
+          await pullAllTetheredPlanets();
           setCloudStatus("☁️ Synced", "ok");
         } else {
           // No remote state yet for this user: check if there's any local storage data to migrate
@@ -654,6 +898,7 @@
           focusId = null; selectedId = null;
           render();
           await saveToSupabase();
+          await pullAllTetheredPlanets();
           setCloudStatus("☁️ Synced", "ok");
         }
       } catch (e) {
@@ -763,6 +1008,103 @@
     const xpOf = (p) => (p && p.id ? subtreeXP(p) : universeXP());
     const levelOf = (p) => levelFromXP(xpOf(p));
 
+    const AURA_SKINS = {
+      classic: { id: "classic", name: "Obsidian Classic",     minLv: 1, glow: null,      ringDash: null,         badge: "✨", desc: "Pure atmospheric planetary glow." },
+      bio:     { id: "bio",     name: "Bioluminescent Tide",  minLv: 2, glow: "#2DD4BF", ringDash: "8 5",        badge: "🌊", desc: "Emerald-cyan double corona unlocked at Lv 2." },
+      solar:   { id: "solar",   name: "Solar Corona",         minLv: 3, glow: "#E5A93C", ringDash: "14 5",       badge: "☀️", desc: "Radiant golden flare ring unlocked at Lv 3." },
+      nebula:  { id: "nebula",  name: "Nebula Violet",        minLv: 4, glow: "#C084FC", ringDash: "5 5",        badge: "🔮", desc: "Deep amethyst cosmic halo unlocked at Lv 4." },
+      crown:   { id: "crown",   name: "Supernova Crown",      minLv: 5, glow: "#F43F5E", ringDash: "3 4 12 4",   badge: "👑", desc: "Prismatic sovereign ring unlocked at Lv 5." },
+    };
+
+    function moonCompanion(p) {
+      const ids = p && p.id ? [p.id, ...descendants(p.id)] : descendants(null);
+      let maxStreak = 0, totalWins = 0;
+      for (const id of ids) {
+        const pl = P(id);
+        if (!pl) continue;
+        for (const t of pl.tasks || []) {
+          if ((t.streak || 0) > maxStreak) maxStreak = t.streak;
+          if (t.done) totalWins++;
+          if (Array.isArray(t.history)) totalWins += t.history.length;
+        }
+      }
+      const score = Math.max(maxStreak, Math.floor(totalWins / 2));
+      if (score >= 14) return { stage: 3, name: "Aether Ringed Moon", icon: "🪐", color: "#C084FC", nextAt: null, score, desc: "Ascended ringed moon — a monument to orbital mastery!" };
+      if (score >= 7)  return { stage: 2, name: "Nova Sprite",        icon: "🌕", color: "#E5A93C", nextAt: 14,   score, desc: "Radiant golden moon hatched from 7+ streak power!" };
+      if (score >= 3)  return { stage: 1, name: "Luna Spark",         icon: "🌙", color: "#2DD4BF", nextAt: 7,    score, desc: "Silver-teal companion moon orbiting your planet!" };
+      return { stage: 0, name: "Dormant Cosmic Egg", icon: "🥚", color: "#64748B", nextAt: 3, score, desc: "Reach a 3-day streak (or 6 completed missions) here to hatch a companion moon!" };
+    }
+
+    function healthBreakdown(p) {
+      if (!p) {
+        const ids = childIds(null);
+        const score = computeHealth(null);
+        return {
+          score,
+          base: 85,
+          recentBonus: 0,
+          overduePenalty: 0,
+          strainDrag: 0,
+          isParentAvg: ids.length > 0,
+          summary: ids.length ? `Average health across ${ids.length} root sectors (${score}%).` : "Default core health (85%).",
+          tip: score < 80 ? "Focus on sectors with overdue tasks or active strain to raise Life health." : "Your solar system is in strong orbital balance ✦",
+        };
+      }
+      const st = taskStats(p);
+      const kids = childIds(p.id);
+      const base = Math.round(kids.length ? kids.reduce((a, id) => a + computeHealth(P(id)), 0) / kids.length : 85);
+      const recentBonus = 5 * Math.min(3, st.recent);
+      const overduePenalty = 15 * st.overdue;
+      const strainDrag = strainPenalty(p, st);
+      const score = computeHealth(p);
+      let tip = "Complete a mission in this sector to earn +5% momentum bonus (up to +15%).";
+      if (st.overdue > 0) tip = `Complete or reschedule ${st.overdue} overdue task${st.overdue > 1 ? "s" : ""} to immediately recover +${overduePenalty}% health!`;
+      else if (strainDrag > 0) tip = `Complete 1 more task here today to neutralise −${ Math.min(10, strainDrag) }% gravitational strain!`;
+      else if (st.recent >= 3) tip = "Maximum momentum bonus (+15%) active! Keep orbits clear.";
+      return { score, base, recentBonus, overduePenalty, strainDrag, isParentAvg: kids.length > 0, tip };
+    }
+
+    let supernovaParticles = [];
+    let bannerTimer = null;
+    function triggerSupernova(pid, headline, subline, accentColor = "#E5A93C") {
+      const g = geom();
+      let sx = g.cx, sy = g.cy;
+      const el = pid && scene.kidEls[pid] ? scene.kidEls[pid] : scene.focusEl;
+      if (el) {
+        const rect = el.getBoundingClientRect();
+        if (rect.width > 0) { sx = rect.left + rect.width / 2; sy = rect.top + rect.height / 2; }
+      }
+      const palette = [accentColor, "#2DD4BF", "#E5A93C", "#F8FAFC", "#C084FC"];
+      for (let i = 0; i < 68; i++) {
+        const angle = (Math.PI * 2 * i) / 68 + (Math.random() - 0.5) * 0.25;
+        const speed = 2.2 + Math.random() * 6.5;
+        supernovaParticles.push({
+          x: sx,
+          y: sy,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          r: 1.8 + Math.random() * 3.2,
+          alpha: 1,
+          color: palette[i % palette.length],
+        });
+      }
+      const banner = document.getElementById("supernovaBanner");
+      const inner = document.getElementById("supernovaBannerInner");
+      if (banner && inner) {
+        inner.style.borderColor = accentColor + "99";
+        inner.innerHTML = `
+          <div class="w-11 h-11 rounded-full flex items-center justify-center text-2xl shrink-0" style="background:${accentColor}25;border:1px solid ${accentColor}88;box-shadow:0 0 24px ${accentColor}66">✦</div>
+          <div class="min-w-0">
+            <p class="font-fraunces text-base sm:text-lg font-semibold text-white leading-tight">${esc(headline)}</p>
+            <p class="text-xs text-amber-200/90 mt-0.5">${esc(subline)}</p>
+          </div>
+        `;
+        banner.classList.remove("hidden");
+        clearTimeout(bannerTimer);
+        bannerTimer = setTimeout(() => banner.classList.add("hidden"), 3800);
+      }
+    }
+
     function logEvent(pid, type, text) {
       const owner = ownerOf(pid); if (!owner) return;
       owner.timeline = owner.timeline || [];
@@ -792,9 +1134,14 @@
 
     function toggleTask(pid, tid) {
       const p = P(pid); const t = p?.tasks.find(x => x.id === tid); if (!t) return;
+      if (!canEditPlanet(p)) {
+        toast("🔭 Observer Mode (Read-Only) · Ask the planet owner for Co-Pilot access", "#F59E0B");
+        return;
+      }
       const chain = ancestorsChain(pid);
       const before = chain.map(c => Math.floor(levelOf(c)));
       const uBefore = Math.floor(levelFromXP(universeXP()));
+      const actor = userDisplayName();
 
       if (t.recur) {
         // Recurring task: award XP, increment streak, log cycle, and advance due date
@@ -804,7 +1151,8 @@
         const prevDue = t.due || todayISO();
         t.due = nextRecurringDate(t.due, t.recur);
         t.streak = (t.streak || 0) + 1;
-        t.history.unshift({ at: Date.now(), xp: gain, prevDue });
+        t.completedBy = actor;
+        t.history.unshift({ at: Date.now(), xp: gain, prevDue, by: actor });
         if (t.history.length > 60) t.history.length = 60;
         p.xp = (p.xp || 0) + gain;
         logEvent(pid, "done", `Cycled ${RECUR_LABEL[t.recur] || "↻"} “${t.title}” (🔥 ${t.streak}) · +${gain} XP`);
@@ -814,8 +1162,18 @@
         if (ups.length || uUp) {
           ups.forEach(c => logEvent(c.id, "levelup", `Reached Level ${Math.floor(levelOf(c))}`));
           if (uUp) logEvent(null, "levelup", `Life reached Level ${Math.floor(levelFromXP(universeXP()))}`);
-          setTimeout(sfx.levelUp, 260);
-          toast(`⬆ ${ups[0] ? ups[0].name : "Life"} reached Level ${Math.floor(ups[0] ? levelOf(ups[0]) : levelFromXP(universeXP()))}!`, "#E5A93C");
+          const upName = ups[0] ? ups[0].name : "Life";
+          const newLv = Math.floor(ups[0] ? levelOf(ups[0]) : levelFromXP(universeXP()));
+          setTimeout(() => {
+            sfx.levelUp();
+            triggerSupernova(pid, `✦ SUPERNOVA LEVEL UP! · ${upName} Lv ${newLv}`, `New cosmic milestone reached (+${gain} XP)!`, "#E5A93C");
+          }, 220);
+        } else if (t.streak === 3 || t.streak === 7 || t.streak === 14) {
+          const mc = moonCompanion(p);
+          setTimeout(() => {
+            sfx.levelUp();
+            triggerSupernova(pid, `${mc.icon} MOON HATCHED: ${mc.name}!`, `${p.name} reached a ${t.streak}-day streak!`, mc.color);
+          }, 220);
         } else {
           toast(`↻ +${gain} XP · 🔥 ${t.streak} streak · next due ${t.due}`);
         }
@@ -826,18 +1184,26 @@
 
       if (!t.done) {
         const strains = strainCount(p);
-        const gain = taskXP(t.diff, strains);
-        t.done = true; t.doneAt = Date.now(); t.xpAwarded = gain;
+        const isBreakthrough = strains > 0 && t.diff >= 4;
+        const baseGain = taskXP(t.diff, strains);
+        const gain = isBreakthrough ? Math.round(baseGain * 1.25) : baseGain;
+        t.done = true; t.doneAt = Date.now(); t.xpAwarded = gain; t.completedBy = actor;
         p.xp = (p.xp || 0) + gain;
-        logEvent(pid, "done", `Completed “${t.title}” · +${gain} XP`);
-        sfx.done();
+        logEvent(pid, "done", `Completed “${t.title}” · +${gain} XP${isBreakthrough ? " (Gravitational Breakthrough!)" : ""}`);
+        if (isBreakthrough) sfx.breakthrough(); else sfx.done();
         const ups = chain.filter((c, i) => Math.floor(levelOf(c)) > before[i]);
         const uUp = Math.floor(levelFromXP(universeXP())) > uBefore;
         if (ups.length || uUp) {
           ups.forEach(c => logEvent(c.id, "levelup", `Reached Level ${Math.floor(levelOf(c))}`));
           if (uUp) logEvent(null, "levelup", `Life reached Level ${Math.floor(levelFromXP(universeXP()))}`);
-          setTimeout(sfx.levelUp, 260);
-          toast(`⬆ ${ups[0] ? ups[0].name : "Life"} reached Level ${Math.floor(ups[0] ? levelOf(ups[0]) : levelFromXP(universeXP()))}!`, "#E5A93C");
+          const upName = ups[0] ? ups[0].name : "Life";
+          const newLv = Math.floor(ups[0] ? levelOf(ups[0]) : levelFromXP(universeXP()));
+          setTimeout(() => {
+            sfx.levelUp();
+            triggerSupernova(pid, `✦ SUPERNOVA LEVEL UP! · ${upName} Lv ${newLv}`, `New cosmic aura unlocked (+${gain} XP)!`, "#E5A93C");
+          }, 220);
+        } else if (isBreakthrough) {
+          triggerSupernova(pid, `⚡ GRAVITATIONAL BREAKTHROUGH!`, `Conquered high-gravity mission on ${p.name} · +${gain} XP!`, "#F59E0B");
         } else {
           toast(`+${gain} XP · ${p.name}${strains ? " · resilience bonus" : ""}`);
         }
@@ -854,6 +1220,7 @@
     function undoRecurringCycle(pid, tid) {
       const p = P(pid); const t = p?.tasks.find(x => x.id === tid);
       if (!t || !Array.isArray(t.history) || !t.history.length) return;
+      if (!canEditPlanet(p)) { toast("🔭 Observer Mode (Read-Only)", "#F59E0B"); return; }
       const last = t.history.shift();
       p.xp = Math.max(0, (p.xp || 0) - (last.xp || 0));
       t.streak = Math.max(0, (t.streak || 1) - 1);
@@ -865,6 +1232,7 @@
 
     function deleteTask(pid, tid) {
       const p = P(pid); if (!p) return;
+      if (!canEditPlanet(p)) { toast("🔭 Observer Mode (Read-Only)", "#F59E0B"); return; }
       const t = p.tasks.find(x => x.id === tid); if (!t) return;
       p.tasks = p.tasks.filter(x => x.id !== tid);
       logEvent(pid, "deleted", `Removed task “${t.title}”`);
@@ -891,6 +1259,7 @@
 
     function toggleStrain(id, kind) {
       const p = P(id); if (!p) return;
+      if (!canEditPlanet(p)) { toast("🔭 Observer Mode (Read-Only)", "#F59E0B"); return; }
       p.strain[kind] = !p.strain[kind];
       const label = kind === "fin" ? "Financial strain" : "Psychological strain";
       logEvent(id, "strain", `${label} ${p.strain[kind] ? "flagged" : "cleared"}`);
@@ -901,14 +1270,16 @@
 
     function addNote(id, text) {
       const owner = ownerOf(id); if (!owner || !text.trim()) return;
+      if (id && !canEditPlanet(P(id))) { toast("🔭 Observer Mode (Read-Only)", "#F59E0B"); return; }
       owner.notes = owner.notes || [];
-      owner.notes.unshift({ id: uid("n"), text: text.trim(), at: Date.now() });
+      owner.notes.unshift({ id: uid("n"), text: text.trim(), at: Date.now(), by: userDisplayName() });
       logEvent(id, "note", "Note added");
       sfx.add();
       commit();
     }
     function deleteNote(id, nid) {
       const owner = ownerOf(id); if (!owner) return;
+      if (id && !canEditPlanet(P(id))) { toast("🔭 Observer Mode (Read-Only)", "#F59E0B"); return; }
       owner.notes = (owner.notes || []).filter(n => n.id !== nid);
       commit();
     }
@@ -986,12 +1357,17 @@
       const score = computeHealth(pl.id ? pl : null), hex = healthHex(score);
       const lvl = levelOf(pl.id ? pl : null);
       const kids = childIds(pl.id);
-      const hasMoons = kind === "child" && kids.length > 0;
-      const pad = isFocus ? 18 : hasMoons ? 24 : 14;
+      const mc = moonCompanion(pl.id ? pl : null);
+      const hasMoons = (kind === "child" && kids.length > 0) || mc.stage > 0;
+      const pad = isFocus ? 22 : hasMoons ? 24 : 16;
       const r = size / 2 + (isFocus ? 9 : 7);
       const circ = 2 * Math.PI * r, filled = (score / 100) * circ;
       const svgDim = size + pad * 2, c = svgDim / 2, sw = isFocus ? 3.5 : 2.75;
       const strained = pl.id && strainCount(pl) > 0;
+      const isTethered = !!(pl.id && pl.tetherCode);
+      const skinKey = (pl.id ? pl.auraSkin : STATE.life?.auraSkin) || "classic";
+      const skin = AURA_SKINS[skinKey] || AURA_SKINS.classic;
+      const auraColor = skin.glow || pl.color;
       const mob = isMobile();
       const titlePx = Math.round(size * (mob ? (isFocus ? 0.20 : 0.22) : (isFocus ? 0.22 : isParent ? 0.25 : 0.235)));
       const pillPx = mob ? 11 : (isFocus ? 14 : 13);
@@ -999,40 +1375,64 @@
       const maxLabelW = mob ? (isFocus ? 150 : 116) : (isFocus ? 210 : 165);
       const iconPx = Math.round(size * 0.45);
 
-      const moons = hasMoons ? kids.slice(0, 10).map((cid, i, arr) => {
+      const childMoons = (kind === "child" && kids.length > 0) ? kids.slice(0, 10).map((cid, i, arr) => {
         const a = ((-90 + i * (360 / arr.length)) * Math.PI) / 180;
         const mh = healthHex(computeHealth(P(cid)));
         return `<circle cx="${c + Math.cos(a) * (r + 11)}" cy="${c + Math.sin(a) * (r + 11)}" r="4" fill="${mh}" style="filter:drop-shadow(0 0 5px ${mh})"><title>${esc(P(cid).name)}</title></circle>`;
       }).join("") : "";
+
+      const companionMoonSVG = (!isParent && mc.stage > 0) ? (() => {
+        const ma = (-42 * Math.PI) / 180;
+        const mx = c + Math.cos(ma) * (r + 12), my = c + Math.sin(ma) * (r + 12);
+        return `
+          <circle cx="${c}" cy="${c}" r="${r + 12}" fill="none" stroke="${mc.color}33" stroke-width="1" stroke-dasharray="2 5"/>
+          ${mc.stage >= 3 ? `<ellipse cx="${mx}" cy="${my}" rx="9" ry="3.2" fill="none" stroke="${mc.color}" stroke-width="1.3" transform="rotate(-22 ${mx} ${my})"/>` : ""}
+          <circle cx="${mx}" cy="${my}" r="${mc.stage >= 2 ? 5.2 : 4.2}" fill="${mc.color}" style="filter:drop-shadow(0 0 8px ${mc.color})">
+            <title>${esc(mc.name)} (Streak Companion)</title>
+          </circle>
+        `;
+      })() : "";
+
+      const tetherRingSVG = isTethered ? `
+        <circle class="arc-animated" cx="${c}" cy="${c}" r="${r + 6}" fill="none" stroke="#E5A93C" stroke-width="1.6" stroke-dasharray="6 8" style="filter:drop-shadow(0 0 6px rgba(229,169,60,0.6))"/>
+      ` : "";
+
+      const auraRingSVG = skin.ringDash ? `
+        <circle class="arc-animated" cx="${c}" cy="${c}" r="${r + (isFocus ? 14 : 10)}" fill="none" stroke="${skin.glow}" stroke-width="1.5" stroke-dasharray="${skin.ringDash}" style="filter:drop-shadow(0 0 8px ${skin.glow})"/>
+      ` : "";
 
       const wrapper = document.createElement("div");
       wrapper.className = "absolute left-0 top-0 pointer-events-auto cursor-pointer will-change-transform";
       if (isFocus) wrapper.style.zIndex = "3";
       wrapper.innerHTML = `
         <div class="node-inner relative flex items-center justify-center transition-transform duration-200 ${isFocus ? "hover:scale-[1.03] pill-always" : "hover:scale-110"} ${isParent ? "pill-always" : ""}" style="width:${size}px;height:${size}px;">
-          <div class="absolute rounded-full pointer-events-none" style="width:${size * 1.85}px;height:${size * 1.85}px;top:${-size * 0.425}px;left:${-size * 0.425}px;background:radial-gradient(circle, ${pl.color}55 0%, transparent 70%);"></div>
+          <div class="absolute rounded-full pointer-events-none" style="width:${size * 1.95}px;height:${size * 1.95}px;top:${-size * 0.475}px;left:${-size * 0.475}px;background:radial-gradient(circle, ${auraColor}58 0%, transparent 70%);"></div>
           ${kind === "child" ? `<div class="reticle-wrap absolute pointer-events-none" style="inset:${-pad - 4}px;display:none"><div class="reticle w-full h-full rounded-full border border-dashed border-amber-300/60"></div></div>` : ""}
           <svg class="absolute pointer-events-none overflow-visible" width="${svgDim}" height="${svgDim}" style="top:${-pad}px;left:${-pad}px;">
             ${isFocus ? `<circle cx="${c}" cy="${c}" r="${r + 8}" fill="none" stroke="rgba(45,212,191,0.18)" stroke-dasharray="3 7"/>` : ""}
+            ${auraRingSVG}
+            ${tetherRingSVG}
             <circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="${sw}"/>
             <circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${hex}" stroke-width="${sw}"
                     stroke-dasharray="${filled} ${circ - filled}" stroke-dashoffset="${circ / 4}" stroke-linecap="round"
                     style="filter:drop-shadow(0 0 6px ${hex}88)"/>
             ${strained ? `<circle class="strain-pulse" cx="${c}" cy="${c}" r="${r}" fill="none" stroke="#EF4444" stroke-width="${sw + 0.8}" stroke-dasharray="${circ * 0.12 * strainCount(pl)} ${circ}" stroke-dashoffset="${-circ * 0.1}" stroke-linecap="round" style="filter:drop-shadow(0 0 8px #EF4444)"/>` : ""}
-            ${moons}
+            ${childMoons}
+            ${companionMoonSVG}
           </svg>
           <div class="planet-disc w-full h-full rounded-full inline-flex items-center justify-center leading-none select-none text-white"
-               style="color:#F8FAFC;background:radial-gradient(circle at 32% 28%, ${pl.color}ee, ${pl.color} 70%, #0D0F0E 140%);box-shadow:0 0 24px ${pl.color}66, inset 0 2px 4px rgba(255,255,255,0.25), inset 0 -3px 6px rgba(0,0,0,0.4);">
+               style="color:#F8FAFC;background:radial-gradient(circle at 32% 28%, ${pl.color}ee, ${pl.color} 70%, #0D0F0E 140%);box-shadow:0 0 26px ${auraColor}77, inset 0 2px 4px rgba(255,255,255,0.25), inset 0 -3px 6px rgba(0,0,0,0.4);">
             ${renderNodeIcon(pl.icon, iconPx)}
           </div>
           <div class="node-label absolute top-full flex flex-col items-center pointer-events-none left-1/2 -translate-x-1/2 whitespace-nowrap z-30" style="margin-top:${labelMarginTop}px">
             <span class="font-fraunces text-white truncate leading-snug px-2 py-0.5 rounded-md bg-[#0D0F0E]/75 backdrop-blur-[2px] tracking-wide" style="max-width:${maxLabelW}px;font-size:${titlePx}px;font-weight:${isFocus ? 600 : 500};text-shadow:0 2px 12px #000, 0 0 4px #000;">
-              ${isParent ? "← " : ""}${esc(pl.name)}
+              ${isParent ? "← " : ""}${isTethered ? "🔗 " : ""}${esc(pl.name)}
             </span>
-            <div class="node-pill mt-0.5 flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#0B0E0F]/95 border border-white/15 font-medium shadow-[0_4px_14px_rgba(0,0,0,0.65)]" style="font-size:${pillPx}px">
+            <div class="node-pill mt-0.5 flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#0B0E0F]/95 border ${isTethered ? "border-amber-400/45" : "border-white/15"} font-medium shadow-[0_4px_14px_rgba(0,0,0,0.65)]" style="font-size:${pillPx}px">
               <span class="font-semibold" style="color:${hex}">${score}%</span>
               <span class="text-slate-400">·</span>
               <span class="text-amber-300 font-semibold">Lv ${Math.floor(lvl)}</span>
+              ${mc.stage > 0 ? `<span class="text-slate-400">·</span><span title="${esc(mc.name)}">${mc.icon}</span>` : ""}
               ${kids.length && !isFocus ? `<span class="text-slate-400">·</span><span class="text-teal-300">${kids.length} in orbit</span>` : ""}
             </div>
           </div>
@@ -1201,13 +1601,16 @@
       };
     }
 
-    function taskRow(x, mobile, showPlanet = true) {
+    function taskRow(x, mobile, showPlanet = true, reasonBadge = "") {
       const { t, p } = x;
       const cb = mobile ? "w-7 h-7 text-sm" : "w-6 h-6 text-xs";
       const btn = mobile ? "w-9 h-9 text-sm" : "w-8 h-8 text-sm";
       const cycledToday = t.recur && Array.isArray(t.history) && t.history[0] && isoOf(t.history[0].at) === todayISO();
       const recurBadge = t.recur ? `<span class="px-2 py-0.5 rounded-full bg-teal-400/15 border border-teal-400/35 text-teal-200 font-medium">${RECUR_LABEL[t.recur] || "↻ Repeat"}${t.streak ? ` · 🔥 ${t.streak}` : ""}</span><span aria-hidden="true" class="text-slate-500">·</span>` : "";
       const cycledBadge = cycledToday ? `<span class="px-2 py-0.5 rounded-full bg-emerald-400/15 border border-emerald-400/40 text-emerald-300 font-medium">✓ Cycled today</span><span aria-hidden="true" class="text-slate-500">·</span>` : "";
+      const attrWho = t.done && t.completedBy ? `✓ ${t.completedBy}` : (t.createdBy ? `by ${t.createdBy}` : "");
+      const attrBadge = (p.tetherCode && attrWho) ? `<span class="px-2 py-0.5 rounded-full bg-amber-400/15 border border-amber-400/35 text-amber-200 font-medium">${esc(attrWho)}</span><span aria-hidden="true" class="text-slate-500">·</span>` : "";
+      const reasonHTML = reasonBadge ? `<span class="px-2 py-0.5 rounded-full bg-amber-400/15 border border-amber-400/35 text-amber-200 font-medium">${reasonBadge}</span><span aria-hidden="true" class="text-slate-500">·</span>` : "";
       return `
         <div class="group flex items-center gap-3.5 ${mobile ? "p-3.5" : "p-3.5"} rounded-xl bg-white/[0.035] border ${cycledToday ? "border-teal-400/35" : "border-white/10"} hover:border-teal-400/35 transition-colors ${t.done ? "opacity-55" : ""}">
           <button data-act="toggle" data-pid="${p.id}" data-tid="${t.id}" title="${t.recur ? "Complete cycle & advance due date" : t.done ? "Reopen task" : "Complete task"}"
@@ -1216,6 +1619,8 @@
             <p class="${mobile ? "text-base" : "text-[15px] xl:text-base"} font-medium text-slate-100 leading-snug line-clamp-2 break-words [overflow-wrap:anywhere] ${t.done ? "line-through text-slate-400" : ""}" title="${esc(t.title)}">${esc(t.title)}</p>
             <div class="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs leading-none text-slate-300">
               ${showPlanet ? `<span style="color:${p.color}" class="brightness-150 font-medium inline-flex items-center gap-1">${renderNodeIcon(p.icon, 13)} <span>${esc(p.name)}</span></span><span aria-hidden="true" class="text-slate-500">·</span>` : ""}
+              ${reasonHTML}
+              ${attrBadge}
               ${recurBadge}
               ${cycledBadge}
               <span class="text-amber-300/90 tracking-[0.12em]" title="Difficulty ${t.diff}">${"◆".repeat(t.diff)}<span class="text-slate-500">${"◆".repeat(5 - t.diff)}</span></span>
@@ -1236,15 +1641,24 @@
 
     function missionsHTML(tid, mobile) {
       const g = taskGroups(tid);
+      const triageBanner = g.overdue.length >= 2 ? `
+        <div class="p-3 rounded-xl bg-red-500/10 border border-red-400/35 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <span class="text-red-200 font-medium">⚠ ${g.overdue.length} overdue tasks creating orbital drag</span>
+          <div class="flex items-center gap-1.5">
+            <button data-act="triage-overdue" data-id="${tid || ""}" data-days="0" class="px-2.5 py-1 rounded-lg bg-amber-400/20 hover:bg-amber-400/30 border border-amber-400/45 text-amber-200 font-semibold cursor-pointer">Move to Today</button>
+            <button data-act="triage-overdue" data-id="${tid || ""}" data-days="1" class="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/15 text-slate-200 cursor-pointer">Tomorrow</button>
+          </div>
+        </div>` : "";
       const sec = (title, cls, arr, showPlanet) => arr.length ? `
         <div class="space-y-2.5">
           <p class="text-xs font-semibold uppercase tracking-wider ${cls}">${title} · ${arr.length}</p>
           ${arr.map(x => taskRow(x, mobile, showPlanet)).join("")}
         </div>` : "";
-      let html = sec("⚠ Overdue", "text-red-300", g.overdue, true)
+      let html = triageBanner
+        + sec("⚠ Overdue", "text-red-300", g.overdue, true)
         + sec("Here", "text-teal-300", g.here, false)
         + sec("In orbit", "text-slate-300", g.orbit, true);
-      if (!g.openCount) html += `<div class="p-6 rounded-xl border border-dashed border-white/15 text-center text-sm text-slate-300">All clear in this sector ✦<br><span class="text-slate-400 text-xs">Add a task to keep momentum up.</span></div>`;
+      if (!g.openCount) html += `<div class="p-6 rounded-xl border border-dashed border-white/15 text-center text-sm text-slate-300">All clear in this sector ✦<br><span class="text-slate-400 text-xs">Add a task or press ⌘K to quick-add.</span></div>`;
       if (g.done.length) html += `
         <div>
           <button data-act="toggle-completed" class="w-full flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-slate-400 hover:text-slate-200 py-1.5 cursor-pointer">
@@ -1266,7 +1680,7 @@
           ${chip("fin", "$ Financial strain", target.strain.fin)}
           ${chip("psy", "🧠 Psyche strain", target.strain.psy)}
         </div>
-        ${n ? `<p class="mt-2.5 text-xs leading-snug text-amber-200/90">High gravity · tasks here earn <b>${100 + 25 * n}% XP</b>. ${need ? `${need} more win${need > 1 ? "s" : ""} today neutralise the drag.` : "Drag neutralised for today ✓"}</p>` : ""}`;
+        ${n ? `<p class="mt-2.5 text-xs leading-snug text-amber-200/90">High gravity · tasks here earn <b>${100 + 25 * n}% XP</b> (Diff 4–5 trigger ⚡ Breakthrough). ${need ? `${need} more win${need > 1 ? "s" : ""} today neutralise drag.` : "Drag neutralised for today ✓"}</p>` : ""}`;
     }
 
     function notesHTML(id, mobile) {
@@ -1281,7 +1695,7 @@
           <div class="p-3.5 rounded-xl bg-white/[0.035] border border-white/10">
             <p class="text-sm xl:text-base text-slate-100 whitespace-pre-wrap leading-snug">${esc(nt.text)}</p>
             <div class="mt-2 flex items-center justify-between text-xs text-slate-400">
-              <span>${new Date(nt.at).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}</span>
+              <span>${nt.by ? `${esc(nt.by)} · ` : ""}${new Date(nt.at).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}</span>
               <button data-act="del-note" data-id="${id || ""}" data-nid="${nt.id}" class="hover:text-red-300 cursor-pointer">Delete</button>
             </div>
           </div>`).join("") : `<p class="text-sm text-slate-400 text-center py-4">No notes yet.</p>`}`;
@@ -1301,11 +1715,11 @@
           </div>`).join("")}</div>`;
     }
 
-    function gaugeSVG(score, size = 72, stroke = 5.5) {
+    function gaugeSVG(score, size = 72, stroke = 5.5, pid = "") {
       const hex = healthHex(score), r = size / 2 - stroke, c = 2 * Math.PI * r;
       const compact = size < 58;
       return `
-        <div class="relative flex-shrink-0 flex items-center justify-center" style="width:${size}px;height:${size}px" title="Health ${score}%" aria-label="Health ${score}%">
+        <button data-act="open-cosmetics" data-id="${pid || ""}" class="relative flex-shrink-0 flex items-center justify-center cursor-pointer hover:scale-105 transition-transform" style="width:${size}px;height:${size}px" title="Click for Health math breakdown, Moon companion & Cosmic Auras" aria-label="Health ${score}%">
           <svg width="${size}" height="${size}" class="-rotate-90">
             <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="${stroke}"/>
             <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${hex}" stroke-width="${stroke}" stroke-linecap="round"
@@ -1315,7 +1729,206 @@
             <span class="font-bold" style="color:${hex};font-size:${Math.round(size * (compact ? 0.31 : 0.29))}px">${score}</span>
             ${compact ? "" : `<span class="text-[9px] uppercase tracking-[0.14em] text-slate-300 mt-0.5 font-medium">health</span>`}
           </div>
-        </div>`;
+        </button>`;
+    }
+
+    function curatedTodayData() {
+      const today = todayISO();
+      const all = descendants(null).flatMap(id => P(id).tasks.map(t => ({ t, p: P(id) })));
+      const open = all.filter(x => !x.t.done);
+      const doneToday = all.filter(x => (x.t.done && x.t.doneAt && isoOf(x.t.doneAt) === today) || (Array.isArray(x.t.history) && x.t.history.some(h => isoOf(h.at) === today)));
+      const xpToday = all.reduce((a, x) => {
+        let sum = (x.t.done && x.t.doneAt && isoOf(x.t.doneAt) === today) ? (x.t.xpAwarded || 0) : 0;
+        if (Array.isArray(x.t.history)) sum += x.t.history.filter(h => isoOf(h.at) === today).reduce((s, h) => s + (h.xp || 0), 0);
+        return a + sum;
+      }, 0);
+      const overdue = open.filter(x => x.t.due && x.t.due < today);
+      const dueToday = open.filter(x => x.t.due === today);
+      const scored = open.map(x => {
+        let pts = x.t.diff * 3;
+        let reason = "🎯 High Impact";
+        const pHealth = computeHealth(x.p);
+        const strains = strainCount(x.p);
+        if (x.t.due && x.t.due < today) {
+          pts += 60;
+          reason = "⚠ Overdue (+15% Health)";
+        } else if (x.t.due === today) {
+          pts += 42;
+          reason = "📅 Due Today";
+        } else if (strains > 0) {
+          pts += 28;
+          reason = `⚡ High Gravity (+${25 * strains}% XP)`;
+        } else if (pHealth < 70) {
+          pts += 22;
+          reason = `🩹 Neglect Rescue (${pHealth}%)`;
+        } else if ((x.t.streak || 0) >= 2) {
+          pts += 18;
+          reason = `🔥 Protect ${x.t.streak}d Streak`;
+        }
+        return { ...x, pts, reason };
+      }).sort((a, b) => b.pts - a.pts);
+
+      return {
+        priority: scored.slice(0, 5),
+        overdue,
+        dueToday,
+        open,
+        doneToday,
+        xpToday,
+      };
+    }
+
+    function weeklyConstellationHTML() {
+      const now = new Date();
+      const dayOfWeek = (now.getDay() + 6) % 7; // 0 = Mon .. 6 = Sun
+      const mondayMs = now.getTime() - dayOfWeek * DAY;
+      const dayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+      const allTasks = descendants(null).flatMap(id => P(id).tasks);
+      const activeDates = new Set();
+      for (const t of allTasks) {
+        if (t.done && t.doneAt) activeDates.add(isoOf(t.doneAt));
+        if (Array.isArray(t.history)) t.history.forEach(h => { if (h.at) activeDates.add(isoOf(h.at)); });
+      }
+      const coords = [
+        { x: 38,  y: 66 },
+        { x: 92,  y: 34 },
+        { x: 148, y: 58 },
+        { x: 204, y: 26 },
+        { x: 260, y: 52 },
+        { x: 314, y: 28 },
+        { x: 368, y: 46 },
+      ];
+      const days = dayLabels.map((lbl, i) => {
+        const iso = isoOf(mondayMs + i * DAY);
+        const lit = activeDates.has(iso);
+        const isToday = iso === todayISO();
+        return { lbl, iso, lit, isToday, ...coords[i] };
+      });
+      const litDays = days.filter(d => d.lit);
+      const names = [
+        "Uncharted Void (Complete a mission to spark your first star)",
+        "The Lone Spark ✦",
+        "The Binary Twin ✦✦",
+        "The Voyager's Trident",
+        "The Celestial Compass",
+        "The Northern Crown",
+        "The Astral Anchor",
+        "The Phoenix Ascendant 👑",
+      ];
+      const constName = names[Math.min(7, litDays.length)];
+      let linesSVG = "";
+      for (let i = 1; i < days.length; i++) {
+        const prev = days[i - 1], curr = days[i];
+        if (prev.lit && curr.lit) {
+          linesSVG += `<line x1="${prev.x}" y1="${prev.y}" x2="${curr.x}" y2="${curr.y}" stroke="#E5A93C" stroke-width="2" style="filter:drop-shadow(0 0 6px #E5A93C)"/>`;
+        } else {
+          linesSVG += `<line x1="${prev.x}" y1="${prev.y}" x2="${curr.x}" y2="${curr.y}" stroke="rgba(255,255,255,0.12)" stroke-width="1.2" stroke-dasharray="3 4"/>`;
+        }
+      }
+      const starsSVG = days.map(d => `
+        <g>
+          ${d.lit ? `<circle cx="${d.x}" cy="${d.y}" r="11" fill="rgba(229,169,60,0.18)"/>` : ""}
+          <circle cx="${d.x}" cy="${d.y}" r="${d.lit ? 5.5 : 3.5}" fill="${d.lit ? "#E5A93C" : (d.isToday ? "#2DD4BF" : "rgba(255,255,255,0.22)")}" style="${d.lit ? "filter:drop-shadow(0 0 8px #E5A93C)" : ""}"/>
+          <text x="${d.x}" y="92" text-anchor="middle" fill="${d.isToday ? "#2DD4BF" : (d.lit ? "#FDE68A" : "#94A3B8")}" font-size="10" font-weight="${d.isToday || d.lit ? "600" : "400"}">${d.lbl}</text>
+        </g>
+      `).join("");
+
+      return `
+        <div class="p-4 rounded-2xl bg-[#0B0E0F]/90 border border-teal-400/25">
+          <div class="flex items-center justify-between gap-2 mb-2">
+            <div>
+              <p class="text-[11px] uppercase tracking-wider text-amber-300 font-semibold">Weekly Streak Constellation</p>
+              <p class="font-fraunces text-base text-white">${constName}</p>
+            </div>
+            <span class="px-2.5 py-1 rounded-full bg-amber-400/15 border border-amber-400/35 text-xs font-semibold text-amber-200">${litDays.length} / 7 days lit</span>
+          </div>
+          <svg viewBox="0 0 406 102" class="w-full h-24 overflow-visible">
+            ${linesSVG}
+            ${starsSVG}
+          </svg>
+        </div>
+      `;
+    }
+
+    function todayFocusContentHTML(mobile) {
+      const td = curatedTodayData();
+      const triageBar = td.overdue.length ? `
+        <div class="p-3.5 rounded-xl bg-red-500/10 border border-red-400/35 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <div>
+            <p class="text-red-200 font-semibold">⚠ ${td.overdue.length} Overdue Mission${td.overdue.length > 1 ? "s" : ""} Across Your Solar System</p>
+            <p class="text-slate-300 mt-0.5">Triage them in one click to restore orbital health.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button data-act="triage-overdue" data-id="" data-days="0" class="px-3 py-1.5 rounded-full bg-amber-400/20 hover:bg-amber-400/30 border border-amber-400/50 text-amber-200 font-semibold cursor-pointer">Move All to Today</button>
+            <button data-act="triage-overdue" data-id="" data-days="1" class="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/15 text-slate-200 cursor-pointer">Snooze to Tomorrow</button>
+          </div>
+        </div>` : "";
+
+      return `
+        <div class="space-y-4">
+          <div class="p-4 rounded-2xl bg-gradient-to-br from-amber-500/10 via-teal-500/5 to-transparent border border-amber-400/30 flex items-center justify-between gap-4">
+            <div>
+              <p class="text-xs uppercase tracking-wider text-amber-300 font-semibold">⚡ What should I do right now?</p>
+              <h3 class="font-fraunces text-xl sm:text-2xl font-semibold text-white mt-0.5">Today's Priority Queue</h3>
+              <p class="text-xs text-slate-300 mt-1">Auto-ranked by urgency, overdue recovery, high-gravity strain, and streak protection.</p>
+            </div>
+            <button data-act="open-cmd" class="px-3.5 py-2 rounded-full text-xs font-semibold text-[#0D0F0E] shrink-0 cursor-pointer shadow-md" style="background:var(--gold)">+ Quick Add</button>
+          </div>
+          ${triageBar}
+          ${td.priority.length ? `
+            <div class="space-y-2.5">
+              ${td.priority.map(x => taskRow(x, mobile, true, x.reason)).join("")}
+            </div>
+          ` : `
+            <div class="p-8 rounded-2xl border border-dashed border-teal-400/30 text-center space-y-2">
+              <p class="text-2xl">✦</p>
+              <p class="font-fraunces text-lg text-white">All priority orbits are clear!</p>
+              <p class="text-xs text-slate-300">You have completed ${td.doneToday.length} mission${td.doneToday.length === 1 ? "" : "s"} today (+${td.xpToday} XP).</p>
+            </div>
+          `}
+        </div>
+      `;
+    }
+
+    function checkinContentHTML(mobile) {
+      const td = curatedTodayData();
+      const ul = levelInfo(universeXP());
+      const reflId = mobile ? "inputReflectMob" : "inputReflectDesk";
+      const sec = (title, cls, arr) => arr.length ? `<div class="space-y-2"><p class="text-xs font-semibold uppercase tracking-wider ${cls}">${title} · ${arr.length}</p>${arr.map(x => taskRow(x, mobile, true)).join("")}</div>` : "";
+      return `
+        <div class="space-y-4">
+          <div class="p-4 rounded-2xl bg-white/[0.03] border border-white/10">
+            <div class="flex items-center justify-between gap-2">
+              <div>
+                <p class="text-xs uppercase tracking-wider text-teal-400 font-semibold">Daily Celestial Check-in</p>
+                <h3 class="font-fraunces text-xl sm:text-2xl font-semibold text-white mt-0.5">${new Date().toLocaleDateString([], { weekday: "long", month: "short", day: "numeric" })}</h3>
+              </div>
+              <button data-act="toggle-push" class="px-3 py-1.5 rounded-full text-xs font-medium border ${STATE.pushEnabled ? "border-teal-400/45 bg-teal-400/15 text-teal-200" : "border-white/15 bg-white/5 text-slate-300"} cursor-pointer">${STATE.pushEnabled ? "🔔 Reminder ON" : "🔕 Remind Me"}</button>
+            </div>
+            <div class="mt-3.5 grid grid-cols-3 gap-2.5 text-center">
+              <div class="rounded-xl bg-white/[0.04] border border-white/10 py-2.5"><p class="text-xl font-semibold text-teal-300">${td.doneToday.length}</p><p class="text-[10px] uppercase tracking-wider text-slate-300">done today</p></div>
+              <div class="rounded-xl bg-white/[0.04] border border-white/10 py-2.5"><p class="text-xl font-semibold text-amber-300">+${td.xpToday}</p><p class="text-[10px] uppercase tracking-wider text-slate-300">xp earned</p></div>
+              <div class="rounded-xl bg-white/[0.04] border border-white/10 py-2.5"><p class="text-xl font-semibold" style="color:${healthHex(computeHealth(null))}">${computeHealth(null)}%</p><p class="text-[10px] uppercase tracking-wider text-slate-300">life health</p></div>
+            </div>
+            <p class="mt-3 text-xs text-slate-300">Life Lv ${ul.whole} · ${ul.toNext} XP to Lv ${ul.whole + 1}</p>
+            <div class="mt-1.5 h-1.5 rounded-full bg-white/10 overflow-hidden"><div class="h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-300" style="width:${Math.max(ul.pct, 2)}%"></div></div>
+          </div>
+
+          ${weeklyConstellationHTML()}
+
+          <div class="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2.5">
+            <p class="text-xs font-semibold uppercase tracking-wider text-amber-300">✨ Evening Reflection Journal</p>
+            <textarea id="${reflId}" rows="2" placeholder="What gave you energy today, or what deserves your focus tomorrow?" class="w-full bg-white/5 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-slate-100 focus:outline-none focus:border-teal-400 resize-none"></textarea>
+            <div class="flex justify-end">
+              <button data-act="save-reflection" data-input="${reflId}" class="px-4 py-1.5 rounded-full text-xs font-semibold text-[#0D0F0E] cursor-pointer hover:brightness-110" style="background:var(--gold)">Save Reflection to Life Journal</button>
+            </div>
+          </div>
+
+          ${sec("⚠ Overdue", "text-red-300", td.overdue)}
+          ${sec("Due Today", "text-amber-300", td.dueToday)}
+          ${td.doneToday.length ? sec("Completed / Cycled Today", "text-teal-300", td.doneToday) : ""}
+        </div>
+      `;
     }
 
     // =========================================================================
@@ -1340,12 +1953,20 @@
           <button data-act="dive" data-id="${item.id ?? ""}" class="truncate max-w-[96px] min-w-0 px-1.5 py-0.5 rounded text-xs cursor-pointer ${idx === lastTwo.length - 1 ? "text-teal-200 font-semibold" : "text-slate-300"}">${esc(item.name)}</button>
         `).join("");
       }
+      const themeIcon = (SOUND_THEMES[STATE.soundTheme || "crystal"] || SOUND_THEMES.crystal).icon;
       const btnSound = document.getElementById("btnSoundToggle");
-      if (btnSound) btnSound.textContent = STATE.soundOn ? "🔊 Audio On" : "🔇 Muted";
+      if (btnSound) btnSound.textContent = STATE.soundOn ? `🔊 ${themeIcon}` : "🔇";
       const mobSound = document.getElementById("mobBtnSound");
       if (mobSound) mobSound.textContent = STATE.soundOn ? "🔊" : "🔇";
       const comp = document.getElementById("compassFocusName");
       if (comp) comp.textContent = fp ? fp.name : rootName;
+      const badgeToday = document.getElementById("badgeTodayCount");
+      if (badgeToday) {
+        const td = curatedTodayData();
+        badgeToday.textContent = String(td.priority.length);
+      }
+      const lblPush = document.getElementById("lblPushMenu");
+      if (lblPush) lblPush.textContent = STATE.pushEnabled ? "Push Reminder: ON ✓" : "Enable Daily Push Reminder";
     }
 
     function renderHUD() {
@@ -1356,20 +1977,37 @@
       const inspecting = !!selectedId && !!target;
       const score = computeHealth(target);
       const li = levelInfo(xpOf(target));
+      const mc = moonCompanion(target);
       const kids = childIds(tid);
       const g = taskGroups(tid);
       const parentName = target ? (P(target.parentId)?.name || "Life") : "";
       const subtitle = inspecting ? `Inspecting · orbiting ${esc(parentName)}` : target ? `Focused · orbiting ${esc(parentName)}` : "Solar system core · overview";
       const notesCount = (ownerOf(tid)?.notes || []).length;
 
+      const tetherBtn = tid ? `<button data-act="open-tether" data-id="${tid}" title="Tether / Share planet with partner" class="w-9 h-9 rounded-full ${target?.tetherCode ? "bg-amber-400/20 border-amber-400/50 text-amber-200" : "bg-white/5 border-white/15 text-slate-200 hover:text-teal-300"} border text-sm cursor-pointer transition-colors">🔗</button>` : "";
+      const cosmeticsBtn = `<button data-act="open-cosmetics" data-id="${tid || ""}" title="Planet Health math, Moon companion & Cosmic Auras" class="w-9 h-9 rounded-full bg-white/5 hover:bg-amber-400/20 border border-white/15 text-sm cursor-pointer transition-colors">${mc.icon}</button>`;
+
       const actions = inspecting
         ? `<button data-act="dive" data-id="${tid}" class="px-3.5 py-1.5 rounded-full text-xs xl:text-sm font-semibold text-[#0D0F0E] cursor-pointer hover:scale-105 transition-transform" style="background:var(--gold)">Dive in →</button>
+           ${tetherBtn}${cosmeticsBtn}
            <button data-act="edit-planet" data-id="${tid}" title="Customize or delete planet" class="w-9 h-9 rounded-full bg-white/5 hover:bg-teal-400/20 border border-white/15 hover:border-teal-400/45 text-slate-200 hover:text-teal-300 text-sm cursor-pointer transition-colors">✎</button>
            <button data-act="clear-select" title="Close inspector" class="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 border border-white/15 text-slate-200 text-sm cursor-pointer">✕</button>`
         : target
-        ? `<button data-act="edit-planet" data-id="${tid}" title="Customize or delete planet" class="w-9 h-9 rounded-full bg-white/5 hover:bg-teal-400/20 border border-white/15 hover:border-teal-400/45 text-slate-200 hover:text-teal-300 text-sm cursor-pointer transition-colors">✎</button>
+        ? `${tetherBtn}${cosmeticsBtn}
+           <button data-act="edit-planet" data-id="${tid}" title="Customize or delete planet" class="w-9 h-9 rounded-full bg-white/5 hover:bg-teal-400/20 border border-white/15 hover:border-teal-400/45 text-slate-200 hover:text-teal-300 text-sm cursor-pointer transition-colors">✎</button>
            <button data-act="dive" data-id="${target.parentId || ""}" class="px-3.5 py-1.5 rounded-full bg-white/5 hover:bg-teal-400/15 border border-white/15 text-xs xl:text-sm text-slate-200 hover:text-teal-300 cursor-pointer font-medium">← Back</button>`
-        : `<button data-act="edit-planet" data-id="" title="Customize core (name, color, emoji)" class="w-9 h-9 rounded-full bg-white/5 hover:bg-teal-400/20 border border-white/15 hover:border-teal-400/45 text-slate-200 hover:text-teal-300 text-sm cursor-pointer transition-colors">✎</button>`;
+        : `<button data-act="open-tether" data-id="" title="Join a partner's tethered planet" class="w-9 h-9 rounded-full bg-white/5 hover:bg-teal-400/20 border border-white/15 text-sm cursor-pointer">🔗</button>
+           ${cosmeticsBtn}
+           <button data-act="edit-planet" data-id="" title="Customize core (name, color, emoji)" class="w-9 h-9 rounded-full bg-white/5 hover:bg-teal-400/20 border border-white/15 hover:border-teal-400/45 text-slate-200 hover:text-teal-300 text-sm cursor-pointer transition-colors">✎</button>`;
+
+      const tetherBanner = (target && target.tetherCode) ? `
+        <div class="px-5 py-2.5 bg-amber-400/[0.08] border-b border-amber-400/25 flex items-center justify-between gap-2 text-xs">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="text-amber-300">🔗</span>
+            <span class="text-amber-100 font-medium truncate">Co-Orbit <code class="text-amber-300 font-semibold">${esc(target.tetherCode)}</code> · ${canEditPlanet(target) ? "🛸 Co-Pilot" : "🔭 Observer (Read-Only)"}</span>
+          </div>
+          <button data-act="open-tether" data-id="${target.id}" class="px-2.5 py-0.5 rounded-full bg-amber-400/20 border border-amber-400/40 text-amber-200 font-semibold cursor-pointer shrink-0">Manage</button>
+        </div>` : "";
 
       const tab = (key, label) => `<button data-act="tab" data-tab="${key}" class="flex-1 min-w-0 h-8 px-2.5 rounded-full text-xs xl:text-[13px] font-medium whitespace-nowrap transition-all cursor-pointer ${hudTab === key ? "bg-teal-400/15 border border-teal-400/45 text-teal-200 font-semibold" : "text-slate-300 hover:text-white border border-transparent"}">${label}</button>`;
 
@@ -1382,14 +2020,18 @@
           </div>
           <div class="flex items-center gap-1.5 shrink-0">${actions}</div>
         </div>
+        ${tetherBanner}
 
         <div class="px-5 py-4 border-b border-teal-400/15">
           <div class="flex items-center gap-4">
-            ${gaugeSVG(score)}
+            ${gaugeSVG(score, 72, 5.5, tid || "")}
             <div class="flex-1 min-w-0">
-              <div class="flex items-baseline justify-between">
-                <span class="text-2xl font-semibold text-amber-300 leading-none">Lv ${li.whole}</span>
-                <span class="text-xs text-slate-300 font-medium">${li.toNext} XP to Lv ${li.whole + 1}</span>
+              <div class="flex items-baseline justify-between gap-2">
+                <div class="flex items-center gap-2">
+                  <span class="text-2xl font-semibold text-amber-300 leading-none">Lv ${li.whole}</span>
+                  <button data-act="open-cosmetics" data-id="${tid || ""}" class="px-2 py-0.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/15 text-[11px] text-slate-200 cursor-pointer" title="${esc(mc.desc)}">${mc.icon} ${esc(mc.name)}</button>
+                </div>
+                <span class="text-xs text-slate-300 font-medium shrink-0">${li.toNext} XP to Lv ${li.whole + 1}</span>
               </div>
               <div class="mt-2.5 h-2 rounded-full bg-white/10 overflow-hidden shadow-[inset_0_1px_2px_rgba(0,0,0,.5)]">
                 <div class="h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-300 transition-all duration-700" style="width:${Math.max(li.pct, 2)}%"></div>
@@ -1435,6 +2077,7 @@
     // =========================================================================
     // 9. Mobile renderer: Multi-view Glassmorphism Mobile Experience
     // =========================================================================
+    let mobCheckinSubTab = "today"; // "today" | "checkin"
     function renderMobile() {
       const root = document.getElementById("mobileView");
       if (!isMobile()) { root.innerHTML = ""; root.className = "mob-only hidden"; return; }
@@ -1454,8 +2097,8 @@
         const node = target || lifeNode();
         const score = computeHealth(target);
         const li = levelInfo(xpOf(target));
+        const mc = moonCompanion(target);
         const g = taskGroups(tid);
-        const kids = childIds(tid);
         const isPeek = mobSheetSnap === "peek";
 
         const previewLimit = window.innerHeight < 730 ? 1 : 2;
@@ -1473,17 +2116,19 @@
             <button data-act="toggle-sheet" class="w-full py-1 -mt-1 mb-1.5 flex items-center justify-center cursor-pointer" title="${isPeek ? "Expand sector sheet" : "Collapse to peek"}">
               <span class="w-10 h-1 rounded-full bg-white/25"></span>
             </button>
-            <div class="flex items-center gap-3 min-w-0">
+            <div class="flex items-center gap-2.5 min-w-0">
               <button data-act="edit-planet" data-id="${target ? target.id : ""}" title="Customize planet" class="w-11 h-11 rounded-full inline-flex items-center justify-center leading-none select-none text-white flex-shrink-0 cursor-pointer shadow-lg" style="background:radial-gradient(circle at 32% 28%, ${node.color}ee, ${node.color} 70%, #0D0F0E 140%);box-shadow:0 0 20px ${node.color}77">${renderNodeIcon(node.icon, 20)}</button>
               <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 min-w-0">
+                <div class="flex items-center gap-1.5 min-w-0">
                   <h3 class="font-fraunces text-xl font-semibold text-white truncate leading-tight [font-variation-settings:'opsz'_48]">${esc(node.name)}</h3>
-                  ${g.overdueCount ? `<span class="px-2 py-0.5 rounded-full bg-red-500/20 border border-red-500/35 text-[10px] text-red-200 font-semibold shrink-0">⚠ ${g.overdueCount} overdue</span>` : ""}
+                  ${target?.tetherCode ? `<span class="px-1.5 py-0.5 rounded-full bg-amber-400/20 border border-amber-400/40 text-[10px] text-amber-200 font-semibold shrink-0">🔗</span>` : ""}
+                  ${g.overdueCount ? `<span class="px-2 py-0.5 rounded-full bg-red-500/20 border border-red-500/35 text-[10px] text-red-200 font-semibold shrink-0">⚠ ${g.overdueCount}</span>` : ""}
                 </div>
-                <p class="mt-0.5 text-xs text-slate-300 truncate">Lv ${li.whole} · ${li.toNext} XP to Lv ${li.whole + 1} · <span class="font-semibold" style="color:${healthHex(score)}">${score}%</span></p>
+                <p class="mt-0.5 text-xs text-slate-300 truncate">Lv ${li.whole} · ${mc.icon} · ${li.toNext} XP to Lv ${li.whole + 1}</p>
               </div>
+              ${tid ? `<button data-act="open-tether" data-id="${tid}" class="w-9 h-9 rounded-full bg-white/5 border border-white/15 text-xs inline-flex items-center justify-center shrink-0 cursor-pointer" title="Tether / Share planet">🔗</button>` : ""}
               <button data-act="add-sat" data-id="${focusId || ""}" class="w-9 h-9 rounded-full bg-amber-400/15 border border-amber-400/35 text-amber-200 inline-flex items-center justify-center text-xs font-semibold shrink-0 cursor-pointer" title="Launch new satellite">+🪐</button>
-              ${gaugeSVG(score, 48, 4.5)}
+              ${gaugeSVG(score, 48, 4.5, tid || "")}
             </div>
             <div class="mt-2.5 h-1.5 rounded-full bg-white/10 overflow-hidden shadow-[inset_0_1px_2px_rgba(0,0,0,.5)]">
               <div class="h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-300" style="width:${Math.max(li.pct, 2)}%"></div>
@@ -1512,6 +2157,7 @@
         const node = fp || lifeNode();
         const score = computeHealth(fp);
         const li = levelInfo(xpOf(fp));
+        const mc = moonCompanion(fp);
         const kids = childIds(focusId);
         const g = taskGroups(focusId);
         const notesCount = (ownerOf(focusId)?.notes || []).length;
@@ -1523,13 +2169,14 @@
               <div class="flex items-center gap-3 min-w-0">
                 <button data-act="edit-planet" data-id="${fp ? fp.id : ""}" title="Customize planet" class="w-12 h-12 rounded-full inline-flex items-center justify-center leading-none select-none text-white flex-shrink-0 cursor-pointer shadow-lg" style="background:radial-gradient(circle at 32% 28%, ${node.color}ee, ${node.color} 70%, #0D0F0E 140%);box-shadow:0 0 22px ${node.color}77">${renderNodeIcon(node.icon, 22)}</button>
                 <div class="flex-1 min-w-0">
-                  <div class="flex items-center gap-2 min-w-0">
+                  <div class="flex items-center gap-1.5 min-w-0">
                     <h2 class="font-fraunces text-2xl font-semibold truncate leading-tight text-white [font-variation-settings:'opsz'_72]">${esc(node.name)}</h2>
                     <button data-act="edit-planet" data-id="${fp ? fp.id : ""}" title="Customize planet" class="w-7 h-7 rounded-full bg-white/5 border border-white/15 text-xs text-slate-200 hover:text-teal-300 inline-flex items-center justify-center cursor-pointer shrink-0">✎</button>
+                    <button data-act="open-tether" data-id="${fp ? fp.id : ""}" title="Share / Tether planet" class="w-7 h-7 rounded-full bg-white/5 border border-white/15 text-xs text-amber-200 inline-flex items-center justify-center cursor-pointer shrink-0">🔗</button>
                   </div>
-                  <p class="mt-0.5 text-xs text-slate-300">Lv ${li.whole} · ${li.toNext} XP to Lv ${li.whole + 1}</p>
+                  <p class="mt-0.5 text-xs text-slate-300">Lv ${li.whole} · ${mc.icon} ${esc(mc.name)} · ${li.toNext} XP to Lv ${li.whole + 1}</p>
                 </div>
-                ${gaugeSVG(score, 54, 4.5)}
+                ${gaugeSVG(score, 54, 4.5, fp ? fp.id : "")}
               </div>
               <div class="mt-3 h-1.5 rounded-full bg-white/10 overflow-hidden shadow-[inset_0_1px_2px_rgba(0,0,0,.5)]">
                 <div class="h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-300" style="width:${Math.max(li.pct, 2)}%"></div>
@@ -1547,7 +2194,7 @@
                 return `<button data-act="dive" data-id="${cid}" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/[0.04] border border-white/10 active:bg-teal-400/15 text-left cursor-pointer min-w-0">
                   <div class="relative w-10 h-10 rounded-full inline-flex items-center justify-center leading-none select-none text-white flex-shrink-0" style="background:radial-gradient(circle at 32% 28%, ${cp.color}ee, ${cp.color} 70%, #0D0F0E 140%);box-shadow:0 0 0 2px #0D0F0E, 0 0 0 3.5px ${hex}">${renderNodeIcon(cp.icon, 18)}</div>
                   <div class="flex-1 min-w-0">
-                    <p class="font-fraunces text-base text-slate-100 truncate leading-snug pb-0.5">${esc(cp.name)}</p>
+                    <p class="font-fraunces text-base text-slate-100 truncate leading-snug pb-0.5">${cp.tetherCode ? "🔗 " : ""}${esc(cp.name)}</p>
                     <p class="text-xs text-slate-300 truncate"><span class="font-semibold" style="color:${hex}">${h}%</span> · Lv ${Math.floor(levelOf(cp))} · ${st.openCount ? `${st.openCount} open${st.overdueCount ? ` · <span class="text-red-300">${st.overdueCount} overdue</span>` : ""}` : "All clear"}</p>
                   </div>
                   <span class="text-teal-400 text-lg shrink-0">›</span>
@@ -1571,44 +2218,19 @@
           </div>
         `;
       } else if (mobView === "checkin") {
-        const today = todayISO();
-        const all = descendants(null).flatMap(id => P(id).tasks.map(t => ({ t, p: P(id) })));
-        const open = all.filter(x => !x.t.done);
-        const doneToday = all.filter(x => (x.t.done && x.t.doneAt && isoOf(x.t.doneAt) === today) || (Array.isArray(x.t.history) && x.t.history.some(h => isoOf(h.at) === today)));
-        const xpToday = all.reduce((a, x) => {
-          let sum = (x.t.done && x.t.doneAt && isoOf(x.t.doneAt) === today) ? (x.t.xpAwarded || 0) : 0;
-          if (Array.isArray(x.t.history)) sum += x.t.history.filter(h => isoOf(h.at) === today).reduce((s, h) => s + (h.xp || 0), 0);
-          return a + sum;
-        }, 0);
-        const overdue = open.filter(x => x.t.due && x.t.due < today);
-        const dueToday = open.filter(x => x.t.due === today);
-        const later = open.filter(x => !x.t.due || x.t.due > today).sort((a, b) => (a.t.due || "9999").localeCompare(b.t.due || "9999"));
-        const ul = levelInfo(universeXP());
-        const sec = (title, cls, arr) => arr.length ? `<p class="mt-4 mb-2 text-xs font-semibold uppercase tracking-wider ${cls}">${title} · ${arr.length}</p><div class="space-y-2">${arr.map(x => taskRow(x, true, true)).join("")}</div>` : "";
-        
         body = `
           <div class="px-4 pt-16 pb-28 space-y-4 fade-up">
-            <div class="hud-panel glass-surface p-4">
-              <p class="text-xs uppercase tracking-wider text-teal-400 font-semibold">End-of-day check-in</p>
-              <h2 class="font-fraunces text-2xl font-semibold mt-0.5 leading-snug pb-0.5 text-white">${new Date().toLocaleDateString([], { weekday: "long", month: "short", day: "numeric" })}</h2>
-              <div class="mt-3 grid grid-cols-3 gap-2 text-center">
-                <div class="rounded-xl bg-white/[0.04] border border-white/10 py-2.5"><p class="text-xl font-semibold text-teal-300">${doneToday.length}</p><p class="text-[10px] uppercase tracking-wider text-slate-300">done today</p></div>
-                <div class="rounded-xl bg-white/[0.04] border border-white/10 py-2.5"><p class="text-xl font-semibold text-amber-300">+${xpToday}</p><p class="text-[10px] uppercase tracking-wider text-slate-300">xp earned</p></div>
-                <div class="rounded-xl bg-white/[0.04] border border-white/10 py-2.5"><p class="text-xl font-semibold" style="color:${healthHex(computeHealth(null))}">${computeHealth(null)}%</p><p class="text-[10px] uppercase tracking-wider text-slate-300">life health</p></div>
-              </div>
-              <p class="mt-3 text-xs text-slate-300">Life Lv ${ul.whole} · ${ul.toNext} XP to Lv ${ul.whole + 1}</p>
-              <div class="mt-2 h-1.5 rounded-full bg-white/10 overflow-hidden"><div class="h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-300" style="width:${ul.pct}%"></div></div>
+            <div class="flex items-center gap-2 p-1 rounded-full bg-white/[0.04] border border-white/10">
+              <button data-act="mob-checkin-sub" data-sub="today" class="flex-1 py-2 rounded-full text-xs font-semibold cursor-pointer ${mobCheckinSubTab === "today" ? "bg-amber-400/20 text-amber-200 border border-amber-400/45" : "text-slate-300"}">⚡ Today Focus</button>
+              <button data-act="mob-checkin-sub" data-sub="checkin" class="flex-1 py-2 rounded-full text-xs font-semibold cursor-pointer ${mobCheckinSubTab === "checkin" ? "bg-teal-400/20 text-teal-200 border border-teal-400/45" : "text-slate-300"}">🌙 Evening Check-in</button>
             </div>
-            ${sec("⚠ Overdue", "text-red-300", overdue)}
-            ${sec("Due today", "text-amber-300", dueToday)}
-            ${sec("Upcoming", "text-slate-300", later)}
-            ${!open.length ? `<div class="mt-5 p-6 rounded-2xl border border-dashed border-white/10 text-center text-sm text-slate-300">Every orbit is clear. Rest well ✦</div>` : ""}
-            ${doneToday.length ? sec("Completed / cycled today", "text-teal-300", doneToday) : ""}
+            ${mobCheckinSubTab === "today" ? todayFocusContentHTML(true) : checkinContentHTML(true)}
           </div>
         `;
       } else if (mobView === "account") {
         const userEmail = currentUser?.email || "Guest User";
         const userName = currentUser?.user_metadata?.full_name || userEmail.split("@")[0] || "Explorer";
+        const curTheme = SOUND_THEMES[STATE.soundTheme || "crystal"] || SOUND_THEMES.crystal;
         body = `
           <div class="px-4 pt-16 pb-28 space-y-4 fade-up">
             <div class="hud-panel glass-surface p-5">
@@ -1617,9 +2239,17 @@
                 <div class="flex-1 min-w-0">
                   <h2 class="font-fraunces text-xl font-semibold text-white truncate leading-snug pb-0.5">${esc(userName)}</h2>
                   <p class="text-xs text-slate-300 truncate">${esc(userEmail)}</p>
-                  <span class="inline-block mt-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${currentUser ? "bg-teal-400/20 text-teal-300 border border-teal-400/40" : "bg-amber-400/20 text-amber-300 border border-amber-400/40"}">${currentUser ? "Google Account Connected" : "Guest Mode (Local)"}</span>
+                  <span class="inline-block mt-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${currentUser ? "bg-teal-400/20 text-teal-300 border border-teal-400/40" : "bg-amber-400/20 text-amber-300 border border-amber-400/40"}">${currentUser ? "Cloud Account Connected" : "Guest Mode (Local-Only)"}</span>
                 </div>
               </div>
+            </div>
+
+            <div class="hud-panel glass-surface p-5 space-y-3">
+              <h3 class="text-xs font-semibold uppercase tracking-wider text-amber-300">🔗 Shared Solar System (Partner Tether)</h3>
+              <p class="text-xs text-slate-300 leading-relaxed">Share a planet (like Signal or Home) with your partner in Co-Pilot or Read-Only Observer mode, or join their invite code.</p>
+              <button data-act="open-tether" data-id="${focusId || ""}" class="w-full py-2.5 px-4 rounded-xl text-xs font-semibold border border-amber-400/45 bg-amber-400/15 text-amber-200 hover:bg-amber-400/25 flex items-center justify-center gap-2 cursor-pointer shadow-md">
+                <span>🪐</span><span>Manage or Join Tethered Planet</span>
+              </button>
             </div>
 
             <div class="hud-panel glass-surface p-5 space-y-3">
@@ -1637,11 +2267,18 @@
             </div>
 
             <div class="hud-panel glass-surface p-5 space-y-3">
-              <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-300">Audio & Experience</h3>
+              <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-300">Audio, Cosmetics & Notifications</h3>
               <div class="flex items-center justify-between">
-                <span class="text-sm text-slate-200">Sound Effects (Web Audio)</span>
+                <span class="text-sm text-slate-200">Sound Effects (${curTheme.icon} ${curTheme.label})</span>
                 <button data-act="sound" class="px-3.5 py-1.5 rounded-full text-xs font-semibold border ${STATE.soundOn ? "border-teal-400/45 bg-teal-400/20 text-teal-200" : "border-white/15 text-slate-400"} cursor-pointer">${STATE.soundOn ? "🔊 Enabled" : "🔇 Muted"}</button>
               </div>
+              <div class="flex items-center justify-between pt-1">
+                <span class="text-sm text-slate-200">Evening Push Reminder</span>
+                <button data-act="toggle-push" class="px-3.5 py-1.5 rounded-full text-xs font-semibold border ${STATE.pushEnabled ? "border-teal-400/45 bg-teal-400/20 text-teal-200" : "border-white/15 text-slate-400"} cursor-pointer">${STATE.pushEnabled ? "🔔 Active" : "🔕 Off"}</button>
+              </div>
+              <button data-act="open-cosmetics" data-id="${focusId || ""}" class="w-full mt-1 py-2.5 px-4 rounded-xl text-xs font-semibold border border-white/15 bg-white/5 text-slate-200 flex items-center justify-center gap-2 cursor-pointer">
+                <span>🎨</span><span>Customize Planet Auras & Soundscapes</span>
+              </button>
             </div>
 
             <div class="hud-panel glass-surface p-5 space-y-3 border-red-500/30">
@@ -1827,13 +2464,552 @@
           logEvent(pid, "renamed", `Edited task “${title}”`);
         }
       } else {
-        P(pid).tasks.push({ id: uid("t"), title, diff, due, recur, streak: 0, history: [], done: false, doneAt: null, xpAwarded: 0 });
+        P(pid).tasks.push({ id: uid("t"), title, diff, due, recur, streak: 0, history: [], done: false, doneAt: null, xpAwarded: 0, createdBy: userDisplayName() });
         logEvent(pid, "added", `Added ${recur ? (RECUR_LABEL[recur] + " ") : ""}task “${title}”`);
       }
       closeModal("taskModal");
       editingTask = null;
       sfx.add();
       commit();
+    }
+
+    // =========================================================================
+    // 10b. Phase 1 & Phase 2 Modal Controllers (Today Focus, Check-in, Command Deck, Partner Tether, Cosmetics, Push)
+    // =========================================================================
+    let activeFocusTab = "today"; // "today" | "checkin"
+    function openTodayCheckinModal(tab = "today") {
+      activeFocusTab = tab;
+      renderTodayCheckinModal();
+      openModal("todayCheckinModal");
+    }
+    function renderTodayCheckinModal() {
+      const btnT = document.getElementById("tabBtnTodayFocus");
+      const btnC = document.getElementById("tabBtnDeskCheckin");
+      const body = document.getElementById("todayCheckinBody");
+      if (!body) return;
+      if (btnT) btnT.className = `px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold cursor-pointer transition-all ${activeFocusTab === "today" ? "bg-amber-400/20 text-amber-200 border border-amber-400/45 shadow-sm" : "text-slate-300 hover:text-white border border-transparent"}`;
+      if (btnC) btnC.className = `px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold cursor-pointer transition-all ${activeFocusTab === "checkin" ? "bg-teal-400/20 text-teal-200 border border-teal-400/45 shadow-sm" : "text-slate-300 hover:text-white border border-transparent"}`;
+      body.innerHTML = activeFocusTab === "today" ? todayFocusContentHTML(false) : checkinContentHTML(false);
+    }
+
+    function triageOverdueTasks(pid, daysOffset = 0) {
+      const targetDue = addDays(daysOffset);
+      const today = todayISO();
+      const ids = pid && P(pid) ? [pid, ...descendants(pid)] : descendants(null);
+      let moved = 0;
+      ids.forEach(id => {
+        const p = P(id);
+        if (!p || !canEditPlanet(p)) return;
+        for (const t of p.tasks) {
+          if (!t.done && t.due && t.due < today) {
+            t.due = targetDue;
+            moved++;
+          }
+        }
+      });
+      if (moved > 0) {
+        logEvent(pid || null, "renamed", `Triaged ${moved} overdue mission${moved === 1 ? "" : "s"} to ${daysOffset === 0 ? "Today" : "Tomorrow"}`);
+        sfx.done();
+        toast(`⚡ Triaged ${moved} overdue mission${moved === 1 ? "" : "s"} to ${daysOffset === 0 ? "Today" : "Tomorrow"}`);
+        commit();
+        if (!document.getElementById("todayCheckinModal").classList.contains("hidden")) renderTodayCheckinModal();
+      } else {
+        toast("No editable overdue missions to triage");
+      }
+    }
+
+    function saveReflection(inputId) {
+      const inp = document.getElementById(inputId);
+      if (!inp || !inp.value.trim()) { toast("Write a short reflection first", "#F59E0B"); return; }
+      const text = `🌙 Evening Reflection: ${inp.value.trim()}`;
+      addNote(null, text);
+      inp.value = "";
+      toast("✦ Reflection saved to your Life Journal");
+      if (!document.getElementById("todayCheckinModal").classList.contains("hidden")) renderTodayCheckinModal();
+    }
+
+    // Natural-Language Quick-Add & Global Command Deck (⌘K / Ctrl+K)
+    function parseNaturalQuickAdd(raw) {
+      let text = String(raw || "").trim();
+      if (!text) return null;
+      let diff = 2;
+      let due = todayISO();
+      let recur = "";
+      let targetPid = focusId && P(focusId) ? focusId : (STATE.rootIds[0] || null);
+
+      // Parse !1 .. !5 difficulty
+      text = text.replace(/(?:^|\s)!([1-5])(?=\s|$)/g, (_, d) => { diff = parseInt(d, 10); return " "; });
+      // Parse #daily / #weekdays / #weekly / #monthly
+      text = text.replace(/(?:^|\s)#(daily|weekdays|weekly|monthly)(?=\s|$)/gi, (_, r) => { recur = r.toLowerCase(); return " "; });
+      // Parse due keywords: today, tomorrow, nextweek, nodate
+      text = text.replace(/(?:^|\s)\b(today|tomorrow|tmrw|next\s*week|no\s*date)\b(?=\s|$)/gi, (m, kw) => {
+        const k = kw.toLowerCase().replace(/\s+/g, "");
+        if (k === "today") due = todayISO();
+        else if (k === "tomorrow" || k === "tmrw") due = addDays(1);
+        else if (k === "nextweek") due = addDays(7);
+        else if (k === "nodate") due = "";
+        return " ";
+      });
+      // Parse @PlanetName match
+      const allPlanets = descendants(null).map(id => P(id)).filter(Boolean);
+      text = text.replace(/(?:^|\s)@([a-zA-Z0-9_-]+)(?=\s|$)/g, (full, pname) => {
+        const q = pname.toLowerCase();
+        const found = allPlanets.find(p => p.name.toLowerCase() === q) || allPlanets.find(p => p.name.toLowerCase().startsWith(q));
+        if (found) { targetPid = found.id; return " "; }
+        return full;
+      });
+
+      const cleanTitle = text.replace(/\s+/g, " ").trim();
+      return { title: cleanTitle, diff, due, recur, pid: targetPid };
+    }
+
+    function openCmdModal() {
+      openModal("cmdModal");
+      const inp = document.getElementById("inputCmdQuery");
+      if (inp) {
+        inp.value = "";
+        renderCmdModal("");
+        setTimeout(() => inp.focus(), 25);
+      }
+    }
+
+    function renderCmdModal(rawQuery) {
+      const q = String(rawQuery || "").trim();
+      const previewEl = document.getElementById("cmdQuickAddPreview");
+      const listEl = document.getElementById("cmdResultsList");
+      if (!listEl || !previewEl) return;
+
+      const parsed = parseNaturalQuickAdd(q);
+      const targetP = parsed?.pid ? P(parsed.pid) : null;
+      if (parsed && parsed.title && targetP) {
+        const xpEst = taskXP(parsed.diff, strainCount(targetP));
+        previewEl.classList.remove("hidden");
+        previewEl.innerHTML = `
+          <div class="flex items-center justify-between gap-3">
+            <div class="min-w-0">
+              <p class="text-[11px] uppercase tracking-wider text-amber-300 font-semibold">⚡ Instant Mission Creation (Press Enter)</p>
+              <p class="text-sm font-medium text-white truncate mt-0.5">“${esc(parsed.title)}”</p>
+              <div class="flex flex-wrap items-center gap-1.5 mt-1 text-[11px] text-slate-300">
+                <span class="px-2 py-0.5 rounded-full bg-white/10 text-teal-200">${esc(targetP.icon)} ${esc(targetP.name)}</span>
+                <span class="px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-200 font-semibold">Diff ${parsed.diff} (+${xpEst} XP)</span>
+                <span class="px-2 py-0.5 rounded-full bg-white/10 text-slate-200">${parsed.due ? `Due ${parsed.due}` : "No due date"}</span>
+                ${parsed.recur ? `<span class="px-2 py-0.5 rounded-full bg-teal-400/20 text-teal-200">${RECUR_LABEL[parsed.recur]}</span>` : ""}
+              </div>
+            </div>
+            <button data-act="cmd-quick-create" class="px-3.5 py-2 rounded-full text-xs font-semibold text-[#0D0F0E] shrink-0 cursor-pointer shadow-md" style="background:var(--gold)">+ Create</button>
+          </div>
+        `;
+      } else {
+        previewEl.classList.add("hidden");
+        previewEl.innerHTML = "";
+      }
+
+      const ql = q.toLowerCase();
+      const results = [];
+      // Match planets
+      for (const pid of descendants(null)) {
+        const p = P(pid);
+        if (!p) continue;
+        if (!ql || p.name.toLowerCase().includes(ql)) {
+          const h = computeHealth(p);
+          results.push(`
+            <button data-act="cmd-jump-planet" data-id="${p.id}" class="w-full flex items-center justify-between gap-3 p-2.5 rounded-xl bg-white/[0.03] hover:bg-teal-400/15 border border-white/10 text-left cursor-pointer">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <span class="w-8 h-8 rounded-full inline-flex items-center justify-center text-white shrink-0" style="background:${p.color}">${renderNodeIcon(p.icon, 16)}</span>
+                <div class="min-w-0">
+                  <p class="font-fraunces text-sm text-white truncate">${p.tetherCode ? "🔗 " : ""}${esc(p.name)}</p>
+                  <p class="text-[11px] text-slate-400">Planet · Lv ${Math.floor(levelOf(p))} · Health ${h}%</p>
+                </div>
+              </div>
+              <span class="text-xs text-teal-300 shrink-0">Dive in →</span>
+            </button>
+          `);
+        }
+      }
+      // Match tasks
+      if (ql) {
+        for (const pid of descendants(null)) {
+          const p = P(pid);
+          if (!p) continue;
+          for (const t of p.tasks) {
+            if (t.title.toLowerCase().includes(ql)) {
+              results.push(`
+                <div class="flex items-center justify-between gap-2.5 p-2.5 rounded-xl bg-white/[0.025] border border-white/10">
+                  <div class="flex items-center gap-2.5 min-w-0">
+                    <button data-act="toggle" data-pid="${p.id}" data-tid="${t.id}" class="w-6 h-6 rounded-full border ${t.done ? "bg-teal-400 border-teal-300 text-neutral-900" : "border-slate-500 text-teal-300"} flex items-center justify-center text-xs shrink-0 cursor-pointer">${t.done ? "✓" : "○"}</button>
+                    <div class="min-w-0">
+                      <p class="text-xs sm:text-sm text-slate-100 truncate ${t.done ? "line-through text-slate-500" : ""}">${esc(t.title)}</p>
+                      <p class="text-[11px] text-slate-400">${esc(p.icon)} ${esc(p.name)} · Diff ${t.diff}${t.due ? ` · Due ${t.due}` : ""}</p>
+                    </div>
+                  </div>
+                  <button data-act="cmd-jump-planet" data-id="${p.id}" class="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] text-slate-300 shrink-0 cursor-pointer">Sector →</button>
+                </div>
+              `);
+            }
+          }
+        }
+      }
+
+      listEl.innerHTML = results.length
+        ? results.slice(0, 18).join("")
+        : `<p class="text-xs text-slate-400 text-center py-6">No matching planets or tasks. Press <kbd class="px-1.5 py-0.5 rounded bg-white/10 text-slate-200">Enter</kbd> to create a mission from your query.</p>`;
+    }
+
+    function executeCmdQuickCreate() {
+      const inp = document.getElementById("inputCmdQuery");
+      const parsed = parseNaturalQuickAdd(inp?.value || "");
+      if (!parsed || !parsed.title || !parsed.pid || !P(parsed.pid)) return;
+      const p = P(parsed.pid);
+      if (!canEditPlanet(p)) {
+        toast("🔭 Observer mode: This tethered planet is read-only", "#F59E0B");
+        return;
+      }
+      p.tasks.push({
+        id: uid("t"),
+        title: parsed.title,
+        diff: parsed.diff,
+        due: parsed.due,
+        recur: parsed.recur,
+        streak: 0,
+        history: [],
+        done: false,
+        doneAt: null,
+        xpAwarded: 0,
+        createdBy: userDisplayName(),
+      });
+      logEvent(p.id, "added", `Quick-added task “${parsed.title}”`);
+      closeModal("cmdModal");
+      sfx.add();
+      toast(`⚡ Added “${parsed.title}” to ${p.icon} ${p.name}`);
+      commit();
+    }
+
+    // Shared Solar System / Partner Tether Modal & Actions
+    let tetherModalPlanetId = null;
+    function openTetherModal(pid) {
+      tetherModalPlanetId = pid && P(pid) ? pid : (focusId && P(focusId) ? focusId : (STATE.rootIds[0] || null));
+      renderTetherModal();
+      openModal("tetherModal");
+    }
+
+    function renderTetherModal() {
+      const body = document.getElementById("tetherModalBody");
+      if (!body) return;
+      const order = descendants(null);
+      const p = tetherModalPlanetId ? P(tetherModalPlanetId) : null;
+
+      const planetSelector = order.length ? `
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Select Planet to Share or Manage</label>
+          <select id="selectTetherPlanet" class="w-full bg-[#121719] border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-teal-400">
+            ${order.map(id => {
+              const pl = P(id);
+              return `<option value="${id}" ${id === tetherModalPlanetId ? "selected" : ""}>${esc(pl.icon)} ${esc(pl.name)}${pl.tetherCode ? ` (🔗 ${pl.tetherCode})` : ""}</option>`;
+            }).join("")}
+          </select>
+        </div>
+      ` : "";
+
+      let manageSection = "";
+      if (!currentUser) {
+        manageSection = `
+          <div class="p-4 rounded-2xl bg-amber-400/10 border border-amber-400/35 space-y-2.5">
+            <p class="text-xs font-semibold uppercase tracking-wider text-amber-300">☁️ Cloud Account Required for Partner Tethering</p>
+            <p class="text-xs text-slate-200 leading-relaxed">Guest mode is strictly local to your device. Sign in with your account to generate live Binary Co-Orbit links and sync a shared planet (like Signal) with your partner.</p>
+            <button data-act="auth-btn" class="px-4 py-2 rounded-full text-xs font-semibold text-[#0D0F0E] cursor-pointer" style="background:var(--gold)">Sign In to Enable Tethering</button>
+          </div>
+        `;
+      } else if (p && p.tetherCode) {
+        const isOwner = !p.tetherOwnerId || p.tetherOwnerId === currentUser.id;
+        const shareUrl = `${window.location.origin}${window.location.pathname}?tether=${encodeURIComponent(p.tetherCode)}`;
+        const collabs = Array.isArray(p.tetherCollabs) ? p.tetherCollabs : [];
+        manageSection = `
+          <div class="p-4 rounded-2xl bg-amber-400/[0.08] border border-amber-400/35 space-y-3.5">
+            <div class="flex items-center justify-between gap-2">
+              <div>
+                <span class="px-2.5 py-0.5 rounded-full bg-amber-400/20 border border-amber-400/45 text-[11px] font-semibold text-amber-200">🔗 Active Binary Co-Orbit</span>
+                <h4 class="font-fraunces text-lg text-white mt-1">${esc(p.icon)} ${esc(p.name)}</h4>
+                <p class="text-xs text-slate-300">Hosted by <b class="text-white">${esc(p.tetherOwnerName || "Owner")}</b> · ${collabs.length} partner${collabs.length === 1 ? "" : "s"} linked</p>
+              </div>
+              <div class="text-right">
+                <p class="text-[10px] uppercase tracking-wider text-slate-400">Share Code</p>
+                <p class="font-mono text-base font-bold text-amber-300">${esc(p.tetherCode)}</p>
+              </div>
+            </div>
+
+            <div class="p-2.5 rounded-xl bg-[#0B0E0F]/90 border border-white/10 flex items-center justify-between gap-2">
+              <input id="inputShareLinkUrl" type="text" readonly value="${esc(shareUrl)}" class="flex-1 bg-transparent text-xs text-slate-300 focus:outline-none truncate">
+              <button data-act="copy-tether-link" data-code="${esc(p.tetherCode)}" class="px-3 py-1.5 rounded-lg bg-teal-400/20 hover:bg-teal-400/30 border border-teal-400/45 text-xs font-semibold text-teal-200 cursor-pointer shrink-0">Copy Invite Link</button>
+            </div>
+
+            ${isOwner ? `
+              <div class="pt-2 border-t border-white/10 space-y-2">
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300">Partner Permission Mode (Switchable Anytime)</label>
+                <div class="grid grid-cols-2 gap-2">
+                  <button data-act="set-tether-role" data-id="${p.id}" data-role="editor" class="p-2.5 rounded-xl border text-left cursor-pointer transition-all ${p.tetherRoleMode !== "viewer" ? "bg-teal-400/20 border-teal-400 text-white" : "bg-white/5 border-white/10 text-slate-300"}">
+                    <p class="text-xs font-semibold">🛸 Co-Pilot (Edit)</p>
+                    <p class="text-[11px] text-slate-300 mt-0.5">Partner can add, complete & edit tasks + notes</p>
+                  </button>
+                  <button data-act="set-tether-role" data-id="${p.id}" data-role="viewer" class="p-2.5 rounded-xl border text-left cursor-pointer transition-all ${p.tetherRoleMode === "viewer" ? "bg-amber-400/20 border-amber-400 text-white" : "bg-white/5 border-white/10 text-slate-300"}">
+                    <p class="text-xs font-semibold">🔭 Observer (Read-Only)</p>
+                    <p class="text-[11px] text-slate-300 mt-0.5">Partner can view live health & tasks without editing</p>
+                  </button>
+                </div>
+              </div>
+            ` : `
+              <p class="text-xs text-slate-300">Your current role on this shared planet: <b class="text-amber-200">${canEditPlanet(p) ? "🛸 Co-Pilot (Full Edit)" : "🔭 Observer (Read-Only)"}</b></p>
+            `}
+
+            <div class="pt-2 border-t border-white/10 flex items-center justify-between">
+              <button data-act="sync-cloud" class="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/15 text-xs text-teal-200 cursor-pointer">⟳ Sync Partner Updates Now</button>
+              <button data-act="leave-tether" data-id="${p.id}" class="px-3 py-1.5 rounded-full bg-red-500/10 hover:bg-red-500/20 border border-red-400/35 text-xs text-red-200 cursor-pointer">Untether Planet</button>
+            </div>
+          </div>
+        `;
+      } else if (p) {
+        manageSection = `
+          <div class="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-3">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-wider text-teal-300">Create New Partner Tether</p>
+              <p class="text-xs text-slate-300 mt-0.5">Generate a live Share Code for <b class="text-white">${esc(p.icon)} ${esc(p.name)}</b> so your partner can dock it into their solar system.</p>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <button data-act="activate-tether" data-id="${p.id}" data-role="editor" class="p-3 rounded-xl bg-teal-400/15 hover:bg-teal-400/25 border border-teal-400/45 text-left cursor-pointer">
+                <p class="text-xs font-semibold text-teal-200">🛸 Share as Co-Pilot (Edit)</p>
+                <p class="text-[11px] text-slate-300 mt-0.5">Both of you can add & complete missions together</p>
+              </button>
+              <button data-act="activate-tether" data-id="${p.id}" data-role="viewer" class="p-3 rounded-xl bg-amber-400/15 hover:bg-amber-400/25 border border-amber-400/45 text-left cursor-pointer">
+                <p class="text-xs font-semibold text-amber-200">🔭 Share as Observer (View)</p>
+                <p class="text-[11px] text-slate-300 mt-0.5">Partner sees live health & tasks in read-only mode</p>
+              </button>
+            </div>
+          </div>
+        `;
+      }
+
+      const joinSection = currentUser ? `
+        <div class="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2.5">
+          <p class="text-xs font-semibold uppercase tracking-wider text-amber-300">📡 Join a Partner's Shared Planet</p>
+          <p class="text-xs text-slate-300">Have an invite code (e.g. <code class="text-amber-200">SHR-7K9P</code>)? Enter it below to dock their shared planet into your solar system.</p>
+          <div class="flex gap-2">
+            <input id="inputJoinTetherCode" type="text" placeholder="SHR-XXXX" class="flex-1 bg-[#121719] border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white uppercase font-mono focus:outline-none focus:border-teal-400">
+            <button data-act="join-tether-code" class="px-4 py-2 rounded-xl text-xs font-semibold text-[#0D0F0E] cursor-pointer shrink-0 shadow-md" style="background:var(--gold)">Dock Planet</button>
+          </div>
+        </div>
+      ` : "";
+
+      body.innerHTML = `${planetSelector}${manageSection}${joinSection}`;
+
+      document.getElementById("selectTetherPlanet")?.addEventListener("change", (e) => {
+        tetherModalPlanetId = e.target.value;
+        renderTetherModal();
+      });
+    }
+
+    async function activateTether(pid, roleMode = "editor") {
+      const p = P(pid);
+      if (!p || !currentUser) return;
+      const rand = Array.from({ length: 4 }, () => "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[Math.floor(Math.random() * 32)]).join("");
+      p.tetherCode = p.tetherCode || `SHR-${rand}`;
+      p.tetherOwnerId = currentUser.id;
+      p.tetherOwnerName = userDisplayName();
+      p.tetherRoleMode = roleMode === "viewer" ? "viewer" : "editor";
+      p.tetherCollabs = p.tetherCollabs || [];
+      logEvent(p.id, "added", `Activated Binary Co-Orbit (${p.tetherCode}) as ${p.tetherRoleMode === "viewer" ? "Observer" : "Co-Pilot"}`);
+      sfx.levelUp();
+      await pushTetheredPlanet(p);
+      commit();
+      renderTetherModal();
+      toast(`🔗 ${p.name} tethered (${p.tetherCode})`);
+    }
+
+    async function setTetherRole(pid, roleMode) {
+      const p = P(pid);
+      if (!p || !p.tetherCode || !currentUser) return;
+      p.tetherRoleMode = roleMode === "viewer" ? "viewer" : "editor";
+      logEvent(p.id, "renamed", `Changed partner access to ${p.tetherRoleMode === "viewer" ? "Observer (Read-Only)" : "Co-Pilot (Edit)"}`);
+      sfx.click();
+      await pushTetheredPlanet(p);
+      commit();
+      renderTetherModal();
+      toast(`🔗 Partner mode updated to ${p.tetherRoleMode === "viewer" ? "Observer (Read-Only)" : "Co-Pilot (Edit)"}`);
+    }
+
+    async function joinTetherByCode(rawCode) {
+      if (!currentUser) {
+        toast("Sign in first to join a partner's tethered planet", "#F59E0B");
+        return;
+      }
+      const code = String(rawCode || "").trim().toUpperCase();
+      if (!code) { toast("Enter a valid share code (e.g. SHR-XXXX)", "#F59E0B"); return; }
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/join_shared_planet`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: SUPABASE_KEY,
+            Authorization: `Bearer ${activeAccessToken || SUPABASE_KEY}`,
+          },
+          body: JSON.stringify({ p_share_code: code, p_member_name: userDisplayName() }),
+        });
+        if (!res.ok) {
+          toast("Share code not found or expired", "#EF4444");
+          return;
+        }
+        const row = await res.json();
+        if (!row || !row.share_code) {
+          toast("Share code not found", "#EF4444");
+          return;
+        }
+        await pullAllTetheredPlanets();
+        save();
+        const docked = Object.values(STATE.planets).find(x => x.tetherCode === row.share_code);
+        if (docked) {
+          tetherModalPlanetId = docked.id;
+          triggerSupernova(`Binary Co-Orbit Docked!`, `${docked.icon} ${docked.name} is now linked with ${row.owner_name || "your partner"}`, docked.color || "#2DD4BF");
+        }
+        renderTetherModal();
+      } catch (e) {
+        toast("Could not connect to shared planet", "#EF4444");
+      }
+    }
+
+    function leaveTether(pid) {
+      const p = P(pid);
+      if (!p || !p.tetherCode) return;
+      if (!window.confirm(`Untether “${p.name}”? The planet will remain in your local solar system, but live partner sync will stop.`)) return;
+      delete p.tetherCode;
+      delete p.tetherOwnerId;
+      delete p.tetherOwnerName;
+      delete p.tetherRoleMode;
+      delete p.tetherCollabs;
+      logEvent(p.id, "renamed", "Untethered from Binary Co-Orbit");
+      commit();
+      renderTetherModal();
+      toast(`Untethered ${p.name}`);
+    }
+
+    // Cosmetics, Moon Companion & Transparent Health Math Modal
+    let cosmeticsPlanetId = null;
+    function openCosmeticsModal(pid) {
+      cosmeticsPlanetId = pid && P(pid) ? pid : (focusId && P(focusId) ? focusId : null);
+      renderCosmeticsModal();
+      openModal("cosmeticsModal");
+    }
+
+    function renderCosmeticsModal() {
+      const body = document.getElementById("cosmeticsModalBody");
+      if (!body) return;
+      const target = cosmeticsPlanetId ? P(cosmeticsPlanetId) : null;
+      const node = target || lifeNode();
+      const hb = healthBreakdown(target);
+      const mc = moonCompanion(target);
+      const uLv = levelInfo(universeXP()).whole;
+      const curSkin = (target ? target.auraSkin : STATE.life?.auraSkin) || "classic";
+      const curSound = STATE.soundTheme || "crystal";
+
+      body.innerHTML = `
+        <div class="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold uppercase tracking-wider text-teal-300">📊 Orbital Health Formula · ${esc(node.icon)} ${esc(node.name)}</span>
+            <span class="text-lg font-bold" style="color:${healthHex(hb.score)}">${hb.score}%</span>
+          </div>
+          <p class="text-xs text-slate-300 leading-relaxed">${esc(hb.formula)}</p>
+          ${target ? `
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-center text-xs">
+              <div class="p-2 rounded-xl bg-white/[0.03] border border-white/10"><p class="text-slate-400 text-[10px]">Base</p><p class="font-semibold text-white">76%</p></div>
+              <div class="p-2 rounded-xl bg-white/[0.03] border border-white/10"><p class="text-slate-400 text-[10px]">7d Momentum</p><p class="font-semibold text-teal-300">+${hb.recentBonus}%</p></div>
+              <div class="p-2 rounded-xl bg-white/[0.03] border border-white/10"><p class="text-slate-400 text-[10px]">Overdue (${hb.overdue})</p><p class="font-semibold text-red-300">-${hb.overduePen}%</p></div>
+              <div class="p-2 rounded-xl bg-white/[0.03] border border-white/10"><p class="text-slate-400 text-[10px]">Strain Gravity</p><p class="font-semibold text-amber-300">-${hb.strainPen}%</p></div>
+            </div>
+          ` : ""}
+        </div>
+
+        <div class="p-4 rounded-2xl bg-amber-400/[0.07] border border-amber-400/30 flex items-center gap-3.5">
+          <div class="w-12 h-12 rounded-2xl bg-amber-400/20 border border-amber-400/40 flex items-center justify-center text-2xl shrink-0">${mc.icon}</div>
+          <div class="min-w-0">
+            <p class="text-[11px] uppercase tracking-wider text-amber-300 font-semibold">Orbiting Streak Companion</p>
+            <h4 class="font-fraunces text-base text-white">${esc(mc.name)} · Stage ${mc.stage}/3</h4>
+            <p class="text-xs text-slate-300 mt-0.5">${esc(mc.desc)}</p>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-300">🎨 Planetary Ring Aura (Life Lv ${uLv})</span>
+            <span class="text-[11px] text-slate-400">Applies to ${esc(node.name)}</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            ${Object.values(AURA_SKINS).map(sk => {
+              const unlocked = uLv >= sk.minLv;
+              const active = curSkin === sk.id;
+              return `
+                <button data-act="select-aura" data-skin="${sk.id}" ${unlocked ? "" : "disabled"} class="p-3 rounded-xl border text-left transition-all ${active ? "bg-teal-400/20 border-teal-400 text-white" : unlocked ? "bg-white/[0.03] hover:bg-white/[0.07] border-white/10 text-slate-200 cursor-pointer" : "bg-white/[0.015] border-white/5 text-slate-500 opacity-60 cursor-not-allowed"}">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-semibold">${esc(sk.name)}</span>
+                    <span class="text-[10px] px-2 py-0.5 rounded-full ${unlocked ? "bg-teal-400/20 text-teal-200" : "bg-white/10 text-slate-400"}">${unlocked ? (active ? "Active" : "Unlocked") : `Lv ${sk.minLv}`}</span>
+                  </div>
+                </button>
+              `;
+            }).join("")}
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <span class="block text-xs font-semibold uppercase tracking-wider text-slate-300">🔊 Procedural Web Audio Soundscape</span>
+          <div class="grid grid-cols-2 gap-2">
+            ${Object.entries(SOUND_THEMES).map(([k, th]) => `
+              <button data-act="select-sound-theme" data-theme="${k}" class="p-2.5 rounded-xl border text-left cursor-pointer transition-all ${curSound === k ? "bg-amber-400/20 border-amber-400 text-white" : "bg-white/[0.03] hover:bg-white/[0.07] border-white/10 text-slate-200"}">
+                <span class="text-xs font-semibold">${th.icon} ${esc(th.label)}</span>
+              </button>
+            `).join("")}
+          </div>
+        </div>
+      `;
+    }
+
+    // Web Push / Service Worker Registration for Evening Check-In Reminders
+    async function togglePushReminders() {
+      if (!("Notification" in window)) {
+        toast("Browser notifications are not supported on this device", "#F59E0B");
+        return;
+      }
+      if (STATE.pushEnabled) {
+        STATE.pushEnabled = false;
+        save();
+        renderTopBar();
+        renderMobile();
+        if (!document.getElementById("todayCheckinModal").classList.contains("hidden")) renderTodayCheckinModal();
+        toast("🔕 Daily push reminders paused");
+        return;
+      }
+      const perm = await Notification.requestPermission();
+      if (perm !== "granted") {
+        toast("Please allow notification permission in your browser settings", "#F59E0B");
+        return;
+      }
+      try {
+        if ("serviceWorker" in navigator) {
+          const reg = await navigator.serviceWorker.register("/sw.js");
+          const td = curatedTodayData();
+          if (reg.active) {
+            reg.active.postMessage({
+              type: "SHOW_CHECKIN_REMINDER",
+              title: "Idemap · Celestial Check-in Armed ✦",
+              body: td.priority.length
+                ? `You have ${td.priority.length} priority mission${td.priority.length === 1 ? "" : "s"} in orbit today.`
+                : "All priority orbits are clear! Tap to view your Weekly Star Constellation.",
+            });
+          }
+        }
+      } catch (e) {}
+      STATE.pushEnabled = true;
+      sfx.done();
+      save();
+      renderTopBar();
+      renderMobile();
+      if (!document.getElementById("todayCheckinModal").classList.contains("hidden")) renderTodayCheckinModal();
+      toast("🔔 Evening Push Reminders enabled!");
     }
 
     // =========================================================================
@@ -1868,7 +3044,11 @@
       switch (d.act) {
         case "dive": dive(d.id || null); break;
         case "clear-select": selectedId = null; updateSelectionVisuals(); renderHUD(); break;
-        case "toggle": toggleTask(d.pid, d.tid); break;
+        case "toggle":
+          toggleTask(d.pid, d.tid);
+          if (!document.getElementById("todayCheckinModal").classList.contains("hidden")) renderTodayCheckinModal();
+          if (!document.getElementById("cmdModal").classList.contains("hidden")) renderCmdModal(document.getElementById("inputCmdQuery")?.value || "");
+          break;
         case "undo-cycle": undoRecurringCycle(d.pid, d.tid); break;
         case "edit-task": openTaskModal(null, { pid: d.pid, tid: d.tid }); break;
         case "del-task": deleteTask(d.pid, d.tid); break;
@@ -1882,6 +3062,52 @@
         case "toggle-sheet": mobSheetSnap = mobSheetSnap === "peek" ? "expanded" : "peek"; renderMobile(); rebuildScene(); break;
         case "top-menu": topMenu?.classList.toggle("hidden"); break;
         case "mob-view": mobView = d.view; renderMobile(); rebuildScene(); document.getElementById("mobileView").scrollTop = 0; break;
+        case "mob-checkin-sub": mobCheckinSubTab = d.sub || "today"; renderMobile(); break;
+        case "open-today-focus": openTodayCheckinModal("today"); break;
+        case "open-desk-checkin": openTodayCheckinModal("checkin"); break;
+        case "switch-focus-tab": activeFocusTab = d.tab || "today"; renderTodayCheckinModal(); break;
+        case "triage-overdue": triageOverdueTasks(d.id || null, parseInt(d.days || "0", 10)); break;
+        case "save-reflection": saveReflection(d.input); break;
+        case "open-cmd": openCmdModal(); break;
+        case "cmd-quick-create": executeCmdQuickCreate(); break;
+        case "cmd-jump-planet": closeModal("cmdModal"); dive(d.id || null); break;
+        case "open-tether": openTetherModal(d.id || null); break;
+        case "activate-tether": activateTether(d.id, d.role); break;
+        case "set-tether-role": setTetherRole(d.id, d.role); break;
+        case "copy-tether-link": {
+          const url = `${window.location.origin}${window.location.pathname}?tether=${encodeURIComponent(d.code || "")}`;
+          navigator.clipboard?.writeText(url);
+          toast(`🔗 Copied invite link (${d.code})`);
+          break;
+        }
+        case "join-tether-code": {
+          const codeInp = document.getElementById("inputJoinTetherCode");
+          joinTetherByCode(codeInp?.value || "");
+          break;
+        }
+        case "leave-tether": leaveTether(d.id); break;
+        case "open-cosmetics": openCosmeticsModal(d.id || null); break;
+        case "select-aura": {
+          const target = cosmeticsPlanetId ? P(cosmeticsPlanetId) : null;
+          if (target) target.auraSkin = d.skin;
+          else if (STATE.life) STATE.life.auraSkin = d.skin;
+          sfx.click();
+          commit();
+          renderCosmeticsModal();
+          toast(`✦ Equipped ${AURA_SKINS[d.skin]?.name || "Aura"}`);
+          break;
+        }
+        case "select-sound-theme":
+          STATE.soundTheme = d.theme || "crystal";
+          STATE.soundOn = true;
+          sfx.levelUp();
+          save();
+          renderTopBar();
+          renderMobile();
+          renderCosmeticsModal();
+          toast(`🔊 Soundscape: ${SOUND_THEMES[STATE.soundTheme]?.label}`);
+          break;
+        case "toggle-push": togglePushReminders(); break;
         case "add-note": { const inp = document.getElementById(d.input); if (inp && inp.value.trim()) addNote(d.id || null, inp.value); break; }
         case "del-note": deleteNote(d.id || null, d.nid); break;
         case "sound": STATE.soundOn = !STATE.soundOn; save(); renderTopBar(); renderMobile(); if (STATE.soundOn) sfx.click(); break;
@@ -1889,7 +3115,7 @@
           if (!currentUser) {
             toast("💾 Guest mode: saved locally on this device", "#E5A93C");
           } else {
-            loadFromSupabase().then(() => toast("☁️ Cloud universe synced"));
+            loadFromSupabase().then(() => toast("☁️ Cloud & Partner Orbits synced"));
           }
           break;
         case "login-google": signInWithGoogle(); break;
@@ -1931,23 +3157,44 @@
     document.getElementById("inputForgeCustomColor")?.addEventListener("input", (e) => {
       if (e.target.value) { forge.color = e.target.value; renderForgePickers(); }
     });
+    document.getElementById("inputCmdQuery")?.addEventListener("input", (e) => {
+      renderCmdModal(e.target.value);
+    });
 
     document.addEventListener("keydown", (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        const cmdOpen = !document.getElementById("cmdModal").classList.contains("hidden");
+        if (cmdOpen) closeModal("cmdModal"); else openCmdModal();
+        return;
+      }
       const forgeOpen = !document.getElementById("forgeModal").classList.contains("hidden");
       const taskOpen = !document.getElementById("taskModal").classList.contains("hidden");
+      const cmdOpen = !document.getElementById("cmdModal").classList.contains("hidden");
+      const todayOpen = !document.getElementById("todayCheckinModal").classList.contains("hidden");
+      const tetherOpen = !document.getElementById("tetherModal").classList.contains("hidden");
+      const cosmOpen = !document.getElementById("cosmeticsModal").classList.contains("hidden");
+
       if (e.key === "Escape") {
-        if (forgeOpen) closeModal("forgeModal");
+        if (cmdOpen) closeModal("cmdModal");
+        else if (forgeOpen) closeModal("forgeModal");
         else if (taskOpen) closeModal("taskModal");
+        else if (todayOpen) closeModal("todayCheckinModal");
+        else if (tetherOpen) closeModal("tetherModal");
+        else if (cosmOpen) closeModal("cosmeticsModal");
         else if (selectedId) { selectedId = null; updateSelectionVisuals(); renderHUD(); }
       }
       if (e.key === "Enter" && !e.shiftKey && e.target.tagName !== "TEXTAREA") {
-        if (forgeOpen) { e.preventDefault(); confirmForge(); }
+        if (cmdOpen && document.activeElement?.id === "inputCmdQuery") { e.preventDefault(); executeCmdQuickCreate(); }
+        else if (forgeOpen) { e.preventDefault(); confirmForge(); }
         else if (taskOpen) { e.preventDefault(); confirmTask(); }
       }
     });
 
     // Close modals by clicking the dimmed backdrop
-    ["forgeModal", "taskModal"].forEach(id => document.getElementById(id).addEventListener("click", (e) => { if (e.target.id === id) closeModal(id); }));
+    ["forgeModal", "taskModal", "cmdModal", "todayCheckinModal", "tetherModal", "cosmeticsModal"].forEach(id => {
+      document.getElementById(id)?.addEventListener("click", (e) => { if (e.target.id === id) closeModal(id); });
+    });
 
     // =========================================================================
     // 13. Background starfield + animation loop
@@ -2036,6 +3283,29 @@
         bgCtx.arc(st.x, st.y, st.r, 0, Math.PI * 2);
         bgCtx.fillStyle = `rgba(226,232,240,${a})`;
         bgCtx.fill();
+      }
+      if (supernovaParticles.length) {
+        for (let i = supernovaParticles.length - 1; i >= 0; i--) {
+          const sp = supernovaParticles[i];
+          sp.x += sp.vx;
+          sp.y += sp.vy;
+          sp.vx *= 0.97;
+          sp.vy *= 0.97;
+          sp.life -= sp.decay;
+          if (sp.life <= 0) {
+            supernovaParticles.splice(i, 1);
+            continue;
+          }
+          bgCtx.save();
+          bgCtx.globalAlpha = Math.max(0, sp.life);
+          bgCtx.shadowBlur = 12;
+          bgCtx.shadowColor = sp.color;
+          bgCtx.fillStyle = sp.color;
+          bgCtx.beginPath();
+          bgCtx.arc(sp.x, sp.y, sp.r, 0, Math.PI * 2);
+          bgCtx.fill();
+          bgCtx.restore();
+        }
       }
       if (!mobile || mobView === "orbit") updateOrbitalPositions();
       requestAnimationFrame(animateLoop);
@@ -2145,11 +3415,33 @@
         currentUser = data.session.user;
         activeAccessToken = data.session.access_token || SUPABASE_KEY;
         updateAuthUI();
-        loadFromSupabase();
+        await loadFromSupabase();
       } else {
         updateAuthUI();
         setCloudStatus("💾 Local only", "ok");
       }
+
+      // 3. Handle ?tether=SHR-XXXX invite links
+      try {
+        const sp = new URLSearchParams(window.location.search || "");
+        const inviteCode = sp.get("tether");
+        if (inviteCode) {
+          window.history.replaceState(null, "", window.location.pathname);
+          if (currentUser) {
+            await joinTetherByCode(inviteCode);
+            openTetherModal(tetherModalPlanetId);
+          } else {
+            toast(`🔗 Sign in to join partner planet (${inviteCode.toUpperCase()})`, "#E5A93C");
+          }
+        }
+      } catch (e) {}
+
+      // 4. Register PWA Service Worker if supported
+      try {
+        if ("serviceWorker" in navigator) {
+          navigator.serviceWorker.register("/sw.js").catch(() => {});
+        }
+      } catch (e) {}
     }
 
     render();
