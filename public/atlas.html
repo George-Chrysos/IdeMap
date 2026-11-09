@@ -38,11 +38,12 @@
 
     /* Stationary HUD panels are the ONLY elements allowed to use backdrop-filter (GPU budget). */
     .hud-panel {
-      background: var(--hud-bg);
+      background: linear-gradient(var(--hud-bg), var(--hud-bg)) padding-box,
+                  linear-gradient(160deg, rgba(45, 212, 191, 0.45), rgba(45, 212, 191, 0.08) 40%, rgba(229, 169, 60, 0.18)) border-box;
       backdrop-filter: blur(18px) saturate(160%);
       -webkit-backdrop-filter: blur(18px) saturate(160%);
-      border: 1px solid var(--border-cyan);
-      box-shadow: 0 16px 44px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+      border: 1px solid transparent;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), inset 0 0 40px rgba(45, 212, 191, 0.04), 0 24px 60px rgba(0, 0, 0, 0.6);
       border-radius: 1rem;
     }
     .hud-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
@@ -64,6 +65,15 @@
     @keyframes spin-slow { to { transform: rotate(360deg); } }
     .reticle { animation: spin-slow 14s linear infinite; }
 
+    @media (prefers-reduced-motion: reduce) {
+      .reticle, .arc-animated, .planet-glow-pulse, .strain-pulse { animation: none !important; }
+    }
+
+    button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(94, 234, 212, 0.6);
+    }
+
     /* Node telemetry pills: crisp readability with subtle hover elevation */
     .node-pill { opacity: 0.92; transition: opacity .2s ease, transform .2s ease, border-color .2s ease; }
     .node-inner:hover .node-pill, .is-selected .node-pill, .pill-always .node-pill { opacity: 1; border-color: rgba(45, 212, 191, 0.35); }
@@ -79,6 +89,11 @@
     @media (max-width: 767px) {
       .desk-only { display: none !important; }
       .mob-only { display: block; }
+      #mobileHeader.mob-only { display: flex; }
+      .node-inner:not(.is-selected):not(.pill-always) .node-label { display: none; }
+    }
+    @media (min-width: 768px) {
+      .mob-only { display: none !important; }
     }
     .safe-top { padding-top: max(12px, env(safe-area-inset-top)); }
     .safe-bottom { padding-bottom: max(14px, env(safe-area-inset-bottom)); }
@@ -114,7 +129,7 @@
   <div id="planetCanvas" class="absolute inset-0 z-20 pointer-events-none"></div>
 
   <!-- Mobile Floating Glass Header -->
-  <header id="mobileHeader" class="mob-only fixed top-0 inset-x-0 z-40 px-3.5 pt-3 pb-2.5 bg-[#0B0E0F]/85 backdrop-blur-2xl border-b border-white/10 safe-top flex items-center justify-between gap-2 shadow-lg pointer-events-auto">
+  <header id="mobileHeader" class="mob-only fixed top-0 inset-x-0 z-40 px-3.5 pt-3 pb-2.5 bg-[#0B0E0F]/85 backdrop-blur-2xl border-b border-white/10 safe-top items-center justify-between gap-2 shadow-lg pointer-events-auto">
     <div class="flex items-center gap-1.5 min-w-0 flex-1">
       <button data-act="dive" data-id="" class="flex items-center gap-1.5 flex-shrink-0 cursor-pointer">
         <div class="w-8 h-8 rounded-full bg-teal-400/15 border border-teal-400/40 flex items-center justify-center leading-none">
@@ -133,21 +148,28 @@
 
   <!-- Layer 3: Desktop Top HUD -->
   <header class="desk-only fixed top-6 left-6 right-[440px] xl:right-[505px] 2xl:right-[555px] z-40 flex flex-wrap items-center gap-3 pointer-events-none">
-    <div class="hud-panel px-5 py-3 flex items-center gap-3.5 pointer-events-auto shadow-2xl">
+    <div class="hud-panel h-12 px-4 flex items-center gap-3.5 pointer-events-auto shadow-2xl">
       <button data-act="dive" data-id="" class="flex items-center gap-2.5 cursor-pointer group">
-        <div class="w-9 h-9 rounded-full bg-teal-400/10 border border-teal-400/35 flex items-center justify-center group-hover:border-teal-400 transition-colors">
-          <span class="text-teal-400 text-base">✦</span>
+        <div class="w-8 h-8 rounded-full bg-teal-400/10 border border-teal-400/35 flex items-center justify-center group-hover:border-teal-400 transition-colors">
+          <span class="text-teal-400 text-sm leading-none">✦</span>
         </div>
-        <span class="text-2xl font-semibold tracking-wide font-fraunces text-slate-100 group-hover:text-teal-300 transition-colors">Idemap</span>
+        <span class="text-xl font-semibold tracking-wide font-fraunces text-slate-100 group-hover:text-teal-300 transition-colors leading-none">Idemap</span>
       </button>
-      <div class="h-5 w-[1px] bg-teal-400/20 mx-1"></div>
+      <div class="h-5 w-[1px] bg-teal-400/20 mx-0.5"></div>
       <nav id="breadcrumbNav" class="flex items-center gap-1.5"></nav>
     </div>
-    <div class="hud-panel px-3.5 py-2.5 flex items-center gap-2.5 pointer-events-auto">
+    <div class="hud-panel h-12 px-3 flex items-center gap-2 pointer-events-auto relative">
       <button data-act="sync-cloud" id="btnCloudSync" class="px-3.5 py-1.5 rounded-full text-sm font-medium border border-teal-400/35 bg-teal-400/10 text-teal-200 hover:border-teal-400 transition-all cursor-pointer" title="Click to sync with Supabase database">☁️ Synced</button>
       <button data-act="sound" id="btnSoundToggle" class="px-3.5 py-1.5 rounded-full text-sm font-medium border border-white/15 hover:border-teal-400/50 text-teal-300 transition-all cursor-pointer">🔊 Audio On</button>
-      <button data-act="reset" class="px-3.5 py-1.5 rounded-full text-sm font-medium border border-white/15 hover:border-red-400/50 text-slate-300 hover:text-red-300 transition-all cursor-pointer" title="Reset to the 4 empty seed planets">↺ Reset</button>
       <button data-act="auth-btn" id="btnAuthUser" class="px-3.5 py-1.5 rounded-full text-sm font-medium border border-amber-400/40 bg-amber-400/10 hover:bg-amber-400/20 text-amber-200 transition-all cursor-pointer">👤 Sign In</button>
+      <div class="relative">
+        <button data-act="top-menu" id="btnTopMenu" class="w-8 h-8 rounded-full border border-white/15 hover:border-teal-400/50 text-slate-300 hover:text-white flex items-center justify-center transition-all cursor-pointer text-sm leading-none" title="More options" aria-label="More options">⋯</button>
+        <div id="topOverflowMenu" class="hidden absolute right-0 top-full mt-2 w-48 hud-panel p-1.5 z-50 shadow-2xl">
+          <button data-act="reset" class="w-full px-3 py-2 rounded-lg text-xs font-medium text-left text-red-300 hover:bg-red-500/15 flex items-center gap-2 cursor-pointer transition-colors" title="Reset to the 4 empty seed planets">
+            <span>↺</span><span>Reset to Seed Planets</span>
+          </button>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -259,6 +281,7 @@
       </div>
       <div class="p-5 sm:p-6 pt-3 border-t border-white/10 bg-[#0B0E0F]/95 flex gap-3 flex-shrink-0 safe-bottom">
         <button data-act="forge-confirm" id="btnForgeConfirm" class="flex-1 py-3 rounded-full text-base font-semibold text-neutral-900 cursor-pointer hover:brightness-110 shadow-lg" style="background:var(--gold)">Launch into Orbit</button>
+        <button data-act="del-planet" id="btnForgeDelete" class="hidden px-4 py-3 rounded-full text-sm font-medium border border-red-500/40 bg-red-500/15 hover:bg-red-500/25 text-red-300 cursor-pointer" title="Delete planet">🗑 Delete</button>
         <button data-act="close-modal" data-modal="forgeModal" class="px-5 py-3 rounded-full text-base border border-slate-700 text-slate-200 cursor-pointer">Cancel</button>
       </div>
     </div>
@@ -751,6 +774,7 @@
       selectedId = id;
       updateSelectionVisuals();
       renderHUD();
+      renderMobile();
     }
 
     function toggleTask(pid, tid) {
@@ -879,30 +903,69 @@
     // =========================================================================
     // 6. Desktop Spatial Scene (P0: persistent SVG nodes, transform-only per frame)
     // =========================================================================
+    const LUCIDE_MAP = {
+      "☀️": '<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>',
+      "🏠": '<path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+      "💼": '<path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/>',
+      "👥": '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+      "🎨": '<circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>',
+      "🎮": '<line x1="6" x2="10" y1="11" y2="11"/><line x1="8" x2="8" y1="9" y2="13"/><line x1="15" x2="15.01" y1="12" y2="12"/><line x1="18" x2="18.01" y1="10" y2="10"/><path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z"/>',
+      "🍳": '<circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 1 0-13.6 2.3C6.4 16.4 8 19 8 22h8c0-3 1.6-5.6 2.6-7.7.3-.7.4-1.5.4-2.3Z"/>',
+      "📡": '<path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/>',
+      "✨": '<path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/>',
+      "🌱": '<path d="M7 20h10"/><path d="M10 20c5.5-2.5.8-6.4 3-10"/><path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8z"/><path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1-1 1.6-2.3 1.7-4.6-2.7.1-4 1-4.9 2z"/>',
+      "❤️": '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>',
+      "🏋️": '<path d="M6.5 6.5 17.5 17.5"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/>',
+      "📖": '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>',
+      "💰": '<circle cx="12" cy="12" r="8"/><line x1="12" x2="12" y1="8" y2="16"/><path d="M14.5 9.5a2.5 2.5 0 0 0-5 0c0 2.5 5 1.5 5 4a2.5 2.5 0 0 1-5 0"/>',
+      "🧘": '<circle cx="12" cy="6" r="2"/><path d="M8 20h8"/><path d="m9 16 3-5 3 5"/><path d="m6 15 6-2 6 2"/>',
+      "✈️": '<path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/>',
+      "🧠": '<path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/><path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"/>',
+      "🎵": '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+      "🪐": '<circle cx="12" cy="12" r="6"/><ellipse cx="12" cy="12" rx="11" ry="4" transform="rotate(-24 12 12)"/>',
+      "⚡": '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
+      "🔬": '<path d="M6 18h8"/><path d="M3 22h18"/><path d="M14 22a7 7 0 1 0 0-14h-1"/><path d="M9 14h2"/><path d="M9 12a2 2 0 0 1-2-2V6h6v4a2 2 0 0 1-2 2Z"/><path d="M12 6V3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3"/>',
+      "🏔️": '<path d="m8 3 4 8 5-5 5 15H2L8 3z"/><path d="M4.14 15.08c2.62-1.57 5.24-1.43 7.86.42 2.74 1.94 5.49 2 8.23.19"/>',
+      "🛠️": '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>',
+      "🎯": '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+    };
+
+    function renderNodeIcon(iconStr, pxSize = 20) {
+      const k = (iconStr || "").trim();
+      const paths = LUCIDE_MAP[k] || LUCIDE_MAP[k.replace(/\uFE0F/g, "")];
+      if (paths) {
+        return `<svg width="${pxSize}" height="${pxSize}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="inline-block shrink-0 pointer-events-none" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,0.45))">${paths}</svg>`;
+      }
+      return `<span class="inline-flex items-center justify-center leading-none" style="font-size:${Math.round(pxSize * 0.9)}px;filter:none">${esc(iconStr || "✦")}</span>`;
+    }
+
     const svgEl = document.getElementById("orbitalArcSvg");
     const domContainer = document.getElementById("planetCanvas");
     const SVGNS = "http://www.w3.org/2000/svg";
     let scene = { focusEl: null, wbEl: null, kidEls: {}, kids: [], orbit: null, wbPath: null, arcs: [] };
+    let mobSheetSnap = "peek"; // "peek" | "expanded"
 
     function geom() {
       const w = window.innerWidth, h = window.innerHeight;
       const mob = isMobile();
       if (mob) {
-        const topSafe = 64;
-        const bottomReserved = 296;
-        const availH = Math.max(210, h - topSafe - bottomReserved);
+        const topSafe = 62;
+        const sheetEl = document.getElementById("mobOrbitSheet");
+        const sheetTop = sheetEl ? sheetEl.getBoundingClientRect().top : (mobSheetSnap === "peek" ? h - 180 : h - 385);
+        const availH = Math.max(220, sheetTop - topSafe - 14);
         const cx = Math.round(w / 2);
-        const cy = Math.round(topSafe + availH * 0.46);
-        const radius = Math.round(clamp(Math.min(w * 0.33, availH * 0.41), 76, 128));
-        const scale = clamp(Math.min(w / 400, availH / 340), 0.70, 0.92);
-        return { w, h, cx, cy, radius, scale };
+        const cy = Math.round(topSafe + availH * 0.45);
+        const radius = Math.round(clamp(Math.min(w * 0.39, availH * 0.44), 104, 150));
+        const ry = Math.round(radius * 0.88);
+        const scale = clamp(Math.min(w / 410, availH / 340), 0.68, 0.88);
+        return { w, h, cx, cy, radius, ry, scale };
       }
       const panel = w >= 1536 ? 545 : w >= 1280 ? 495 : 425;
-      const cx = Math.round((w - panel) / 2);
+      const cx = Math.round((w - panel) / 2 - 16);
       const cy = Math.round(h / 2 + 16);
       const radius = Math.round(clamp(Math.min(w - panel - 90, h - 175) * 0.4, 175, 450));
       const scale = clamp(Math.min(w / 1400, h / 880), 0.9, 1.35);
-      return { w, h, cx, cy, radius, scale };
+      return { w, h, cx, cy, radius, ry: radius, scale };
     }
 
     function createNode(pl, size, kind) {
@@ -919,8 +982,9 @@
       const mob = isMobile();
       const titlePx = Math.round(size * (mob ? (isFocus ? 0.20 : 0.22) : (isFocus ? 0.22 : isParent ? 0.25 : 0.235)));
       const pillPx = mob ? 11 : (isFocus ? 14 : 13);
-      const labelMarginTop = Math.max(11, pad + (hasMoons ? 4 : -1));
+      const labelMarginTop = Math.max(11, pad + (hasMoons ? 4 : -1)) + (kind === "child" ? 10 : 0);
       const maxLabelW = mob ? (isFocus ? 150 : 116) : (isFocus ? 210 : 165);
+      const iconPx = Math.round(size * 0.45);
 
       const moons = hasMoons ? kids.slice(0, 10).map((cid, i, arr) => {
         const a = ((-90 + i * (360 / arr.length)) * Math.PI) / 180;
@@ -930,10 +994,11 @@
 
       const wrapper = document.createElement("div");
       wrapper.className = "absolute left-0 top-0 pointer-events-auto cursor-pointer will-change-transform";
+      if (isFocus) wrapper.style.zIndex = "3";
       wrapper.innerHTML = `
         <div class="node-inner relative flex items-center justify-center transition-transform duration-200 ${isFocus ? "hover:scale-[1.03] pill-always" : "hover:scale-110"} ${isParent ? "pill-always" : ""}" style="width:${size}px;height:${size}px;">
           <div class="absolute rounded-full pointer-events-none" style="width:${size * 1.85}px;height:${size * 1.85}px;top:${-size * 0.425}px;left:${-size * 0.425}px;background:radial-gradient(circle, ${pl.color}55 0%, transparent 70%);"></div>
-          ${kind === "child" ? `<div class="reticle-wrap absolute pointer-events-none" style="inset:${-pad - 6}px;display:none"><div class="reticle w-full h-full rounded-full border border-dashed border-amber-300/80"></div></div>` : ""}
+          ${kind === "child" ? `<div class="reticle-wrap absolute pointer-events-none" style="inset:${-pad - 4}px;display:none"><div class="reticle w-full h-full rounded-full border border-dashed border-amber-300/60"></div></div>` : ""}
           <svg class="absolute pointer-events-none overflow-visible" width="${svgDim}" height="${svgDim}" style="top:${-pad}px;left:${-pad}px;">
             ${isFocus ? `<circle cx="${c}" cy="${c}" r="${r + 8}" fill="none" stroke="rgba(45,212,191,0.18)" stroke-dasharray="3 7"/>` : ""}
             <circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="${sw}"/>
@@ -943,12 +1008,12 @@
             ${strained ? `<circle class="strain-pulse" cx="${c}" cy="${c}" r="${r}" fill="none" stroke="#EF4444" stroke-width="${sw + 0.8}" stroke-dasharray="${circ * 0.12 * strainCount(pl)} ${circ}" stroke-dashoffset="${-circ * 0.1}" stroke-linecap="round" style="filter:drop-shadow(0 0 8px #EF4444)"/>` : ""}
             ${moons}
           </svg>
-          <div class="planet-disc w-full h-full rounded-full flex items-center justify-center leading-none select-none text-white"
-               style="color:${pl.color};background:radial-gradient(circle at 32% 28%, ${pl.color}ee, ${pl.color} 70%, #0D0F0E 140%);font-size:${Math.round(size * 0.39)}px;box-shadow:0 0 24px ${pl.color}66, inset 0 2px 4px rgba(255,255,255,0.25), inset 0 -3px 6px rgba(0,0,0,0.4);">
-            <span class="inline-flex items-center justify-center leading-none translate-y-[0.5px]" style="filter:none">${esc(pl.icon)}</span>
+          <div class="planet-disc w-full h-full rounded-full inline-flex items-center justify-center leading-none select-none text-white"
+               style="color:#F8FAFC;background:radial-gradient(circle at 32% 28%, ${pl.color}ee, ${pl.color} 70%, #0D0F0E 140%);box-shadow:0 0 24px ${pl.color}66, inset 0 2px 4px rgba(255,255,255,0.25), inset 0 -3px 6px rgba(0,0,0,0.4);">
+            ${renderNodeIcon(pl.icon, iconPx)}
           </div>
-          <div class="absolute top-full flex flex-col items-center pointer-events-none left-1/2 -translate-x-1/2 whitespace-nowrap z-30" style="margin-top:${labelMarginTop}px">
-            <span class="font-fraunces text-white truncate leading-snug pb-0.5 tracking-wide" style="max-width:${maxLabelW}px;font-size:${titlePx}px;font-weight:${isFocus ? 600 : 500};text-shadow:0 2px 12px #000, 0 0 4px #000;">
+          <div class="node-label absolute top-full flex flex-col items-center pointer-events-none left-1/2 -translate-x-1/2 whitespace-nowrap z-30" style="margin-top:${labelMarginTop}px">
+            <span class="font-fraunces text-white truncate leading-snug px-2 py-0.5 rounded-md bg-[#0D0F0E]/75 backdrop-blur-[2px] tracking-wide" style="max-width:${maxLabelW}px;font-size:${titlePx}px;font-weight:${isFocus ? 600 : 500};text-shadow:0 2px 12px #000, 0 0 4px #000;">
               ${isParent ? "← " : ""}${esc(pl.name)}
             </span>
             <div class="node-pill mt-0.5 flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#0B0E0F]/95 border border-white/15 font-medium shadow-[0_4px_14px_rgba(0,0,0,0.65)]" style="font-size:${pillPx}px">
@@ -980,21 +1045,22 @@
       const kids = childIds(focusId);
       scene.kids = kids;
       const s = g.scale;
+      const mob = isMobile();
 
       // SVG skeleton, created once per scene and mutated per frame
-      const orbit = document.createElementNS(SVGNS, "circle");
+      const orbit = document.createElementNS(SVGNS, "ellipse");
       orbit.setAttribute("fill", "none"); orbit.setAttribute("stroke", "rgba(45,212,191,0.14)"); orbit.setAttribute("stroke-width", "1.25");
       svgEl.appendChild(orbit); scene.orbit = orbit;
       if (fp) {
         const wp = document.createElementNS(SVGNS, "path");
-        wp.setAttribute("fill", "none"); wp.setAttribute("stroke", "rgba(234,179,8,0.26)"); wp.setAttribute("stroke-width", "1.75");
+        wp.setAttribute("fill", "none"); wp.setAttribute("stroke", "rgba(234,179,8,0.22)"); wp.setAttribute("stroke-width", "1.5");
         wp.setAttribute("class", "arc-animated");
         svgEl.appendChild(wp); scene.wbPath = wp;
       }
       kids.forEach((cid, i) => {
         const a = document.createElementNS(SVGNS, "path");
         a.setAttribute("fill", "none");
-        a.setAttribute("stroke", i % 2 === 0 ? "rgba(45,212,191,0.28)" : "rgba(234,179,8,0.22)");
+        a.setAttribute("stroke", i % 2 === 0 ? "rgba(45,212,191,0.20)" : "rgba(234,179,8,0.16)");
         a.setAttribute("stroke-width", "1.5");
         a.setAttribute("class", "arc-animated");
         svgEl.appendChild(a); scene.arcs.push(a);
@@ -1003,18 +1069,20 @@
       // Wayback parent
       if (fp) {
         const par = P(fp.parentId) || lifeNode();
-        const el = createNode(par, Math.round(64 * s), "wayback");
+        const el = createNode(par, Math.round((mob ? 50 : 64) * s), "wayback");
         el.addEventListener("click", (e) => { e.stopPropagation(); dive(fp.parentId || null); });
         domContainer.appendChild(el); scene.wbEl = el;
       }
       // Focus centre
-      const center = createNode(fp || lifeNode(), Math.round(114 * s), "focus");
+      const focusSize = mob ? clamp(Math.round(g.radius * 0.56), 58, 72) : Math.round(114 * s);
+      const center = createNode(fp || lifeNode(), focusSize, "focus");
       center.addEventListener("click", (e) => { e.stopPropagation(); select(null); });
       domContainer.appendChild(center); scene.focusEl = center;
 
       // Orbiting children: click = inspect, click again = dive
+      const childSize = mob ? clamp(Math.round(g.radius * 0.40), 42, 52) : Math.round(78 * s);
       kids.forEach(cid => {
-        const el = createNode(P(cid), Math.round(78 * s), "child");
+        const el = createNode(P(cid), childSize, "child");
         el.addEventListener("click", (e) => {
           e.stopPropagation();
           if (selectedId === cid) dive(cid); else select(cid);
@@ -1038,14 +1106,15 @@
 
     function updateOrbitalPositions() {
       if (!scene.orbit) return;
-      const { cx, cy, radius } = geom();
+      const { cx, cy, radius, ry } = geom();
       const mob = isMobile();
       if (scene.focusEl) place(scene.focusEl, cx, cy);
-      scene.orbit.setAttribute("cx", cx); scene.orbit.setAttribute("cy", cy); scene.orbit.setAttribute("r", radius);
-      if (scene.hintEl) place(scene.hintEl, cx, cy + radius * 0.75);
+      scene.orbit.setAttribute("cx", cx); scene.orbit.setAttribute("cy", cy);
+      scene.orbit.setAttribute("rx", radius); scene.orbit.setAttribute("ry", ry);
+      if (scene.hintEl) place(scene.hintEl, cx, cy + ry * 0.75);
 
       const wbX = mob ? Math.max(46, Math.round(cx - radius * 0.94)) : Math.max(95, Math.round(cx - radius * 1.15));
-      const wbY = mob ? Math.max(88, Math.round(cy - radius * 0.92)) : Math.max(125, Math.round(cy - radius * 0.82));
+      const wbY = mob ? Math.max(88, Math.round(cy - ry * 0.92)) : Math.max(125, Math.round(cy - ry * 0.82));
       if (scene.wbEl) place(scene.wbEl, wbX, wbY);
       if (scene.wbPath) scene.wbPath.setAttribute("d", `M ${wbX} ${wbY} Q ${cx - radius * (mob ? 0.55 : 0.7)} ${wbY + (cy - wbY) * 0.65} ${cx} ${cy}`);
 
@@ -1053,12 +1122,12 @@
       for (let i = 0; i < n; i++) {
         const angle = -90 + (360 / n) * i + orbitOffset;
         const rad = (angle * Math.PI) / 180;
-        const ex = cx + Math.cos(rad) * radius, ey = cy + Math.sin(rad) * radius;
+        const ex = cx + Math.cos(rad) * radius, ey = cy + Math.sin(rad) * ry;
         const el = scene.kidEls[scene.kids[i]];
         if (el) place(el, ex, ey);
         const mx = (cx + ex) / 2, my = (cy + ey) / 2;
         const pRad = ((angle + 90) * Math.PI) / 180;
-        const cpx = mx + Math.cos(pRad) * (radius * 0.34), cpy = my + Math.sin(pRad) * (radius * 0.34);
+        const cpx = mx + Math.cos(pRad) * (radius * 0.34), cpy = my + Math.sin(pRad) * (ry * 0.34);
         scene.arcs[i].setAttribute("d", `M ${cx} ${cy} Q ${cpx} ${cpy} ${ex} ${ey}`);
       }
     }
@@ -1122,22 +1191,22 @@
       const cb = mobile ? "w-7 h-7 text-sm" : "w-6 h-6 text-xs";
       const btn = mobile ? "w-9 h-9 text-sm" : "w-8 h-8 text-sm";
       const cycledToday = t.recur && Array.isArray(t.history) && t.history[0] && isoOf(t.history[0].at) === todayISO();
-      const recurBadge = t.recur ? `<span class="px-2 py-0.5 rounded-full bg-teal-400/15 border border-teal-400/35 text-teal-200 font-medium">${RECUR_LABEL[t.recur] || "↻ Repeat"}${t.streak ? ` · 🔥 ${t.streak}` : ""}</span><span class="text-slate-600">·</span>` : "";
-      const cycledBadge = cycledToday ? `<span class="px-2 py-0.5 rounded-full bg-emerald-400/15 border border-emerald-400/40 text-emerald-300 font-medium">✓ Cycled today</span><span class="text-slate-600">·</span>` : "";
+      const recurBadge = t.recur ? `<span class="px-2 py-0.5 rounded-full bg-teal-400/15 border border-teal-400/35 text-teal-200 font-medium">${RECUR_LABEL[t.recur] || "↻ Repeat"}${t.streak ? ` · 🔥 ${t.streak}` : ""}</span><span aria-hidden="true" class="text-slate-500">·</span>` : "";
+      const cycledBadge = cycledToday ? `<span class="px-2 py-0.5 rounded-full bg-emerald-400/15 border border-emerald-400/40 text-emerald-300 font-medium">✓ Cycled today</span><span aria-hidden="true" class="text-slate-500">·</span>` : "";
       return `
         <div class="group flex items-center gap-3.5 ${mobile ? "p-3.5" : "p-3.5"} rounded-xl bg-white/[0.035] border ${cycledToday ? "border-teal-400/35" : "border-white/10"} hover:border-teal-400/35 transition-colors ${t.done ? "opacity-55" : ""}">
           <button data-act="toggle" data-pid="${p.id}" data-tid="${t.id}" title="${t.recur ? "Complete cycle & advance due date" : t.done ? "Reopen task" : "Complete task"}"
                   class="${cb} flex-shrink-0 rounded-md border flex items-center justify-center cursor-pointer transition-all ${t.done ? "bg-teal-400 border-teal-400 text-[#0D0F0E] font-bold" : cycledToday ? "border-teal-400 bg-teal-400/20 text-teal-200 hover:bg-teal-400/30" : "border-slate-400 hover:border-teal-400 hover:bg-teal-400/10 text-teal-300"}">${t.done ? "✓" : t.recur ? "↻" : ""}</button>
           <div class="flex-1 min-w-0">
-            <p class="${mobile ? "text-base" : "text-[15px] xl:text-base"} font-medium text-slate-100 leading-snug ${t.done ? "line-through text-slate-400" : ""}">${esc(t.title)}</p>
-            <div class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-300">
-              ${showPlanet ? `<span style="color:${p.color}" class="brightness-150 font-medium">${esc(p.icon)} ${esc(p.name)}</span><span class="text-slate-600">·</span>` : ""}
+            <p class="${mobile ? "text-base" : "text-[15px] xl:text-base"} font-medium text-slate-100 leading-snug line-clamp-2 break-words [overflow-wrap:anywhere] ${t.done ? "line-through text-slate-400" : ""}" title="${esc(t.title)}">${esc(t.title)}</p>
+            <div class="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs leading-none text-slate-300">
+              ${showPlanet ? `<span style="color:${p.color}" class="brightness-150 font-medium inline-flex items-center gap-1">${renderNodeIcon(p.icon, 13)} <span>${esc(p.name)}</span></span><span aria-hidden="true" class="text-slate-500">·</span>` : ""}
               ${recurBadge}
               ${cycledBadge}
-              <span class="text-amber-300/90" title="Difficulty ${t.diff}">${"◆".repeat(t.diff)}<span class="text-slate-700">${"◆".repeat(5 - t.diff)}</span></span>
-              <span class="text-slate-600">·</span>
+              <span class="text-amber-300/90 tracking-[0.12em]" title="Difficulty ${t.diff}">${"◆".repeat(t.diff)}<span class="text-slate-500">${"◆".repeat(5 - t.diff)}</span></span>
+              <span aria-hidden="true" class="text-slate-500">·</span>
               ${dueLabel(t)}
-              ${t.done && t.xpAwarded ? `<span class="text-slate-600">·</span><span class="text-teal-300 font-medium">+${t.xpAwarded} XP</span>` : ""}
+              ${t.done && t.xpAwarded ? `<span aria-hidden="true" class="text-slate-500">·</span><span class="text-teal-300 font-medium">+${t.xpAwarded} XP</span>` : ""}
             </div>
           </div>
           <div class="flex items-center gap-1.5 flex-shrink-0">
@@ -1221,15 +1290,15 @@
       const hex = healthHex(score), r = size / 2 - stroke, c = 2 * Math.PI * r;
       const compact = size < 58;
       return `
-        <div class="relative flex-shrink-0 flex items-center justify-center" style="width:${size}px;height:${size}px">
+        <div class="relative flex-shrink-0 flex items-center justify-center" style="width:${size}px;height:${size}px" title="Health ${score}%" aria-label="Health ${score}%">
           <svg width="${size}" height="${size}" class="-rotate-90">
             <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="${stroke}"/>
             <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${hex}" stroke-width="${stroke}" stroke-linecap="round"
                     stroke-dasharray="${(score / 100) * c} ${c}" style="filter:drop-shadow(0 0 6px ${hex}88);transition:stroke-dasharray .6s cubic-bezier(.22,1,.36,1)"/>
           </svg>
           <div class="absolute flex flex-col items-center leading-none">
-            <span class="font-bold" style="color:${hex};font-size:${Math.round(size * (compact ? 0.27 : 0.29))}px">${score}</span>
-            <span class="${compact ? "text-[8px]" : "text-[9px]"} uppercase tracking-widest text-slate-300 mt-0.5 font-medium">health</span>
+            <span class="font-bold" style="color:${hex};font-size:${Math.round(size * (compact ? 0.31 : 0.29))}px">${score}</span>
+            ${compact ? "" : `<span class="text-[9px] uppercase tracking-[0.14em] text-slate-300 mt-0.5 font-medium">health</span>`}
           </div>
         </div>`;
     }
@@ -1280,27 +1349,23 @@
 
       const actions = inspecting
         ? `<button data-act="dive" data-id="${tid}" class="px-3.5 py-1.5 rounded-full text-xs xl:text-sm font-semibold text-[#0D0F0E] cursor-pointer hover:scale-105 transition-transform" style="background:var(--gold)">Dive in →</button>
-           <button data-act="edit-planet" data-id="${tid}" title="Customize planet (name, color, emoji)" class="w-9 h-9 rounded-full bg-white/5 hover:bg-teal-400/20 border border-white/15 hover:border-teal-400/45 text-slate-200 hover:text-teal-300 text-sm cursor-pointer transition-colors">✎</button>
-           <button data-act="del-planet" data-id="${tid}" title="Delete planet" class="w-9 h-9 rounded-full bg-red-500/15 hover:bg-red-500/25 border border-red-500/35 text-red-300 text-sm cursor-pointer">🗑</button>
+           <button data-act="edit-planet" data-id="${tid}" title="Customize or delete planet" class="w-9 h-9 rounded-full bg-white/5 hover:bg-teal-400/20 border border-white/15 hover:border-teal-400/45 text-slate-200 hover:text-teal-300 text-sm cursor-pointer transition-colors">✎</button>
            <button data-act="clear-select" title="Close inspector" class="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 border border-white/15 text-slate-200 text-sm cursor-pointer">✕</button>`
         : target
-        ? `<button data-act="edit-planet" data-id="${tid}" title="Customize planet (name, color, emoji)" class="w-9 h-9 rounded-full bg-white/5 hover:bg-teal-400/20 border border-white/15 hover:border-teal-400/45 text-slate-200 hover:text-teal-300 text-sm cursor-pointer transition-colors">✎</button>
-           <button data-act="del-planet" data-id="${tid}" title="Delete planet" class="w-9 h-9 rounded-full bg-red-500/15 hover:bg-red-500/25 border border-red-500/35 text-red-300 text-sm cursor-pointer">🗑</button>
+        ? `<button data-act="edit-planet" data-id="${tid}" title="Customize or delete planet" class="w-9 h-9 rounded-full bg-white/5 hover:bg-teal-400/20 border border-white/15 hover:border-teal-400/45 text-slate-200 hover:text-teal-300 text-sm cursor-pointer transition-colors">✎</button>
            <button data-act="dive" data-id="${target.parentId || ""}" class="px-3.5 py-1.5 rounded-full bg-white/5 hover:bg-teal-400/15 border border-white/15 text-xs xl:text-sm text-slate-200 hover:text-teal-300 cursor-pointer font-medium">← Back</button>`
         : `<button data-act="edit-planet" data-id="" title="Customize core (name, color, emoji)" class="w-9 h-9 rounded-full bg-white/5 hover:bg-teal-400/20 border border-white/15 hover:border-teal-400/45 text-slate-200 hover:text-teal-300 text-sm cursor-pointer transition-colors">✎</button>`;
 
-      const tab = (key, label) => `<button data-act="tab" data-tab="${key}" class="flex-1 py-2 rounded-full text-xs xl:text-sm font-medium transition-all cursor-pointer ${hudTab === key ? "bg-teal-400/15 border border-teal-400/45 text-teal-200 font-semibold" : "text-slate-300 hover:text-white border border-transparent"}">${label}</button>`;
+      const tab = (key, label) => `<button data-act="tab" data-tab="${key}" class="flex-1 min-w-0 h-8 px-2.5 rounded-full text-xs xl:text-[13px] font-medium whitespace-nowrap transition-all cursor-pointer ${hudTab === key ? "bg-teal-400/15 border border-teal-400/45 text-teal-200 font-semibold" : "text-slate-300 hover:text-white border border-transparent"}">${label}</button>`;
 
       panel.innerHTML = `
-        <div class="flex items-center justify-between gap-2 px-5 py-4 border-b border-teal-400/15 bg-white/[0.015] ${inspecting ? "shadow-[inset_0_-1px_0_rgba(229,169,60,0.35)]" : ""}" style="background-image:radial-gradient(150px circle at 14% 25%, ${node.color}24, transparent 78%)">
-          <div class="flex items-center gap-3 min-w-0">
-            <button data-act="edit-planet" data-id="${tid || ""}" title="Click to customize color & emoji" class="w-11 h-11 rounded-full flex items-center justify-center leading-none select-none text-xl flex-shrink-0 cursor-pointer hover:scale-105 transition-transform" style="background:${node.color};box-shadow:0 0 16px ${node.color}88">${esc(node.icon)}</button>
-            <div class="min-w-0">
-              <h2 class="text-2xl font-semibold text-white font-fraunces truncate leading-snug pb-0.5">${esc(node.name)}</h2>
-              <p class="text-xs xl:text-sm ${inspecting ? "text-amber-300 font-medium" : "text-slate-300"} truncate">${subtitle}</p>
-            </div>
+        <div class="flex items-start justify-between gap-3 px-5 py-4 border-b border-teal-400/15 bg-white/[0.015] ${inspecting ? "shadow-[inset_0_-1px_0_rgba(229,169,60,0.35)]" : ""}" style="background-image:radial-gradient(150px circle at 14% 25%, ${node.color}24, transparent 78%)">
+          <button data-act="edit-planet" data-id="${tid || ""}" title="Click to customize color & icon" class="w-11 h-11 rounded-full inline-flex items-center justify-center leading-none select-none text-white shrink-0 cursor-pointer hover:scale-105 transition-transform" style="background:radial-gradient(circle at 32% 28%, ${node.color}ee, ${node.color} 70%, #0D0F0E 140%);box-shadow:0 0 16px ${node.color}88">${renderNodeIcon(node.icon, 20)}</button>
+          <div class="min-w-0 flex-1">
+            <h2 class="text-2xl font-semibold text-white font-fraunces truncate leading-[1.1] tracking-[-0.005em] [font-variation-settings:'opsz'_72]">${esc(node.name)}</h2>
+            <p class="mt-1 text-[13px] xl:text-sm leading-snug tracking-[0.01em] ${inspecting ? "text-amber-300 font-medium" : "text-slate-300"} truncate" title="${subtitle}">${subtitle}</p>
           </div>
-          <div class="flex items-center gap-1.5 flex-shrink-0">${actions}</div>
+          <div class="flex items-center gap-1.5 shrink-0">${actions}</div>
         </div>
 
         <div class="px-5 py-4 border-b border-teal-400/15">
@@ -1311,8 +1376,8 @@
                 <span class="text-2xl font-semibold text-amber-300 leading-none">Lv ${li.lvl.toFixed(1)}</span>
                 <span class="text-xs text-slate-300 font-medium">${li.toNext} XP to Lv ${li.whole + 1}</span>
               </div>
-              <div class="mt-2.5 h-2 rounded-full bg-white/10 overflow-hidden">
-                <div class="h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-300 transition-all duration-700" style="width:${li.pct}%"></div>
+              <div class="mt-2.5 h-2 rounded-full bg-white/10 overflow-hidden shadow-[inset_0_1px_2px_rgba(0,0,0,.5)]">
+                <div class="h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-300 transition-all duration-700" style="width:${Math.max(li.pct, 2)}%"></div>
               </div>
               <div class="mt-2.5 flex items-center gap-2 text-xs xl:text-sm">
                 <span class="uppercase tracking-wider text-teal-300 font-semibold">Now</span>
@@ -1324,26 +1389,30 @@
           ${strainBlock(target)}
         </div>
 
-        <div class="px-5 py-3.5 border-b border-teal-400/15">
+        <div class="px-5 py-4 border-b border-teal-400/15">
           <div class="flex items-center justify-between mb-2.5">
             <span class="text-xs font-semibold uppercase tracking-wider text-slate-300">Satellites · ${kids.length}</span>
             <button data-act="add-sat" data-id="${tid || ""}" class="px-3 py-1 rounded-full text-xs font-semibold bg-amber-400/15 hover:bg-amber-400/25 text-amber-200 border border-amber-400/35 cursor-pointer">+ Add satellite</button>
           </div>
-          ${kids.length ? `<div class="flex gap-2 overflow-x-auto pb-1 hud-scroll">${kids.map(cid => {
+          ${kids.length ? `<div class="relative -mx-5"><div class="flex gap-2 overflow-x-auto px-5 pb-1.5 snap-x scroll-px-5 hud-scroll [mask-image:linear-gradient(90deg,transparent,#000_20px,#000_calc(100%-28px),transparent)]">${kids.map(cid => {
             const cp = P(cid), h = computeHealth(cp);
-            return `<button data-act="dive" data-id="${cid}" title="Dive into ${esc(cp.name)}" class="px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-teal-400/15 border border-white/15 text-xs xl:text-sm text-slate-100 flex items-center gap-2 flex-shrink-0 cursor-pointer">
-              <span class="w-2 h-2 rounded-full" style="background:${healthHex(h)};box-shadow:0 0 6px ${healthHex(h)}"></span>
-              <span>${esc(cp.icon)}</span><span class="font-fraunces">${esc(cp.name)}</span><span class="text-teal-300">→</span></button>`;
-          }).join("")}</div>` : `<p class="text-xs xl:text-sm text-slate-400">No satellites in orbit.</p>`}
+            return `<button data-act="dive" data-id="${cid}" title="Dive into ${esc(cp.name)}" class="snap-start shrink-0 inline-flex items-center gap-2 h-8 px-3 rounded-xl bg-white/5 hover:bg-teal-400/15 border border-white/15 text-xs xl:text-sm text-slate-100 cursor-pointer">
+              <span class="w-2 h-2 rounded-full shrink-0" style="background:${healthHex(h)};box-shadow:0 0 6px ${healthHex(h)}"></span>
+              <span class="inline-flex items-center justify-center leading-none text-slate-100">${renderNodeIcon(cp.icon, 15)}</span>
+              <span class="font-fraunces leading-none max-w-[9ch] truncate [font-variation-settings:'opsz'_14]">${esc(cp.name)}</span>
+              <span class="text-teal-300/80 leading-none">→</span></button>`;
+          }).join("")}</div></div>` : `<p class="text-xs xl:text-sm text-slate-400">No satellites in orbit.</p>`}
         </div>
 
-        <div class="px-5 pt-3 pb-2 flex items-center gap-1.5">
-          ${tab("missions", `Missions${g.openCount ? ` · ${g.openCount}` : ""}`)}
-          ${tab("notes", `Notes${notesCount ? ` · ${notesCount}` : ""}`)}
-          ${tab("timeline", "Timeline")}
+        <div class="px-5 pt-4 pb-3 flex items-center gap-2">
+          <div role="tablist" class="flex flex-1 min-w-0 gap-1 p-1 rounded-full bg-white/[0.04] border border-white/10">
+            ${tab("missions", `Missions${g.openCount ? ` · ${g.openCount}` : ""}`)}
+            ${tab("notes", `Notes${notesCount ? ` · ${notesCount}` : ""}`)}
+            ${tab("timeline", "Timeline")}
+          </div>
+          ${hudTab === "missions" ? `<button data-act="add-task" data-pid="${tid || ""}" class="shrink-0 h-9 px-3.5 inline-flex items-center gap-1.5 rounded-full text-xs xl:text-sm font-semibold text-[#0D0F0E] hover:scale-105 transition-all cursor-pointer shadow-[0_0_15px_rgba(229,169,60,0.25)]" style="background:var(--gold)"><span class="text-base leading-none">+</span><span class="hidden xl:inline">Add task</span><span class="xl:hidden">Task</span></button>` : ""}
         </div>
-        ${hudTab === "missions" ? `<div class="px-5 pb-1.5 flex justify-end"><button data-act="add-task" data-pid="${tid || ""}" class="px-3.5 py-1.5 rounded-full text-xs xl:text-sm font-semibold text-[#0D0F0E] hover:scale-105 transition-all cursor-pointer shadow-[0_0_15px_rgba(229,169,60,0.25)]" style="background:var(--gold)">+ Add task</button></div>` : ""}
-        <div class="flex-1 overflow-y-auto hud-scroll px-5 pb-5 pt-2 space-y-4">
+        <div class="flex-1 overflow-y-auto hud-scroll px-5 pt-1 pb-8 space-y-3 [mask-image:linear-gradient(180deg,#000_calc(100%-24px),transparent)]">
           ${hudTab === "missions" ? missionsHTML(tid, false) : hudTab === "notes" ? notesHTML(tid, false) : timelineHTML(tid)}
         </div>`;
     }
@@ -1372,46 +1441,55 @@
         const li = levelInfo(xpOf(target));
         const g = taskGroups(tid);
         const kids = childIds(tid);
-        
+        const isPeek = mobSheetSnap === "peek";
+
         const previewLimit = window.innerHeight < 730 ? 1 : 2;
         const previewTasks = [...g.overdue, ...g.here].slice(0, previewLimit);
         const tasksPreviewHTML = previewTasks.length ? previewTasks.map(x => `
           <div class="flex items-center gap-2.5 p-2 rounded-xl bg-white/[0.04] border border-white/10 text-xs min-w-0">
-            <button data-act="toggle-task" data-id="${x.t.id}" class="w-6 h-6 rounded-full border border-teal-400/45 flex items-center justify-center text-xs text-teal-300 flex-shrink-0 cursor-pointer active:scale-95">○</button>
+            <button data-act="toggle" data-pid="${x.p.id}" data-tid="${x.t.id}" class="w-6 h-6 rounded-full border border-teal-400/45 flex items-center justify-center text-xs text-teal-300 flex-shrink-0 cursor-pointer active:scale-95">○</button>
             <span class="flex-1 min-w-0 truncate text-slate-100 font-medium">${esc(x.t.title)}</span>
             <span class="text-[11px] font-semibold text-amber-300 flex-shrink-0">+${x.t.diff * 10} XP</span>
           </div>
         `).join("") : `<p class="text-xs text-slate-300 py-1">No active missions in this sector.</p>`;
 
         body = `
-          <div class="fixed inset-x-3 bottom-[74px] z-30 glass-surface rounded-2xl p-3.5 shadow-2xl pointer-events-auto border border-white/15 safe-bottom fade-up" style="background-image:radial-gradient(140px circle at 15% 20%, ${node.color}24, transparent 78%)">
-            <div class="w-10 h-1 rounded-full bg-white/20 mx-auto mb-2 flex-shrink-0"></div>
+          <div id="mobOrbitSheet" class="fixed inset-x-3 bottom-[78px] z-30 glass-surface rounded-2xl p-3.5 shadow-2xl pointer-events-auto border border-white/15 fade-up" style="background-image:radial-gradient(140px circle at 15% 20%, ${node.color}24, transparent 78%)">
+            <button data-act="toggle-sheet" class="w-full py-1 -mt-1 mb-1.5 flex items-center justify-center cursor-pointer" title="${isPeek ? "Expand sector sheet" : "Collapse to peek"}">
+              <span class="w-10 h-1 rounded-full bg-white/25"></span>
+            </button>
             <div class="flex items-center gap-3 min-w-0">
-              <button data-act="edit-planet" data-id="${target ? target.id : ""}" title="Customize planet" class="w-11 h-11 rounded-full flex items-center justify-center leading-none select-none text-xl flex-shrink-0 cursor-pointer shadow-lg" style="background:radial-gradient(circle at 32% 28%, ${node.color}ee, ${node.color} 70%, #0D0F0E 140%);box-shadow:0 0 20px ${node.color}77">${esc(node.icon)}</button>
+              <button data-act="edit-planet" data-id="${target ? target.id : ""}" title="Customize planet" class="w-11 h-11 rounded-full inline-flex items-center justify-center leading-none select-none text-white flex-shrink-0 cursor-pointer shadow-lg" style="background:radial-gradient(circle at 32% 28%, ${node.color}ee, ${node.color} 70%, #0D0F0E 140%);box-shadow:0 0 20px ${node.color}77">${renderNodeIcon(node.icon, 20)}</button>
               <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2 min-w-0">
-                  <h3 class="font-fraunces text-xl font-semibold text-white truncate leading-snug pb-0.5">${esc(node.name)}</h3>
-                  ${target ? `<button data-act="edit-planet" data-id="${target.id}" class="text-xs text-slate-300 hover:text-teal-300 cursor-pointer shrink-0">✎</button>` : ""}
+                  <h3 class="font-fraunces text-xl font-semibold text-white truncate leading-tight [font-variation-settings:'opsz'_48]">${esc(node.name)}</h3>
+                  ${g.overdueCount ? `<span class="px-2 py-0.5 rounded-full bg-red-500/20 border border-red-500/35 text-[10px] text-red-200 font-semibold shrink-0">⚠ ${g.overdueCount} overdue</span>` : ""}
                 </div>
-                <p class="text-xs text-slate-300 truncate">Lv ${li.lvl.toFixed(1)} · ${li.toNext} XP to next · <span class="font-semibold" style="color:${healthHex(score)}">${score}%</span></p>
+                <p class="mt-0.5 text-xs text-slate-300 truncate">Lv ${li.lvl.toFixed(1)} · ${li.toNext} XP to next · <span class="font-semibold" style="color:${healthHex(score)}">${score}%</span></p>
               </div>
-              ${gaugeSVG(score, 52, 4.5)}
+              <button data-act="add-sat" data-id="${focusId || ""}" class="w-9 h-9 rounded-full bg-amber-400/15 border border-amber-400/35 text-amber-200 inline-flex items-center justify-center text-xs font-semibold shrink-0 cursor-pointer" title="Launch new satellite">+🪐</button>
+              ${gaugeSVG(score, 48, 4.5)}
             </div>
-            <div class="mt-2 h-1.5 rounded-full bg-white/10 overflow-hidden">
-              <div class="h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-300" style="width:${li.pct}%"></div>
+            <div class="mt-2.5 h-1.5 rounded-full bg-white/10 overflow-hidden shadow-[inset_0_1px_2px_rgba(0,0,0,.5)]">
+              <div class="h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-300" style="width:${Math.max(li.pct, 2)}%"></div>
             </div>
-            <div class="mt-2.5 pt-2 border-t border-white/10 space-y-1.5">
-              <div class="flex items-center justify-between text-xs font-semibold text-slate-300">
-                <span class="uppercase tracking-wider">Sector Tasks · ${g.openCount}</span>
-                <button data-act="mob-view" data-view="missions" class="text-teal-300 hover:underline cursor-pointer">Full Missions →</button>
+            ${isPeek ? `
+              <div class="mt-2.5 pt-2 border-t border-white/10 flex items-center justify-between gap-2 text-xs">
+                <button data-act="toggle-sheet" class="text-slate-300 hover:text-white font-medium cursor-pointer">▴ ${g.openCount} sector task${g.openCount === 1 ? "" : "s"} · tap to expand</button>
+                <button data-act="mob-view" data-view="missions" class="px-3.5 py-1.5 rounded-full text-xs font-semibold text-neutral-900 cursor-pointer shadow-md shrink-0" style="background:var(--gold)">Sector Missions →</button>
               </div>
-              ${g.overdueCount ? `<div class="px-2.5 py-1 rounded-lg bg-red-500/15 border border-red-500/30 text-[11px] text-red-200 font-medium flex items-center justify-between"><span>⚠ ${g.overdueCount} overdue</span><button data-act="mob-view" data-view="missions" class="underline">View</button></div>` : ""}
-              ${tasksPreviewHTML}
-            </div>
-            <div class="mt-2.5 pt-2 border-t border-white/10 flex items-center gap-2">
-              <button data-act="add-sat" data-id="${focusId || ""}" class="flex-1 py-1.5 px-3 rounded-full text-xs font-medium border border-dashed border-amber-400/50 bg-amber-400/10 text-amber-200 cursor-pointer">+ Satellite</button>
-              <button data-act="mob-view" data-view="missions" class="flex-1 py-1.5 px-3 rounded-full text-xs font-semibold text-neutral-900 cursor-pointer shadow-md" style="background:var(--gold)">Sector Missions</button>
-            </div>
+            ` : `
+              <div class="mt-2.5 pt-2 border-t border-white/10 space-y-1.5">
+                <div class="flex items-center justify-between text-xs font-semibold text-slate-300">
+                  <span class="uppercase tracking-wider">Sector Tasks · ${g.openCount}</span>
+                  <button data-act="toggle-sheet" class="text-slate-400 hover:text-slate-200 cursor-pointer">▾ Collapse</button>
+                </div>
+                ${tasksPreviewHTML}
+              </div>
+              <div class="mt-2.5 pt-2 border-t border-white/10 flex items-center gap-2">
+                <button data-act="mob-view" data-view="missions" class="w-full py-2 px-4 rounded-full text-xs font-semibold text-neutral-900 cursor-pointer shadow-md" style="background:var(--gold)">Open Sector Missions (${g.openCount})</button>
+              </div>
+            `}
           </div>
         `;
       } else if (mobView === "missions") {
@@ -1428,24 +1506,20 @@
             ${fp ? `<button data-act="dive" data-id="${fp.parentId || ""}" class="text-xs text-teal-300 font-medium py-1 flex items-center gap-1 cursor-pointer">← Return to ${esc(P(fp.parentId)?.name || "Life")}</button>` : ""}
             <div class="hud-panel glass-surface p-4" style="background-image:radial-gradient(150px circle at 15% 20%, ${node.color}24, transparent 78%)">
               <div class="flex items-center gap-3 min-w-0">
-                <button data-act="edit-planet" data-id="${fp ? fp.id : ""}" title="Customize planet" class="w-14 h-14 rounded-full flex items-center justify-center leading-none select-none text-2xl flex-shrink-0 cursor-pointer shadow-lg" style="background:radial-gradient(circle at 32% 28%, ${node.color}ee, ${node.color} 70%, #0D0F0E 140%);box-shadow:0 0 22px ${node.color}77">${esc(node.icon)}</button>
+                <button data-act="edit-planet" data-id="${fp ? fp.id : ""}" title="Customize planet" class="w-12 h-12 rounded-full inline-flex items-center justify-center leading-none select-none text-white flex-shrink-0 cursor-pointer shadow-lg" style="background:radial-gradient(circle at 32% 28%, ${node.color}ee, ${node.color} 70%, #0D0F0E 140%);box-shadow:0 0 22px ${node.color}77">${renderNodeIcon(node.icon, 22)}</button>
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center gap-2 min-w-0">
-                    <h2 class="font-fraunces text-2xl font-semibold truncate leading-snug pb-0.5 text-white">${esc(node.name)}</h2>
-                    ${fp ? `<button data-act="edit-planet" data-id="${fp.id}" class="text-xs text-slate-300 hover:text-teal-300 cursor-pointer shrink-0">✎</button>` : ""}
+                    <h2 class="font-fraunces text-2xl font-semibold truncate leading-tight text-white [font-variation-settings:'opsz'_72]">${esc(node.name)}</h2>
+                    <button data-act="edit-planet" data-id="${fp ? fp.id : ""}" title="Customize planet" class="w-7 h-7 rounded-full bg-white/5 border border-white/15 text-xs text-slate-200 hover:text-teal-300 inline-flex items-center justify-center cursor-pointer shrink-0">✎</button>
                   </div>
-                  <p class="text-xs text-slate-300">Lv ${li.lvl.toFixed(1)} · ${li.toNext} XP to next Lv</p>
+                  <p class="mt-0.5 text-xs text-slate-300">Lv ${li.lvl.toFixed(1)} · ${li.toNext} XP to next Lv</p>
                 </div>
-                ${gaugeSVG(score, 58, 4.5)}
+                ${gaugeSVG(score, 54, 4.5)}
               </div>
-              <div class="mt-3 h-1.5 rounded-full bg-white/10 overflow-hidden">
-                <div class="h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-300" style="width:${li.pct}%"></div>
+              <div class="mt-3 h-1.5 rounded-full bg-white/10 overflow-hidden shadow-[inset_0_1px_2px_rgba(0,0,0,.5)]">
+                <div class="h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-300" style="width:${Math.max(li.pct, 2)}%"></div>
               </div>
               ${strainBlock(fp)}
-              <div class="mt-3 flex justify-end gap-2">
-                <button data-act="edit-planet" data-id="${fp ? fp.id : ""}" class="px-3.5 py-1.5 rounded-full text-xs bg-white/5 border border-white/15 text-slate-200 cursor-pointer hover:border-teal-400/50">✎ Customize</button>
-                ${fp ? `<button data-act="del-planet" data-id="${fp.id}" class="px-3.5 py-1.5 rounded-full text-xs bg-red-500/10 border border-red-500/30 text-red-300 cursor-pointer">🗑 Delete planet</button>` : ""}
-              </div>
             </div>
 
             <div class="hud-panel glass-surface p-4">
@@ -1456,7 +1530,7 @@
               ${kids.length ? `<div class="space-y-2 mt-2">${kids.map(cid => {
                 const cp = P(cid), h = computeHealth(cp), hex = healthHex(h), st = taskGroups(cid);
                 return `<button data-act="dive" data-id="${cid}" class="w-full flex items-center gap-3 p-3 rounded-xl bg-white/[0.04] border border-white/10 active:bg-teal-400/15 text-left cursor-pointer min-w-0">
-                  <div class="relative w-10 h-10 rounded-full flex items-center justify-center leading-none select-none text-lg flex-shrink-0" style="background:${cp.color};box-shadow:0 0 0 2px #0D0F0E, 0 0 0 4px ${hex}">${esc(cp.icon)}</div>
+                  <div class="relative w-10 h-10 rounded-full inline-flex items-center justify-center leading-none select-none text-white flex-shrink-0" style="background:radial-gradient(circle at 32% 28%, ${cp.color}ee, ${cp.color} 70%, #0D0F0E 140%);box-shadow:0 0 0 2px #0D0F0E, 0 0 0 3.5px ${hex}">${renderNodeIcon(cp.icon, 18)}</div>
                   <div class="flex-1 min-w-0">
                     <p class="font-fraunces text-base text-slate-100 truncate leading-snug pb-0.5">${esc(cp.name)}</p>
                     <p class="text-xs text-slate-300 truncate"><span class="font-semibold" style="color:${hex}">${h}%</span> · Lv ${levelOf(cp).toFixed(1)} · ${st.openCount ? `${st.openCount} open${st.overdueCount ? ` · <span class="text-red-300">${st.overdueCount} overdue</span>` : ""}` : "All clear"}</p>
@@ -1561,7 +1635,7 @@
       }
 
       const navBtn = (view, icon, label) => `
-        <button data-act="mob-view" data-view="${view}" class="flex-1 flex flex-col items-center justify-center py-1.5 rounded-xl transition-all cursor-pointer ${mobView === view ? "text-teal-300 bg-teal-400/15 font-semibold" : "text-slate-400"}">
+        <button data-act="mob-view" data-view="${view}" class="flex-1 min-h-[48px] flex flex-col items-center justify-center py-1.5 rounded-xl transition-all cursor-pointer ${mobView === view ? "text-teal-300 bg-teal-400/15 font-semibold" : "text-slate-400"}">
           <span class="text-xl leading-none">${icon}</span>
           <span class="text-[10px] mt-1 font-medium">${label}</span>
         </button>
@@ -1584,10 +1658,10 @@
 
     function render() {
       healthCache.clear();
-      rebuildScene();
       renderTopBar();
       renderHUD();
       renderMobile();
+      rebuildScene();
     }
 
     // =========================================================================
@@ -1599,7 +1673,7 @@
     function openModal(id) { const m = document.getElementById(id); m.classList.remove("hidden"); m.classList.add("flex"); }
     function closeModal(id) { const m = document.getElementById(id); m.classList.add("hidden"); m.classList.remove("flex"); }
     function renderForgePickers() {
-      document.getElementById("forgeIcons").innerHTML = FORGE_ICONS.map(i => `<button data-act="forge-icon" data-v="${i}" class="w-9 h-9 rounded-lg text-lg cursor-pointer border ${forge.icon === i ? "border-teal-400 bg-teal-400/15" : "border-white/10 bg-white/5 hover:border-white/30"}">${i}</button>`).join("");
+      document.getElementById("forgeIcons").innerHTML = FORGE_ICONS.map(i => `<button data-act="forge-icon" data-v="${i}" class="w-9 h-9 rounded-lg text-lg inline-flex items-center justify-center cursor-pointer border ${forge.icon === i ? "border-teal-400 bg-teal-400/15 text-teal-200" : "border-white/10 bg-white/5 hover:border-white/30 text-slate-200"}">${renderNodeIcon(i, 18)}</button>`).join("");
       document.getElementById("forgeColors").innerHTML = FORGE_COLORS.map(c => `<button data-act="forge-color" data-v="${c}" class="w-8 h-8 rounded-full cursor-pointer ${forge.color.toLowerCase() === c.toLowerCase() ? "ring-2 ring-offset-2 ring-offset-[#0F1315] ring-teal-300" : ""}" style="background:${c}"></button>`).join("");
       const customIconEl = document.getElementById("inputForgeCustomIcon");
       if (customIconEl && document.activeElement !== customIconEl) customIconEl.value = forge.icon;
@@ -1611,6 +1685,7 @@
       document.getElementById("forgeTargetLabel").textContent = `Orbiting ${parentId ? P(parentId).name : (STATE.life?.name || "Life")}`;
       document.getElementById("forgeModalTitle").textContent = "Launch Celestial Node";
       document.getElementById("btnForgeConfirm").textContent = "Launch into Orbit";
+      document.getElementById("btnForgeDelete")?.classList.add("hidden");
       document.getElementById("inputForgeName").value = "";
       renderForgePickers();
       openModal("forgeModal");
@@ -1629,6 +1704,15 @@
       document.getElementById("forgeTargetLabel").textContent = id ? `Orbiting ${parentName}` : parentName;
       document.getElementById("forgeModalTitle").textContent = "Customize Planet";
       document.getElementById("btnForgeConfirm").textContent = "Save Changes";
+      const delBtn = document.getElementById("btnForgeDelete");
+      if (delBtn) {
+        if (id) {
+          delBtn.dataset.id = id;
+          delBtn.classList.remove("hidden");
+        } else {
+          delBtn.classList.add("hidden");
+        }
+      }
       document.getElementById("inputForgeName").value = target.name || "";
       renderForgePickers();
       openModal("forgeModal");
@@ -1750,6 +1834,10 @@
     // =========================================================================
     document.addEventListener("click", (e) => {
       const el = e.target.closest("[data-act]");
+      const topMenu = document.getElementById("topOverflowMenu");
+      if (topMenu && !topMenu.classList.contains("hidden") && (!el || el.dataset.act !== "top-menu")) {
+        topMenu.classList.add("hidden");
+      }
       if (!el) {
         // Click on empty space clears the inspector selection
         if (selectedId && (e.target === document.body || e.target.id === "spaceCanvas")) { selectedId = null; updateSelectionVisuals(); renderHUD(); }
@@ -1766,11 +1854,13 @@
         case "add-task": openTaskModal(d.pid || null); break;
         case "add-sat": openForge(d.id || null); break;
         case "edit-planet": openEditPlanet(d.id || null); break;
-        case "del-planet": deletePlanet(d.id); break;
+        case "del-planet": closeModal("forgeModal"); deletePlanet(d.id); break;
         case "strain": toggleStrain(d.id, d.kind); break;
-        case "tab": hudTab = d.tab; renderHUD(); break;
+        case "tab": hudTab = d.tab; renderHUD(); renderMobile(); break;
         case "toggle-completed": showCompleted = !showCompleted; renderHUD(); renderMobile(); break;
-        case "mob-view": mobView = d.view; renderMobile(); document.getElementById("mobileView").scrollTop = 0; break;
+        case "toggle-sheet": mobSheetSnap = mobSheetSnap === "peek" ? "expanded" : "peek"; renderMobile(); rebuildScene(); break;
+        case "top-menu": topMenu?.classList.toggle("hidden"); break;
+        case "mob-view": mobView = d.view; renderMobile(); rebuildScene(); document.getElementById("mobileView").scrollTop = 0; break;
         case "add-note": { const inp = document.getElementById(d.input); if (inp && inp.value.trim()) addNote(d.id || null, inp.value); break; }
         case "del-note": deleteNote(d.id || null, d.nid); break;
         case "sound": STATE.soundOn = !STATE.soundOn; save(); renderTopBar(); renderMobile(); if (STATE.soundOn) sfx.click(); break;
