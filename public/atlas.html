@@ -140,7 +140,7 @@
       <div id="mobBreadcrumbs" class="flex items-center gap-1 text-xs text-slate-300 min-w-0 overflow-hidden"></div>
     </div>
     <div class="flex items-center gap-1.5 flex-shrink-0">
-      <button data-act="sync-cloud" id="mobBtnCloudSync" class="px-2.5 py-1 rounded-full text-[11px] font-medium border border-teal-400/35 bg-teal-400/10 text-teal-200 transition-all cursor-pointer whitespace-nowrap" title="Click to sync cloud universe">☁️ Synced</button>
+      <button data-act="sync-cloud" id="mobBtnCloudSync" class="px-2.5 py-1 rounded-full text-[11px] font-medium border border-teal-400/35 bg-teal-400/10 text-teal-200 transition-all cursor-pointer whitespace-nowrap" title="Persistence status">💾 Local Mode</button>
       <button data-act="sound" id="mobBtnSound" class="w-7 h-7 rounded-full border border-white/15 text-xs flex items-center justify-center text-slate-200 cursor-pointer leading-none">🔊</button>
       <button data-act="auth-btn" id="mobBtnAuth" class="px-2.5 py-1 rounded-full text-[11px] font-medium border border-amber-400/40 bg-amber-400/10 text-amber-200 cursor-pointer whitespace-nowrap">👤</button>
     </div>
@@ -159,7 +159,7 @@
       <nav id="breadcrumbNav" class="flex items-center gap-1.5"></nav>
     </div>
     <div class="hud-panel h-12 px-3 flex items-center gap-2 pointer-events-auto relative">
-      <button data-act="sync-cloud" id="btnCloudSync" class="px-3.5 py-1.5 rounded-full text-sm font-medium border border-teal-400/35 bg-teal-400/10 text-teal-200 hover:border-teal-400 transition-all cursor-pointer" title="Click to sync with Supabase database">☁️ Synced</button>
+      <button data-act="sync-cloud" id="btnCloudSync" class="px-3.5 py-1.5 rounded-full text-sm font-medium border border-teal-400/35 bg-teal-400/10 text-teal-200 hover:border-teal-400 transition-all cursor-pointer" title="Persistence status">💾 Local Mode</button>
       <button data-act="sound" id="btnSoundToggle" class="px-3.5 py-1.5 rounded-full text-sm font-medium border border-white/15 hover:border-teal-400/50 text-teal-300 transition-all cursor-pointer">🔊 Audio On</button>
       <button data-act="auth-btn" id="btnAuthUser" class="px-3.5 py-1.5 rounded-full text-sm font-medium border border-amber-400/40 bg-amber-400/10 hover:bg-amber-400/20 text-amber-200 transition-all cursor-pointer">👤 Sign In</button>
       <div class="relative">
@@ -216,7 +216,7 @@
       </div>
 
       <div class="pt-1 text-center">
-        <button data-act="login-guest" class="text-xs text-slate-400 hover:text-teal-300 underline cursor-pointer">Continue in Guest Mode (4 Seed Planets)</button>
+        <button data-act="login-guest" class="text-xs text-slate-400 hover:text-teal-300 underline cursor-pointer">Continue in Guest Mode (Local-only, no cloud sync)</button>
       </div>
     </div>
   </div>
@@ -357,7 +357,7 @@
     let currentUser = null;
     let guestMode = false;
     const storeKey = () => (currentUser?.id ? `${BASE_STORE_KEY}-${currentUser.id}` : BASE_STORE_KEY);
-    const universeId = () => (currentUser?.id ? currentUser.id : "default");
+    const universeId = () => (currentUser?.id ? currentUser.id : null);
     function isoOf(ms) { const d = new Date(ms); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); }
     const todayISO = () => isoOf(Date.now());
     const addDays = (n) => isoOf(Date.now() + n * DAY);
@@ -583,6 +583,10 @@
     }
 
     async function saveToSupabase() {
+      if (!currentUser || !currentUser.id) {
+        setCloudStatus("💾 Local only", "ok");
+        return;
+      }
       setCloudStatus("⟳ Syncing…", "syncing");
       try {
         const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/sync_universe_state`, {
@@ -597,10 +601,14 @@
         if (!res.ok) throw new Error("RPC failed");
         setCloudStatus("☁️ Synced", "ok");
       } catch (e) {
-        setCloudStatus("☁️ Local saved", "err");
+        setCloudStatus("☁️ Offline mode", "err");
       }
     }
     async function loadFromSupabase() {
+      if (!currentUser || !currentUser.id) {
+        setCloudStatus("💾 Local only", "ok");
+        return;
+      }
       setCloudStatus("⟳ Loading…", "syncing");
       try {
         const uidParam = encodeURIComponent(universeId());
@@ -637,7 +645,7 @@
             const userRaw = localStorage.getItem(storeKey());
             const defaultRaw = localStorage.getItem(BASE_STORE_KEY);
             const parsed = userRaw ? JSON.parse(userRaw) : (defaultRaw ? JSON.parse(defaultRaw) : null);
-            if (parsed) fallbackState = normalizeState(parsed);
+            if (parsed && !parsed._isDefaultSeed) fallbackState = normalizeState(parsed);
           } catch (e) {}
 
           STATE = fallbackState || seedState();
@@ -646,9 +654,10 @@
           focusId = null; selectedId = null;
           render();
           await saveToSupabase();
+          setCloudStatus("☁️ Synced", "ok");
         }
       } catch (e) {
-        setCloudStatus("☁️ Local mode", "err");
+        setCloudStatus("☁️ Offline mode", "err");
       }
     }
 
@@ -656,8 +665,12 @@
       STATE._isDefaultSeed = false;
       STATE.updatedAt = Date.now();
       try { localStorage.setItem(storeKey(), JSON.stringify(STATE)); } catch (e) {}
-      clearTimeout(syncTimer);
-      syncTimer = setTimeout(() => { saveToSupabase(); }, 300);
+      if (currentUser) {
+        clearTimeout(syncTimer);
+        syncTimer = setTimeout(() => { saveToSupabase(); }, 300);
+      } else {
+        setCloudStatus("💾 Local only", "ok");
+      }
     }
 
     // UI-only state
@@ -1019,13 +1032,15 @@
             <div class="node-pill mt-0.5 flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#0B0E0F]/95 border border-white/15 font-medium shadow-[0_4px_14px_rgba(0,0,0,0.65)]" style="font-size:${pillPx}px">
               <span class="font-semibold" style="color:${hex}">${score}%</span>
               <span class="text-slate-400">·</span>
-              <span class="text-amber-300 font-semibold">Lv ${lvl.toFixed(1)}</span>
+              <span class="text-amber-300 font-semibold">Lv ${Math.floor(lvl)}</span>
               ${kids.length && !isFocus ? `<span class="text-slate-400">·</span><span class="text-teal-300">${kids.length} in orbit</span>` : ""}
             </div>
           </div>
         </div>`;
       wrapper.addEventListener("mouseenter", () => { hoveringNode = true; });
       wrapper.addEventListener("mouseleave", () => { hoveringNode = false; });
+      wrapper.addEventListener("touchstart", () => { hoveringNode = true; lastTouchTime = Date.now(); }, { passive: true });
+      wrapper.addEventListener("touchend", () => { setTimeout(() => { hoveringNode = false; }, 2000); }, { passive: true });
       return wrapper;
     }
 
@@ -1373,7 +1388,7 @@
             ${gaugeSVG(score)}
             <div class="flex-1 min-w-0">
               <div class="flex items-baseline justify-between">
-                <span class="text-2xl font-semibold text-amber-300 leading-none">Lv ${li.lvl.toFixed(1)}</span>
+                <span class="text-2xl font-semibold text-amber-300 leading-none">Lv ${li.whole}</span>
                 <span class="text-xs text-slate-300 font-medium">${li.toNext} XP to Lv ${li.whole + 1}</span>
               </div>
               <div class="mt-2.5 h-2 rounded-full bg-white/10 overflow-hidden shadow-[inset_0_1px_2px_rgba(0,0,0,.5)]">
@@ -1449,7 +1464,7 @@
           <div class="flex items-center gap-2.5 p-2 rounded-xl bg-white/[0.04] border border-white/10 text-xs min-w-0">
             <button data-act="toggle" data-pid="${x.p.id}" data-tid="${x.t.id}" class="w-6 h-6 rounded-full border border-teal-400/45 flex items-center justify-center text-xs text-teal-300 flex-shrink-0 cursor-pointer active:scale-95">○</button>
             <span class="flex-1 min-w-0 truncate text-slate-100 font-medium">${esc(x.t.title)}</span>
-            <span class="text-[11px] font-semibold text-amber-300 flex-shrink-0">+${x.t.diff * 10} XP</span>
+            <span class="text-[11px] font-semibold text-amber-300 flex-shrink-0">+${taskXP(x.t.diff, strainCount(x.p))} XP</span>
           </div>
         `).join("") : `<p class="text-xs text-slate-300 py-1">No active missions in this sector.</p>`;
 
@@ -1465,7 +1480,7 @@
                   <h3 class="font-fraunces text-xl font-semibold text-white truncate leading-tight [font-variation-settings:'opsz'_48]">${esc(node.name)}</h3>
                   ${g.overdueCount ? `<span class="px-2 py-0.5 rounded-full bg-red-500/20 border border-red-500/35 text-[10px] text-red-200 font-semibold shrink-0">⚠ ${g.overdueCount} overdue</span>` : ""}
                 </div>
-                <p class="mt-0.5 text-xs text-slate-300 truncate">Lv ${li.lvl.toFixed(1)} · ${li.toNext} XP to next · <span class="font-semibold" style="color:${healthHex(score)}">${score}%</span></p>
+                <p class="mt-0.5 text-xs text-slate-300 truncate">Lv ${li.whole} · ${li.toNext} XP to Lv ${li.whole + 1} · <span class="font-semibold" style="color:${healthHex(score)}">${score}%</span></p>
               </div>
               <button data-act="add-sat" data-id="${focusId || ""}" class="w-9 h-9 rounded-full bg-amber-400/15 border border-amber-400/35 text-amber-200 inline-flex items-center justify-center text-xs font-semibold shrink-0 cursor-pointer" title="Launch new satellite">+🪐</button>
               ${gaugeSVG(score, 48, 4.5)}
@@ -1512,7 +1527,7 @@
                     <h2 class="font-fraunces text-2xl font-semibold truncate leading-tight text-white [font-variation-settings:'opsz'_72]">${esc(node.name)}</h2>
                     <button data-act="edit-planet" data-id="${fp ? fp.id : ""}" title="Customize planet" class="w-7 h-7 rounded-full bg-white/5 border border-white/15 text-xs text-slate-200 hover:text-teal-300 inline-flex items-center justify-center cursor-pointer shrink-0">✎</button>
                   </div>
-                  <p class="mt-0.5 text-xs text-slate-300">Lv ${li.lvl.toFixed(1)} · ${li.toNext} XP to next Lv</p>
+                  <p class="mt-0.5 text-xs text-slate-300">Lv ${li.whole} · ${li.toNext} XP to Lv ${li.whole + 1}</p>
                 </div>
                 ${gaugeSVG(score, 54, 4.5)}
               </div>
@@ -1533,7 +1548,7 @@
                   <div class="relative w-10 h-10 rounded-full inline-flex items-center justify-center leading-none select-none text-white flex-shrink-0" style="background:radial-gradient(circle at 32% 28%, ${cp.color}ee, ${cp.color} 70%, #0D0F0E 140%);box-shadow:0 0 0 2px #0D0F0E, 0 0 0 3.5px ${hex}">${renderNodeIcon(cp.icon, 18)}</div>
                   <div class="flex-1 min-w-0">
                     <p class="font-fraunces text-base text-slate-100 truncate leading-snug pb-0.5">${esc(cp.name)}</p>
-                    <p class="text-xs text-slate-300 truncate"><span class="font-semibold" style="color:${hex}">${h}%</span> · Lv ${levelOf(cp).toFixed(1)} · ${st.openCount ? `${st.openCount} open${st.overdueCount ? ` · <span class="text-red-300">${st.overdueCount} overdue</span>` : ""}` : "All clear"}</p>
+                    <p class="text-xs text-slate-300 truncate"><span class="font-semibold" style="color:${hex}">${h}%</span> · Lv ${Math.floor(levelOf(cp))} · ${st.openCount ? `${st.openCount} open${st.overdueCount ? ` · <span class="text-red-300">${st.overdueCount} overdue</span>` : ""}` : "All clear"}</p>
                   </div>
                   <span class="text-teal-400 text-lg shrink-0">›</span>
                 </button>`;
@@ -1581,7 +1596,7 @@
                 <div class="rounded-xl bg-white/[0.04] border border-white/10 py-2.5"><p class="text-xl font-semibold text-amber-300">+${xpToday}</p><p class="text-[10px] uppercase tracking-wider text-slate-300">xp earned</p></div>
                 <div class="rounded-xl bg-white/[0.04] border border-white/10 py-2.5"><p class="text-xl font-semibold" style="color:${healthHex(computeHealth(null))}">${computeHealth(null)}%</p><p class="text-[10px] uppercase tracking-wider text-slate-300">life health</p></div>
               </div>
-              <p class="mt-3 text-xs text-slate-300">Life Lv ${ul.lvl.toFixed(1)} · ${ul.toNext} XP to Lv ${ul.whole + 1}</p>
+              <p class="mt-3 text-xs text-slate-300">Life Lv ${ul.whole} · ${ul.toNext} XP to Lv ${ul.whole + 1}</p>
               <div class="mt-2 h-1.5 rounded-full bg-white/10 overflow-hidden"><div class="h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-300" style="width:${ul.pct}%"></div></div>
             </div>
             ${sec("⚠ Overdue", "text-red-300", overdue)}
@@ -1608,11 +1623,17 @@
             </div>
 
             <div class="hud-panel glass-surface p-5 space-y-3">
-              <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-300">Cloud Sync & Persistence</h3>
-              <p class="text-xs text-slate-300 leading-relaxed">Your universe is synced automatically with Supabase. You can also manually pull cloud changes below.</p>
-              <button data-act="sync-cloud" class="w-full py-2.5 px-4 rounded-xl text-xs font-semibold border border-teal-400/45 bg-teal-400/15 text-teal-200 hover:bg-teal-400/25 flex items-center justify-center gap-2 cursor-pointer shadow-md">
-                <span>☁️</span><span>Pull & Sync Universe from Cloud</span>
-              </button>
+              <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-300">Persistence & Cloud Sync</h3>
+              <p class="text-xs text-slate-300 leading-relaxed">${currentUser ? "Your universe is synced automatically with Supabase. You can also manually pull cloud changes below." : "All changes are saved strictly to this device (localStorage). Sign in to enable secure cloud sync across your devices."}</p>
+              ${currentUser ? `
+                <button data-act="sync-cloud" class="w-full py-2.5 px-4 rounded-xl text-xs font-semibold border border-teal-400/45 bg-teal-400/15 text-teal-200 hover:bg-teal-400/25 flex items-center justify-center gap-2 cursor-pointer shadow-md">
+                  <span>☁️</span><span>Pull & Sync Universe from Cloud</span>
+                </button>
+              ` : `
+                <button data-act="auth-btn" class="w-full py-2.5 px-4 rounded-xl text-xs font-semibold border border-amber-400/45 bg-amber-400/15 text-amber-200 hover:bg-amber-400/25 flex items-center justify-center gap-2 cursor-pointer shadow-md">
+                  <span>👤</span><span>Sign In to Enable Cloud Sync</span>
+                </button>
+              `}
             </div>
 
             <div class="hud-panel glass-surface p-5 space-y-3">
@@ -1864,15 +1885,21 @@
         case "add-note": { const inp = document.getElementById(d.input); if (inp && inp.value.trim()) addNote(d.id || null, inp.value); break; }
         case "del-note": deleteNote(d.id || null, d.nid); break;
         case "sound": STATE.soundOn = !STATE.soundOn; save(); renderTopBar(); renderMobile(); if (STATE.soundOn) sfx.click(); break;
-        case "sync-cloud": loadFromSupabase().then(() => toast("☁️ Cloud universe synced")); break;
+        case "sync-cloud":
+          if (!currentUser) {
+            toast("💾 Guest mode: saved locally on this device", "#E5A93C");
+          } else {
+            loadFromSupabase().then(() => toast("☁️ Cloud universe synced"));
+          }
+          break;
         case "login-google": signInWithGoogle(); break;
         case "login-email": signInWithEmail(false); break;
         case "signup-email": signInWithEmail(true); break;
         case "login-guest":
           guestMode = true;
           updateAuthUI();
-          loadFromSupabase();
-          toast("✦ Entered Guest Mode");
+          setCloudStatus("💾 Local only", "ok");
+          toast("✦ Entered Guest Mode (Saved to this device only)");
           break;
         case "auth-btn":
           if (currentUser) {
@@ -1949,13 +1976,15 @@
     });
     initStars();
 
-    // Touch gesture to rotate orbits on mobile
+    // Touch gesture to rotate orbits on mobile & pause drift on touch interaction
     let touchStartX = null;
     let touchStartY = null;
     let touchStartOffset = 0;
     let isTouchDragging = false;
+    let lastTouchTime = 0;
 
     window.addEventListener("touchstart", (e) => {
+      lastTouchTime = Date.now();
       if (!isMobile() || mobView !== "orbit") return;
       if (e.touches.length === 1 && !e.target.closest("button") && !e.target.closest(".node-inner")) {
         touchStartX = e.touches[0].clientX;
@@ -1966,6 +1995,7 @@
     }, { passive: true });
 
     window.addEventListener("touchmove", (e) => {
+      lastTouchTime = Date.now();
       if (isTouchDragging && e.touches.length === 1) {
         const dx = e.touches[0].clientX - touchStartX;
         orbitOffset = touchStartOffset + dx * 0.45;
@@ -1973,14 +2003,21 @@
       }
     }, { passive: true });
 
-    window.addEventListener("touchend", () => { isTouchDragging = false; });
-    window.addEventListener("touchcancel", () => { isTouchDragging = false; });
+    window.addEventListener("touchend", () => {
+      isTouchDragging = false;
+      lastTouchTime = Date.now();
+    });
+    window.addEventListener("touchcancel", () => {
+      isTouchDragging = false;
+      lastTouchTime = Date.now();
+    });
 
     let tick = 0, lastT = performance.now();
     function animateLoop(now) {
       const dt = Math.min(64, (now || performance.now()) - lastT); lastT = now || performance.now();
       tick += 1;
-      if (!orbitPaused && !hoveringNode && !selectedId) orbitOffset = (orbitOffset + dt * 0.0033) % 360;
+      const isTouchPausing = (Date.now() - lastTouchTime) < 2200;
+      if (!orbitPaused && !hoveringNode && !selectedId && !isTouchDragging && !isTouchPausing) orbitOffset = (orbitOffset + dt * 0.0033) % 360;
       const w = window.innerWidth, h = window.innerHeight;
       const mobile = isMobile();
       const { cx, cy } = mobile ? { cx: w / 2, cy: h * 0.31 } : geom();
@@ -2086,6 +2123,8 @@
           focusId = null; selectedId = null;
           render();
           loadFromSupabase();
+        } else if (!currentUser) {
+          setCloudStatus("💾 Local only", "ok");
         }
       });
 
@@ -2109,6 +2148,7 @@
         loadFromSupabase();
       } else {
         updateAuthUI();
+        setCloudStatus("💾 Local only", "ok");
       }
     }
 
