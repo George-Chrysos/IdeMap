@@ -149,45 +149,86 @@
     </div>
   </header>
 
-  <!-- Layer 3: Desktop Top HUD -->
-  <header class="desk-only fixed top-6 left-6 right-[440px] xl:right-[505px] 2xl:right-[555px] z-40 flex flex-wrap items-center gap-2.5 pointer-events-none">
-    <div class="hud-panel h-12 px-4 flex items-center gap-3 pointer-events-auto shadow-2xl">
-      <button data-act="dive" data-id="" class="flex items-center gap-2.5 cursor-pointer group">
-        <div class="w-8 h-8 rounded-full bg-teal-400/10 border border-teal-400/35 flex items-center justify-center group-hover:border-teal-400 transition-colors">
-          <span class="text-teal-400 text-sm leading-none">✦</span>
-        </div>
-        <span class="text-xl font-semibold tracking-wide font-fraunces text-slate-100 group-hover:text-teal-300 transition-colors leading-none">Idemap</span>
-      </button>
-      <div class="h-5 w-[1px] bg-teal-400/20 mx-0.5"></div>
-      <nav id="breadcrumbNav" class="flex items-center gap-1.5"></nav>
-    </div>
-    <div class="hud-panel h-12 px-3 flex items-center gap-2 pointer-events-auto relative">
-      <button data-act="open-today" id="btnTodayFocus" class="px-3 py-1.5 rounded-full text-xs xl:text-sm font-semibold border border-amber-400/45 bg-amber-400/15 hover:bg-amber-400/25 text-amber-200 transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap" title="Curated priority missions right now (Shortcut: T)">
-        <span>⚡</span><span>Today</span><span id="badgeTodayCount" class="px-1.5 py-0.2 rounded-full bg-amber-400/30 text-amber-100 text-[11px]">0</span>
-      </button>
-      <button data-act="open-checkin" id="btnDeskCheckin" class="px-3 py-1.5 rounded-full text-xs xl:text-sm font-medium border border-teal-400/35 bg-teal-400/10 hover:bg-teal-400/20 text-teal-200 transition-all cursor-pointer whitespace-nowrap" title="Daily Check-in & Star Constellation (Shortcut: C)">🌙 Check-in</button>
-      <button data-act="open-cmd" class="px-3 py-1.5 rounded-full text-xs xl:text-sm font-medium border border-white/15 bg-white/5 hover:border-teal-400/45 text-slate-200 hover:text-teal-200 transition-all cursor-pointer whitespace-nowrap" title="Quick-Add & Global Search (Ctrl+K / ⌘K)">⌘K Search</button>
-      <button data-act="sync-cloud" id="btnCloudSync" class="px-3 py-1.5 rounded-full text-xs xl:text-sm font-medium border border-teal-400/35 bg-teal-400/10 text-teal-200 hover:border-teal-400 transition-all cursor-pointer whitespace-nowrap" title="Persistence status">💾 Local Mode</button>
-      <button data-act="sound" id="btnSoundToggle" class="px-3 py-1.5 rounded-full text-xs xl:text-sm font-medium border border-white/15 hover:border-teal-400/50 text-teal-300 transition-all cursor-pointer whitespace-nowrap">🔊</button>
-      <button data-act="auth-btn" id="btnAuthUser" class="px-3 py-1.5 rounded-full text-xs xl:text-sm font-medium border border-amber-400/40 bg-amber-400/10 hover:bg-amber-400/20 text-amber-200 transition-all cursor-pointer whitespace-nowrap">👤 Sign In</button>
-      <div class="relative">
-        <button data-act="top-menu" id="btnTopMenu" class="w-8 h-8 rounded-full border border-white/15 hover:border-teal-400/50 text-slate-300 hover:text-white flex items-center justify-center transition-all cursor-pointer text-sm leading-none" title="More options" aria-label="More options">⋯</button>
-        <div id="topOverflowMenu" class="hidden absolute right-0 top-full mt-2 w-56 hud-panel p-1.5 z-50 shadow-2xl space-y-1">
-          <button data-act="open-tether" data-id="" class="w-full px-3 py-2 rounded-lg text-xs font-medium text-left text-teal-200 hover:bg-teal-400/15 flex items-center gap-2 cursor-pointer transition-colors">
-            <span>🔗</span><span>Shared Planets & Partner Tether</span>
-          </button>
-          <button data-act="open-cosmetics" data-id="" class="w-full px-3 py-2 rounded-lg text-xs font-medium text-left text-amber-200 hover:bg-amber-400/15 flex items-center gap-2 cursor-pointer transition-colors">
-            <span>🎨</span><span>Planet Auras, Moons & Audio</span>
-          </button>
-          <button data-act="toggle-push" class="w-full px-3 py-2 rounded-lg text-xs font-medium text-left text-slate-200 hover:bg-white/10 flex items-center gap-2 cursor-pointer transition-colors">
-            <span>🔔</span><span id="lblPushMenu">Enable Daily Push Reminder</span>
-          </button>
+  <!-- Layer 3: Desktop Top HUD (Collapsible around User Avatar & Main Parent) -->
+  <header class="desk-only fixed top-6 left-6 right-[440px] xl:right-[505px] 2xl:right-[555px] z-40 flex flex-wrap items-center gap-2 pointer-events-none">
+    <div class="hud-panel min-h-[48px] px-3 py-1.5 flex items-center gap-2 pointer-events-auto shadow-2xl relative">
+      <!-- User Avatar + Settings Dropdown Trigger -->
+      <div class="relative flex items-center">
+        <button data-act="top-menu" id="btnAvatarMenu" class="flex items-center gap-2 pr-2 py-1 rounded-full hover:bg-white/10 transition-colors cursor-pointer group" title="Account, Orbit Controls & Settings">
+          <div id="deskUserAvatar" class="relative w-8 h-8 rounded-full bg-teal-400/15 border border-teal-400/45 flex items-center justify-center text-sm font-semibold text-teal-200 shadow-[0_0_12px_rgba(45,212,191,0.25)] overflow-hidden">
+            <span>✦</span>
+          </div>
+          <span id="deskSyncDot" class="w-2 h-2 rounded-full bg-teal-400 shadow-[0_0_6px_#2DD4BF]" title="Persistence status"></span>
+          <span class="text-xs text-slate-400 group-hover:text-white transition-colors leading-none">▾</span>
+        </button>
+
+        <!-- User Avatar Collapsible Menu -->
+        <div id="topOverflowMenu" class="hidden absolute left-0 top-full mt-2.5 w-72 hud-panel glass-surface p-2.5 z-50 shadow-[0_20px_60px_rgba(0,0,0,0.85)] border border-teal-400/30 space-y-1.5">
+          <div class="px-3 py-2.5 rounded-xl bg-white/[0.04] border border-white/10 flex items-center gap-3">
+            <div id="menuAvatarBadge" class="w-10 h-10 rounded-full bg-teal-400/15 border border-teal-400/40 flex items-center justify-center text-base font-semibold text-teal-200 shrink-0 overflow-hidden">👤</div>
+            <div class="min-w-0 flex-1">
+              <p id="menuUserName" class="font-fraunces text-sm font-semibold text-white truncate">Explorer</p>
+              <p id="menuUserTitle" class="text-[11px] text-amber-300 font-medium truncate">🏆 Stardust Wanderer</p>
+              <p id="menuUserSub" class="text-[10px] text-slate-400 truncate">Local-only guest mode</p>
+            </div>
+          </div>
+
+          <div class="pt-1 space-y-1">
+            <button data-act="pause" id="btnPauseOrbit" class="w-full px-3 py-2 rounded-lg text-xs font-medium text-left text-slate-200 hover:bg-teal-400/15 hover:text-teal-200 flex items-center justify-between cursor-pointer transition-colors">
+              <span class="flex items-center gap-2"><span>🪐</span><span id="lblPauseOrbit">Pause Orbit Drift</span></span>
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-slate-300" id="badgePauseState"> Flowing</span>
+            </button>
+            <button data-act="sync-cloud" id="btnCloudSync" class="w-full px-3 py-2 rounded-lg text-xs font-medium text-left text-teal-200 hover:bg-teal-400/15 flex items-center justify-between cursor-pointer transition-colors" title="Persistence status">
+              <span class="flex items-center gap-2"><span>☁️</span><span>Persistence & Sync</span></span>
+              <span id="lblCloudStatusPill" class="text-[10px] px-2 py-0.5 rounded-full bg-teal-400/15 border border-teal-400/35 text-teal-200">💾 Local</span>
+            </button>
+            <button data-act="sound" id="btnSoundToggle" class="w-full px-3 py-2 rounded-lg text-xs font-medium text-left text-slate-200 hover:bg-white/10 flex items-center justify-between cursor-pointer transition-colors">
+              <span class="flex items-center gap-2"><span>🔊</span><span>Sound Effects</span></span>
+              <span id="lblSoundState" class="text-[10px] px-2 py-0.5 rounded-full bg-teal-400/15 text-teal-200">ON</span>
+            </button>
+          </div>
+
           <div class="h-px bg-white/10 my-1"></div>
-          <button data-act="reset" class="w-full px-3 py-2 rounded-lg text-xs font-medium text-left text-red-300 hover:bg-red-500/15 flex items-center gap-2 cursor-pointer transition-colors" title="Reset to the 4 empty seed planets">
-            <span>↺</span><span>Reset to Seed Planets</span>
-          </button>
+
+          <div class="space-y-1">
+            <button data-act="open-tether" data-id="" class="w-full px-3 py-2 rounded-lg text-xs font-medium text-left text-teal-200 hover:bg-teal-400/15 flex items-center gap-2 cursor-pointer transition-colors">
+              <span>🔗</span><span>Shared Planets & Partner Tether</span>
+            </button>
+            <button data-act="open-cosmetics" data-id="" class="w-full px-3 py-2 rounded-lg text-xs font-medium text-left text-amber-200 hover:bg-amber-400/15 flex items-center gap-2 cursor-pointer transition-colors">
+              <span>🎨</span><span>Health Math, Moons, Auras & Audio</span>
+            </button>
+            <button data-act="toggle-push" class="w-full px-3 py-2 rounded-lg text-xs font-medium text-left text-slate-200 hover:bg-white/10 flex items-center gap-2 cursor-pointer transition-colors">
+              <span>🔔</span><span id="lblPushMenu">Enable Daily Push Reminder</span>
+            </button>
+          </div>
+
+          <div class="h-px bg-white/10 my-1"></div>
+
+          <div class="flex items-center gap-1.5 pt-0.5">
+            <button data-act="auth-btn" id="btnAuthUser" class="flex-1 px-3 py-2 rounded-lg text-xs font-semibold text-center border border-amber-400/40 bg-amber-400/10 hover:bg-amber-400/20 text-amber-200 cursor-pointer transition-colors">👤 Sign In</button>
+            <button data-act="reset" class="px-3 py-2 rounded-lg text-xs font-medium text-red-300 hover:bg-red-500/15 border border-red-500/25 cursor-pointer transition-colors" title="Reset to the 4 empty seed planets">↺ Reset</button>
+          </div>
         </div>
       </div>
+
+      <div class="h-5 w-[1px] bg-teal-400/20"></div>
+
+      <!-- Main Parent (e.g. Life / Jester) & Sector Breadcrumbs -->
+      <nav id="breadcrumbNav" class="flex items-center gap-1.5"></nav>
+
+      <!-- Collapsible Quick-Action Deck -->
+      <div id="deskTopActions" class="flex items-center gap-1.5 pl-1 border-l border-white/10">
+        <button data-act="open-today-focus" id="btnTodayFocus" class="px-3 py-1 rounded-full text-xs font-semibold border border-amber-400/45 bg-amber-400/15 hover:bg-amber-400/25 text-amber-200 transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap" title="Curated priority missions right now">
+          <span>⚡</span><span>Today</span><span id="badgeTodayCount" class="px-1.5 py-0.2 rounded-full bg-amber-400/30 text-amber-100 text-[11px]">0</span>
+        </button>
+        <button data-act="open-desk-checkin" id="btnDeskCheckin" class="px-3 py-1 rounded-full text-xs font-medium border border-teal-400/35 bg-teal-400/10 hover:bg-teal-400/20 text-teal-200 transition-all cursor-pointer whitespace-nowrap" title="Daily Check-in & Star Constellation">🌙 Check-in</button>
+        <button data-act="open-cmd" class="px-2.5 py-1 rounded-full text-xs font-medium border border-white/15 bg-white/5 hover:border-teal-400/45 text-slate-200 hover:text-teal-200 transition-all cursor-pointer whitespace-nowrap" title="Quick-Add & Global Search (Ctrl+K / ⌘K)">⌘K</button>
+        <span id="badgeAlignmentHud" class="hidden"></span>
+        <span id="badgeCometHud" class="hidden"></span>
+      </div>
+
+      <!-- Collapse / Expand Top Bar Button -->
+      <button data-act="toggle-desk-topbar" id="btnCollapseTopBar" class="w-7 h-7 rounded-full bg-white/5 hover:bg-white/15 border border-white/10 text-slate-300 hover:text-white flex items-center justify-center text-xs cursor-pointer transition-colors ml-0.5" title="Collapse or expand top bar">«</button>
     </div>
   </header>
 
@@ -236,19 +277,6 @@
       <div class="pt-1 text-center">
         <button data-act="login-guest" class="text-xs text-slate-400 hover:text-teal-300 underline cursor-pointer">Continue in Guest Mode (Local-only, no cloud sync)</button>
       </div>
-    </div>
-  </div>
-
-  <!-- Layer 4: Desktop bottom-left compass -->
-  <div class="desk-only fixed bottom-6 left-6 z-30">
-    <div class="hud-panel px-5 py-3 flex items-center gap-4 text-sm text-slate-200">
-      <div class="flex items-center gap-2">
-        <span class="text-teal-400 text-base">🧭</span>
-        <span class="text-slate-300">Focus:</span>
-        <span id="compassFocusName" class="text-white font-semibold text-base font-fraunces">Life</span>
-      </div>
-      <span class="text-slate-600">|</span>
-      <button data-act="pause" id="btnPauseOrbit" class="px-3 py-1 rounded-full bg-white/5 hover:bg-teal-400/15 border border-white/15 text-slate-200 hover:text-teal-300 transition-all cursor-pointer font-medium">⏸ Pause Orbit</button>
     </div>
   </div>
 
@@ -592,17 +620,38 @@
     let activeAccessToken = SUPABASE_KEY;
     let syncTimer = null;
 
+    let deskTopBarCollapsed = false;
+
     function setCloudStatus(text, tone = "ok") {
-      const btns = [document.getElementById("btnCloudSync"), document.getElementById("mobBtnCloudSync")];
-      btns.forEach(btn => {
-        if (!btn) return;
-        btn.textContent = text;
-        btn.className = tone === "syncing"
-          ? "px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium border border-amber-400/45 bg-amber-400/10 text-amber-200 transition-all cursor-pointer"
+      const mobBtn = document.getElementById("mobBtnCloudSync");
+      if (mobBtn) {
+        mobBtn.textContent = text;
+        mobBtn.className = tone === "syncing"
+          ? "px-2 py-1 rounded-full text-[11px] font-medium border border-amber-400/45 bg-amber-400/10 text-amber-200 transition-all cursor-pointer whitespace-nowrap"
           : tone === "err"
-          ? "px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium border border-red-400/45 bg-red-500/10 text-red-200 transition-all cursor-pointer"
-          : "px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium border border-teal-400/35 bg-teal-400/10 text-teal-200 hover:border-teal-400 transition-all cursor-pointer";
-      });
+          ? "px-2 py-1 rounded-full text-[11px] font-medium border border-red-400/45 bg-red-500/10 text-red-200 transition-all cursor-pointer whitespace-nowrap"
+          : "px-2 py-1 rounded-full text-[11px] font-medium border border-teal-400/35 bg-teal-400/10 text-teal-200 hover:border-teal-400 transition-all cursor-pointer whitespace-nowrap";
+      }
+      const pill = document.getElementById("lblCloudStatusPill");
+      if (pill) {
+        pill.textContent = text;
+        pill.className = tone === "syncing"
+          ? "text-[10px] px-2 py-0.5 rounded-full bg-amber-400/20 border border-amber-400/40 text-amber-200"
+          : tone === "err"
+          ? "text-[10px] px-2 py-0.5 rounded-full bg-red-500/20 border border-red-400/40 text-red-200"
+          : "text-[10px] px-2 py-0.5 rounded-full bg-teal-400/15 border border-teal-400/35 text-teal-200";
+      }
+      const dot = document.getElementById("deskSyncDot");
+      if (dot) {
+        dot.className = tone === "syncing"
+          ? "w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_6px_#F59E0B] animate-pulse"
+          : tone === "err"
+          ? "w-2 h-2 rounded-full bg-red-400 shadow-[0_0_6px_#EF4444]"
+          : currentUser
+          ? "w-2 h-2 rounded-full bg-teal-400 shadow-[0_0_6px_#2DD4BF]"
+          : "w-2 h-2 rounded-full bg-amber-300 shadow-[0_0_6px_#E5A93C]";
+        dot.title = text;
+      }
     }
 
     function updateAuthUI() {
@@ -614,10 +663,25 @@
         screen.classList.toggle("hidden", authed);
         screen.classList.toggle("flex", !authed);
       }
-      const label = currentUser ? (currentUser.user_metadata?.full_name || currentUser.email?.split("@")[0] || "Account") : "Sign In";
+      const label = currentUser ? (currentUser.user_metadata?.full_name || currentUser.email?.split("@")[0] || "Account") : "Explorer";
+      const avatarUrl = currentUser?.user_metadata?.avatar_url || currentUser?.user_metadata?.picture || null;
+      const initial = (label && label[0]) ? label[0].toUpperCase() : "✦";
+      const avatarHTML = avatarUrl
+        ? `<img src="${esc(avatarUrl)}" alt="${esc(label)}" class="w-full h-full object-cover rounded-full" referrerpolicy="no-referrer">`
+        : `<span>${esc(initial)}</span>`;
+
+      const deskAv = document.getElementById("deskUserAvatar");
+      if (deskAv) deskAv.innerHTML = avatarHTML;
+      const menuAv = document.getElementById("menuAvatarBadge");
+      if (menuAv) menuAv.innerHTML = avatarHTML;
+      const menuName = document.getElementById("menuUserName");
+      if (menuName) menuName.textContent = label;
+      const menuSub = document.getElementById("menuUserSub");
+      if (menuSub) menuSub.textContent = currentUser ? (currentUser.email || "Cloud Synced") : "Guest Mode (Local-only)";
+
       if (btn) {
         if (currentUser) {
-          btn.textContent = `👤 ${label} · Sign Out`;
+          btn.textContent = `👤 Sign Out (${label})`;
           btn.title = `Signed in as ${currentUser.email || label}. Click to sign out.`;
         } else {
           btn.textContent = "👤 Sign In";
@@ -950,63 +1014,260 @@
     const ownerOf = (id) => (id ? P(id) : STATE.life);
 
     // =========================================================================
-    // 4. Mechanics (P1): task-driven health, strain as "gravity", monotonic subtree XP
+    // 4. Mechanics (Upgraded §4 & §5): Gravity-Weighted Health, 48h Strain Shield,
+    //    Tiered Level Curves, Planetary Evolution, Alignment Combo, Solar Shields & Comets
     // =========================================================================
     function taskStats(p) {
-      const today = todayISO(); let overdue = 0, recent = 0, doneToday = 0, open = 0;
-      for (const t of p.tasks) {
-        if (Array.isArray(t.history)) {
+      const today = todayISO();
+      const yesterday = addDays(-1);
+      let overdue = 0, overduePenaltyRaw = 0, recent = 0, recentMomentumRaw = 0;
+      let doneToday = 0, doneYesterday = 0, open = 0, everCompleted = false;
+      for (const t of (p?.tasks || [])) {
+        const d = clamp(parseInt(t.diff, 10) || 2, 1, 5);
+        if (Array.isArray(t.history) && t.history.length > 0) {
+          everCompleted = true;
           for (const h of t.history) {
-            if (h.at && Date.now() - h.at < 7 * DAY) recent++;
+            if (h.at && Date.now() - h.at < 7 * DAY) {
+              recent++;
+              recentMomentumRaw += (2 + d);
+            }
             if (h.at && isoOf(h.at) === today) doneToday++;
+            else if (h.at && isoOf(h.at) === yesterday) doneYesterday++;
           }
         }
         if (t.done) {
-          if (t.doneAt && Date.now() - t.doneAt < 7 * DAY) recent++;
+          everCompleted = true;
+          if (t.doneAt && Date.now() - t.doneAt < 7 * DAY) {
+            recent++;
+            recentMomentumRaw += (2 + d);
+          }
           if (t.doneAt && isoOf(t.doneAt) === today) doneToday++;
+          else if (t.doneAt && isoOf(t.doneAt) === yesterday) doneYesterday++;
         } else {
           open++;
-          if (t.due && t.due < today) overdue++;
+          if (t.due && t.due < today) {
+            overdue++;
+            overduePenaltyRaw += (8 + 2 * d);
+          }
         }
       }
-      return { overdue, recent, doneToday, open };
+      const recentBonus = Math.min(20, recentMomentumRaw);
+      const clearOrbitBonus = (everCompleted && overdue === 0 && strainCount(p) === 0) ? 10 : 0;
+      return {
+        overdue,
+        overduePenalty: overduePenaltyRaw,
+        recent,
+        recentBonus,
+        doneToday,
+        doneYesterday,
+        open,
+        everCompleted,
+        clearOrbitBonus,
+      };
     }
+
     const strainCount = (p) => (p?.strain?.fin ? 1 : 0) + (p?.strain?.psy ? 1 : 0);
-    // Each strain flag applies -15 pressure; every task completed TODAY neutralises 10 of it.
-    const strainPenalty = (p, st) => Math.max(0, 15 * strainCount(p) - 10 * st.doneToday);
+    // §4C: 48-Hour Rolling Strain Shield (12% relief per task today + 6% residual shield from yesterday)
+    const strainPenalty = (p, st) => Math.max(0, 15 * strainCount(p) - 12 * (st?.doneToday || 0) - 6 * (st?.doneYesterday || 0));
+
+    // §4A: Activity Mass M(c) = 1 + Open + 2·Overdue + Recent7d + StrainCount (rolled up across subtree)
+    function activityMass(p) {
+      if (!p) return 1;
+      const ids = [p.id, ...descendants(p.id)];
+      let mass = 1;
+      for (const id of ids) {
+        const pl = P(id);
+        if (!pl) continue;
+        const st = taskStats(pl);
+        mass += st.open + 2 * st.overdue + st.recent + strainCount(pl);
+      }
+      return mass;
+    }
 
     const healthCache = new Map();
-    // H = base(85 for leaves | avg(children) for parents) + 5·min(3, done last 7d) − 15·overdue − net strain
+    function weightedChildrenHealth(ids) {
+      if (!ids.length) return 85;
+      let weightedSum = 0, totalMass = 0;
+      for (const id of ids) {
+        const ch = P(id);
+        if (!ch) continue;
+        const m = activityMass(ch);
+        weightedSum += m * computeHealth(ch);
+        totalMass += m;
+      }
+      return totalMass > 0 ? (weightedSum / totalMass) : 85;
+    }
+
+    // §4A + §4B + §4C: Gravity-weighted parent base + diff-weighted momentum + clear-orbit equilibrium - diff-weighted overdue - 48h strain
     function computeHealth(p) {
       if (!p) {
         const ids = childIds(null);
         if (!ids.length) return 85;
-        return Math.round(ids.reduce((a, id) => a + computeHealth(P(id)), 0) / ids.length);
+        return Math.round(weightedChildrenHealth(ids));
       }
       if (healthCache.has(p.id)) return healthCache.get(p.id);
       const st = taskStats(p);
       const kids = childIds(p.id);
-      const base = kids.length ? kids.reduce((a, id) => a + computeHealth(P(id)), 0) / kids.length : 85;
-      const s = Math.round(clamp(base + 5 * Math.min(3, st.recent) - 15 * st.overdue - strainPenalty(p, st), 0, 100));
+      const base = kids.length ? weightedChildrenHealth(kids) : 85;
+      const s = Math.round(clamp(base + st.recentBonus + st.clearOrbitBonus - st.overduePenalty - strainPenalty(p, st), 0, 100));
       healthCache.set(p.id, s);
       return s;
     }
     const healthHex = (s) => (s >= 70 ? "#2DD4BF" : s >= 45 ? "#F59E0B" : "#EF4444");
 
-    // XP = diff² × 5 × (1 + 0.25 × active strains)  → 5 / 20 / 45 / 80 / 125 XP
-    const taskXP = (diff, strains) => Math.round(diff * diff * 5 * (1 + 0.25 * strains));
+    // §5.2: Orbital Alignment Combo (1.25x XP when >= 3 root sectors have completions today)
+    function orbitalAlignmentStatus() {
+      const today = todayISO();
+      const alignedRootIds = [];
+      for (const rid of (STATE.rootIds || [])) {
+        const rp = P(rid);
+        if (!rp) continue;
+        const branchIds = [rid, ...descendants(rid)];
+        const activeToday = branchIds.some(id => {
+          const pl = P(id);
+          return pl && taskStats(pl).doneToday > 0;
+        });
+        if (activeToday) alignedRootIds.push(rid);
+      }
+      const count = alignedRootIds.length;
+      const active = count >= 3;
+      return { count, alignedRootIds, active, multiplier: active ? 1.25 : 1.0 };
+    }
+
+    // XP = diff² × 5 × (1 + 0.25 × active strains) × (1.25 if Orbital Alignment active)
+    const taskXP = (diff, strains, includeAlignment = true) => {
+      const alignMul = includeAlignment ? orbitalAlignmentStatus().multiplier : 1.0;
+      return Math.round(diff * diff * 5 * (1 + 0.25 * strains) * alignMul);
+    };
+
     // Parent XP = own XP + all descendant XP → adding an empty planet can never lower a level.
     const subtreeXP = (p) => (p.xp || 0) + descendants(p.id).reduce((a, id) => a + (P(id).xp || 0), 0);
     const universeXP = () => descendants(null).reduce((a, id) => a + (P(id).xp || 0), 0);
-    const levelFromXP = (xp) => 1 + Math.floor(10 * Math.pow(Math.max(0, xp) / 100, 0.75)) / 10;
-    const xpForLevel = (L) => 100 * Math.pow(Math.max(0, L - 1), 4 / 3);
-    function levelInfo(xp) {
-      const lvl = levelFromXP(xp), whole = Math.floor(lvl);
-      const a = xpForLevel(whole), b = xpForLevel(whole + 1);
-      return { lvl, whole, pct: clamp(((xp - a) / (b - a)) * 100, 0, 100), toNext: Math.max(0, Math.ceil(b - xp)), xp };
+
+    // §4D: Tiered Leveling Scales: Leaf Satellite (B=80), Root Sector (B=120), Life Core (B=250)
+    const tierBaseXP = (p) => (!p || !p.id ? 250 : (p.parentId ? 80 : 120));
+    const levelFromXP = (xp, B = 120) => 1 + Math.floor(10 * Math.pow(Math.max(0, xp) / B, 1 / 1.35)) / 10;
+    const xpForLevel = (L, B = 120) => B * Math.pow(Math.max(0, L - 1), 1.35);
+    function levelInfo(xp, B = 120) {
+      const lvl = levelFromXP(xp, B), whole = Math.floor(lvl);
+      const a = xpForLevel(whole, B), b = xpForLevel(whole + 1, B);
+      return { lvl, whole, pct: clamp(((xp - a) / Math.max(1, b - a)) * 100, 0, 100), toNext: Math.max(0, Math.ceil(b - xp)), xp, baseConstant: B };
     }
     const xpOf = (p) => (p && p.id ? subtreeXP(p) : universeXP());
-    const levelOf = (p) => levelFromXP(xpOf(p));
+    const levelOf = (p) => levelFromXP(xpOf(p), tierBaseXP(p));
+    const levelInfoOf = (p) => levelInfo(xpOf(p), tierBaseXP(p));
+
+    // §5.1: Planetary Evolution Tiers (Visual Size & Atmospheric Rings by Level)
+    function evolutionTier(lvl) {
+      const w = Math.floor(lvl || 1);
+      if (w >= 10) return { tier: 4, name: "Luminous Star-World", badge: "☀️", scale: 1.18, hasRing: true, hasCorona: true };
+      if (w >= 5)  return { tier: 3, name: "Ringed Giant",        badge: "🪐", scale: 1.13, hasRing: true, hasCorona: false };
+      if (w >= 3)  return { tier: 2, name: "Terrestrial World",   badge: "🌍", scale: 1.07, hasRing: false, hasCorona: false };
+      return              { tier: 1, name: "Proto-Planet",        badge: "🌑", scale: 1.00, hasRing: false, hasCorona: false };
+    }
+
+    // §5.5: Cosmic Titles & Sector Mastery Badges
+    function cosmicTitle(lvl) {
+      const w = Math.floor(lvl || 1);
+      if (w >= 20) return "Architect of Spheres";
+      if (w >= 15) return "Stellar Sovereign";
+      if (w >= 10) return "Binary Commander";
+      if (w >= 8)  return "Gravimetric Savant";
+      if (w >= 5)  return "Sector Navigator";
+      if (w >= 3)  return "Orbital Cartographer";
+      if (w >= 2)  return "Orbital Scout";
+      return "Stardust Wanderer";
+    }
+
+    // §5.3 & §5.4: Solar Flare Shields (Streak Freeze via 90%+ Health) & Daily Passing Comet Quests
+    function evaluateSolarShieldsAndComet() {
+      const today = todayISO();
+      let stateMutated = false;
+
+      // 1. Evaluate Solar Shields & auto-freeze any 1-day overdue recurring streak
+      for (const pid of descendants(null)) {
+        const p = P(pid);
+        if (!p) continue;
+        if (typeof p.solarShields !== "number") p.solarShields = 0;
+        if (typeof p.shieldHealthyDays !== "number") p.shieldHealthyDays = 0;
+
+        // Auto-consume Solar Shield if a recurring habit slipped past due date
+        for (const t of (p.tasks || [])) {
+          if (t.recur && !t.done && t.due && t.due < today && (t.streak || 0) > 0 && p.solarShields > 0) {
+            p.solarShields = Math.max(0, p.solarShields - 1);
+            t.due = today;
+            logEvent(p.id, "done", `🛡️ Solar Flare Shield froze ${t.streak}🔥 streak on “${t.title}”`);
+            setTimeout(() => toast(`🛡️ Solar Shield protected your ${t.streak}🔥 streak on “${t.title}”!`, "#E5A93C"), 400);
+            stateMutated = true;
+          }
+        }
+
+        // Condense Solar Shield from 90%+ Health
+        const h = computeHealth(p);
+        const st = taskStats(p);
+        if (h >= 90 && st.everCompleted && !p._starterShieldGranted) {
+          p._starterShieldGranted = true;
+          p.solarShields = Math.min(2, (p.solarShields || 0) + 1);
+          p.lastShieldCheckISO = today;
+          stateMutated = true;
+        } else if (p.lastShieldCheckISO !== today) {
+          p.lastShieldCheckISO = today;
+          if (h >= 90) {
+            p.shieldHealthyDays = (p.shieldHealthyDays || 0) + 1;
+            if (p.shieldHealthyDays >= 5 && p.solarShields < 2) {
+              p.solarShields += 1;
+              p.shieldHealthyDays = 0;
+              logEvent(p.id, "levelup", `🛡️ Condensed a Solar Flare Shield from 5 days of 90%+ health!`);
+            }
+          } else if (h < 70) {
+            p.shieldHealthyDays = 0;
+          }
+          stateMutated = true;
+        }
+      }
+
+      // 2. Spawn or validate Today's Passing Comet (☄️ Halley's Spark) on lowest-health / most-neglected planet
+      const allIds = descendants(null);
+      if (allIds.length > 0) {
+        if (!STATE.dailyComet || STATE.dailyComet.date !== today || !P(STATE.dailyComet.targetPid)) {
+          const ranked = allIds.map(id => {
+            const pl = P(id);
+            const h = computeHealth(pl);
+            const st = taskStats(pl);
+            // Lower health or zero recent activity attracts the comet
+            const score = h + st.recent * 4 - st.overdue * 10;
+            return { id, score };
+          }).sort((a, b) => a.score - b.score);
+          STATE.dailyComet = {
+            date: today,
+            targetPid: ranked[0].id,
+            claimed: false,
+            bonusXP: 60,
+          };
+          stateMutated = true;
+        }
+      }
+      if (stateMutated) {
+        try { localStorage.setItem(storeKey(), JSON.stringify(STATE)); } catch (e) {}
+      }
+    }
+
+    function claimCometQuest(fromTaskTitle = null) {
+      const comet = STATE.dailyComet;
+      if (!comet || comet.claimed || comet.date !== todayISO()) return false;
+      const p = P(comet.targetPid);
+      if (!p) return false;
+      comet.claimed = true;
+      const bonus = comet.bonusXP || 60;
+      p.xp = (p.xp || 0) + bonus;
+      logEvent(p.id, "levelup", `☄️ Captured Passing Comet (${fromTaskTitle ? `via “${fromTaskTitle}”` : "Orbital Check-in"}) · +${bonus} Comet XP!`);
+      sfx.breakthrough();
+      setTimeout(() => {
+        triggerSupernova(p.id, `☄️ PASSING COMET HARVESTED! (+${bonus} XP)`, `${p.icon} ${p.name} absorbed Halley's Spark bonus energy!`, "#2DD4BF");
+      }, 260);
+      commit();
+      return true;
+    }
 
     const AURA_SKINS = {
       classic: { id: "classic", name: "Obsidian Classic",     minLv: 1, glow: null,      ringDash: null,         badge: "✨", desc: "Pure atmospheric planetary glow." },
@@ -1041,32 +1302,60 @@
         const score = computeHealth(null);
         return {
           score,
-          base: 85,
+          base: score,
           recentBonus: 0,
+          clearOrbitBonus: 0,
+          overdue: 0,
           overduePenalty: 0,
           strainDrag: 0,
+          solarShields: 0,
           isParentAvg: ids.length > 0,
-          summary: ids.length ? `Average health across ${ids.length} root sectors (${score}%).` : "Default core health (85%).",
-          tip: score < 80 ? "Focus on sectors with overdue tasks or active strain to raise Life health." : "Your solar system is in strong orbital balance ✦",
+          formula: ids.length
+            ? `Gravity-weighted average across ${ids.length} root sectors (${score}%). Active sectors with open/overdue tasks pull stronger than dormant sectors.`
+            : "Default core baseline (85%).",
+          tip: score < 80 ? "Focus on high-mass sectors with overdue tasks or active strain to raise Life health." : "Your solar system is in strong gravitational equilibrium ✦",
         };
       }
       const st = taskStats(p);
       const kids = childIds(p.id);
-      const base = Math.round(kids.length ? kids.reduce((a, id) => a + computeHealth(P(id)), 0) / kids.length : 85);
-      const recentBonus = 5 * Math.min(3, st.recent);
-      const overduePenalty = 15 * st.overdue;
+      const base = Math.round(kids.length ? weightedChildrenHealth(kids) : 85);
+      const recentBonus = st.recentBonus;
+      const clearOrbitBonus = st.clearOrbitBonus;
+      const overduePenalty = st.overduePenalty;
       const strainDrag = strainPenalty(p, st);
       const score = computeHealth(p);
-      let tip = "Complete a mission in this sector to earn +5% momentum bonus (up to +15%).";
-      if (st.overdue > 0) tip = `Complete or reschedule ${st.overdue} overdue task${st.overdue > 1 ? "s" : ""} to immediately recover +${overduePenalty}% health!`;
-      else if (strainDrag > 0) tip = `Complete 1 more task here today to neutralise −${ Math.min(10, strainDrag) }% gravitational strain!`;
-      else if (st.recent >= 3) tip = "Maximum momentum bonus (+15%) active! Keep orbits clear.";
-      return { score, base, recentBonus, overduePenalty, strainDrag, isParentAvg: kids.length > 0, tip };
+      let tip = "Complete a mission in this sector to earn +(2 + Diff)% momentum bonus (up to +20%).";
+      if (st.overdue > 0) tip = `Complete or triage ${st.overdue} overdue task${st.overdue > 1 ? "s" : ""} to immediately recover +${overduePenalty}% health!`;
+      else if (strainDrag > 0) tip = `48h Strain Shield active: complete 1 task today to neutralise −${Math.min(12, strainDrag)}% gravity drag!`;
+      else if (clearOrbitBonus > 0) tip = "Clear-Orbit Equilibrium (+10%) active! Maintain 90%+ health to condense 🛡️ Solar Flare Shields.";
+      const formula = `${kids.length ? `Weighted Satellites (${base}%)` : `Base (85%)`} + 7d Momentum (+${recentBonus}%)${clearOrbitBonus ? ` + Clear Orbit (+${clearOrbitBonus}%)` : ""} − Overdue (−${overduePenalty}%) − 48h Strain (−${strainDrag}%) = ${score}%`;
+      return {
+        score,
+        base,
+        recentBonus,
+        clearOrbitBonus,
+        overdue: st.overdue,
+        overduePenalty,
+        strainDrag,
+        solarShields: p.solarShields || 0,
+        shieldHealthyDays: p.shieldHealthyDays || 0,
+        activityMass: activityMass(p),
+        isParentAvg: kids.length > 0,
+        formula,
+        tip,
+      };
     }
 
     let supernovaParticles = [];
     let bannerTimer = null;
     function triggerSupernova(pid, headline, subline, accentColor = "#E5A93C") {
+      // Allow 3-arg call triggerSupernova(headline, subline, color) as well as 4-arg (pid, headline, subline, color)
+      if (arguments.length === 3 && (!pid || !P(pid))) {
+        accentColor = subline || "#E5A93C";
+        subline = headline;
+        headline = pid;
+        pid = null;
+      }
       const g = geom();
       let sx = g.cx, sy = g.cy;
       const el = pid && scene.kidEls[pid] ? scene.kidEls[pid] : scene.focusEl;
@@ -1084,7 +1373,8 @@
           vx: Math.cos(angle) * speed,
           vy: Math.sin(angle) * speed,
           r: 1.8 + Math.random() * 3.2,
-          alpha: 1,
+          life: 1.0,
+          decay: 0.014 + Math.random() * 0.01,
           color: palette[i % palette.length],
         });
       }
@@ -1115,7 +1405,13 @@
     // =========================================================================
     // 5. Mutations
     // =========================================================================
-    function commit() { STATE.focusId = focusId; healthCache.clear(); save(); render(); }
+    function commit() {
+      STATE.focusId = focusId;
+      healthCache.clear();
+      evaluateSolarShieldsAndComet();
+      save();
+      render();
+    }
 
     function dive(id) {
       if (id && !P(id)) id = null;
@@ -1140,8 +1436,11 @@
       }
       const chain = ancestorsChain(pid);
       const before = chain.map(c => Math.floor(levelOf(c)));
-      const uBefore = Math.floor(levelFromXP(universeXP()));
+      const uBefore = Math.floor(levelOf(null));
+      const alignBefore = orbitalAlignmentStatus().active;
       const actor = userDisplayName();
+      const cometTarget = STATE.dailyComet && !STATE.dailyComet.claimed && STATE.dailyComet.date === todayISO() ? STATE.dailyComet.targetPid : null;
+      const hitsComet = cometTarget && (pid === cometTarget || ancestorsChain(pid).some(a => a.id === cometTarget));
 
       if (t.recur) {
         // Recurring task: award XP, increment streak, log cycle, and advance due date
@@ -1157,16 +1456,24 @@
         p.xp = (p.xp || 0) + gain;
         logEvent(pid, "done", `Cycled ${RECUR_LABEL[t.recur] || "↻"} “${t.title}” (🔥 ${t.streak}) · +${gain} XP`);
         sfx.done();
+        const alignAfter = orbitalAlignmentStatus().active;
         const ups = chain.filter((c, i) => Math.floor(levelOf(c)) > before[i]);
-        const uUp = Math.floor(levelFromXP(universeXP())) > uBefore;
-        if (ups.length || uUp) {
-          ups.forEach(c => logEvent(c.id, "levelup", `Reached Level ${Math.floor(levelOf(c))}`));
-          if (uUp) logEvent(null, "levelup", `Life reached Level ${Math.floor(levelFromXP(universeXP()))}`);
-          const upName = ups[0] ? ups[0].name : "Life";
-          const newLv = Math.floor(ups[0] ? levelOf(ups[0]) : levelFromXP(universeXP()));
+        const uUp = Math.floor(levelOf(null)) > uBefore;
+        if (hitsComet) {
+          claimCometQuest(t.title);
+        } else if (!alignBefore && alignAfter) {
           setTimeout(() => {
             sfx.levelUp();
-            triggerSupernova(pid, `✦ SUPERNOVA LEVEL UP! · ${upName} Lv ${newLv}`, `New cosmic milestone reached (+${gain} XP)!`, "#E5A93C");
+            triggerSupernova(pid, `⚡ ORBITAL ALIGNMENT ACTIVATED! (1.25× XP)`, `3+ root sectors active today — golden resonance beams online!`, "#E5A93C");
+          }, 220);
+        } else if (ups.length || uUp) {
+          ups.forEach(c => logEvent(c.id, "levelup", `Reached Level ${Math.floor(levelOf(c))} (${evolutionTier(levelOf(c)).name})`));
+          if (uUp) logEvent(null, "levelup", `Life reached Level ${Math.floor(levelOf(null))} · ${cosmicTitle(levelOf(null))}`);
+          const upName = ups[0] ? ups[0].name : (STATE.life?.name || "Life");
+          const newLv = Math.floor(ups[0] ? levelOf(ups[0]) : levelOf(null));
+          setTimeout(() => {
+            sfx.levelUp();
+            triggerSupernova(pid, `✦ SUPERNOVA LEVEL UP! · ${upName} Lv ${newLv}`, `Evolved into ${ups[0] ? evolutionTier(newLv).name : cosmicTitle(newLv)} (+${gain} XP)!`, "#E5A93C");
           }, 220);
         } else if (t.streak === 3 || t.streak === 7 || t.streak === 14) {
           const mc = moonCompanion(p);
@@ -1191,21 +1498,29 @@
         p.xp = (p.xp || 0) + gain;
         logEvent(pid, "done", `Completed “${t.title}” · +${gain} XP${isBreakthrough ? " (Gravitational Breakthrough!)" : ""}`);
         if (isBreakthrough) sfx.breakthrough(); else sfx.done();
+        const alignAfter = orbitalAlignmentStatus().active;
         const ups = chain.filter((c, i) => Math.floor(levelOf(c)) > before[i]);
-        const uUp = Math.floor(levelFromXP(universeXP())) > uBefore;
-        if (ups.length || uUp) {
-          ups.forEach(c => logEvent(c.id, "levelup", `Reached Level ${Math.floor(levelOf(c))}`));
-          if (uUp) logEvent(null, "levelup", `Life reached Level ${Math.floor(levelFromXP(universeXP()))}`);
-          const upName = ups[0] ? ups[0].name : "Life";
-          const newLv = Math.floor(ups[0] ? levelOf(ups[0]) : levelFromXP(universeXP()));
+        const uUp = Math.floor(levelOf(null)) > uBefore;
+        if (hitsComet) {
+          claimCometQuest(t.title);
+        } else if (!alignBefore && alignAfter) {
           setTimeout(() => {
             sfx.levelUp();
-            triggerSupernova(pid, `✦ SUPERNOVA LEVEL UP! · ${upName} Lv ${newLv}`, `New cosmic aura unlocked (+${gain} XP)!`, "#E5A93C");
+            triggerSupernova(pid, `⚡ ORBITAL ALIGNMENT ACTIVATED! (1.25× XP)`, `3+ root sectors active today — golden resonance beams online!`, "#E5A93C");
+          }, 220);
+        } else if (ups.length || uUp) {
+          ups.forEach(c => logEvent(c.id, "levelup", `Reached Level ${Math.floor(levelOf(c))} (${evolutionTier(levelOf(c)).name})`));
+          if (uUp) logEvent(null, "levelup", `Life reached Level ${Math.floor(levelOf(null))} · ${cosmicTitle(levelOf(null))}`);
+          const upName = ups[0] ? ups[0].name : (STATE.life?.name || "Life");
+          const newLv = Math.floor(ups[0] ? levelOf(ups[0]) : levelOf(null));
+          setTimeout(() => {
+            sfx.levelUp();
+            triggerSupernova(pid, `✦ SUPERNOVA LEVEL UP! · ${upName} Lv ${newLv}`, `Evolved into ${ups[0] ? evolutionTier(newLv).name : cosmicTitle(newLv)} (+${gain} XP)!`, "#E5A93C");
           }, 220);
         } else if (isBreakthrough) {
           triggerSupernova(pid, `⚡ GRAVITATIONAL BREAKTHROUGH!`, `Conquered high-gravity mission on ${p.name} · +${gain} XP!`, "#F59E0B");
         } else {
-          toast(`+${gain} XP · ${p.name}${strains ? " · resilience bonus" : ""}`);
+          toast(`+${gain} XP · ${p.name}${strains ? " · resilience bonus" : ""}${alignAfter ? " · ⚡ 1.25× Aligned" : ""}`);
         }
       } else {
         p.xp = Math.max(0, (p.xp || 0) - (t.xpAwarded || 0));
@@ -1352,14 +1667,18 @@
       return { w, h, cx, cy, radius, ry: radius, scale };
     }
 
-    function createNode(pl, size, kind) {
+    function createNode(pl, baseSize, kind) {
       const isFocus = kind === "focus", isParent = kind === "wayback";
       const score = computeHealth(pl.id ? pl : null), hex = healthHex(score);
       const lvl = levelOf(pl.id ? pl : null);
+      const evo = evolutionTier(lvl);
+      const size = kind === "child" ? Math.round(baseSize * evo.scale) : baseSize;
       const kids = childIds(pl.id);
       const mc = moonCompanion(pl.id ? pl : null);
-      const hasMoons = (kind === "child" && kids.length > 0) || mc.stage > 0;
-      const pad = isFocus ? 22 : hasMoons ? 24 : 16;
+      const hasComet = !!(pl.id && STATE.dailyComet && !STATE.dailyComet.claimed && STATE.dailyComet.date === todayISO() && STATE.dailyComet.targetPid === pl.id);
+      const shields = pl.id ? (pl.solarShields || 0) : 0;
+      const hasMoons = (kind === "child" && kids.length > 0) || mc.stage > 0 || evo.hasRing || hasComet;
+      const pad = isFocus ? 24 : hasMoons ? 26 : 16;
       const r = size / 2 + (isFocus ? 9 : 7);
       const circ = 2 * Math.PI * r, filled = (score / 100) * circ;
       const svgDim = size + pad * 2, c = svgDim / 2, sw = isFocus ? 3.5 : 2.75;
@@ -1393,6 +1712,15 @@
         `;
       })() : "";
 
+      // §5.1 Planetary Evolution Ring (Lv 5+) & Star-World Corona (Lv 10+)
+      const evoRingSVG = (!isParent && evo.hasRing) ? `
+        <ellipse cx="${c}" cy="${c}" rx="${r + 13}" ry="${Math.round((r + 13) * 0.34)}" fill="none" stroke="${auraColor}99" stroke-width="1.8" transform="rotate(-18 ${c} ${c})" style="filter:drop-shadow(0 0 6px ${auraColor})"/>
+        ${evo.hasCorona ? `
+          <circle cx="${c - (r + 13)}" cy="${c - 4}" r="3.2" fill="#FDE68A" style="filter:drop-shadow(0 0 8px #E5A93C)"/>
+          <circle cx="${c + (r + 13)}" cy="${c + 4}" r="3.2" fill="#2DD4BF" style="filter:drop-shadow(0 0 8px #2DD4BF)"/>
+        ` : ""}
+      ` : "";
+
       const tetherRingSVG = isTethered ? `
         <circle class="arc-animated" cx="${c}" cy="${c}" r="${r + 6}" fill="none" stroke="#E5A93C" stroke-width="1.6" stroke-dasharray="6 8" style="filter:drop-shadow(0 0 6px rgba(229,169,60,0.6))"/>
       ` : "";
@@ -1401,15 +1729,24 @@
         <circle class="arc-animated" cx="${c}" cy="${c}" r="${r + (isFocus ? 14 : 10)}" fill="none" stroke="${skin.glow}" stroke-width="1.5" stroke-dasharray="${skin.ringDash}" style="filter:drop-shadow(0 0 8px ${skin.glow})"/>
       ` : "";
 
+      const cometBadgeHTML = hasComet ? `
+        <button data-act="claim-comet" data-id="${pl.id}" title="☄️ Passing Comet! Click to claim +60 Bonus XP orbital check-in on ${esc(pl.name)}"
+                class="absolute -top-3 -right-3 z-40 px-2 py-0.5 rounded-full bg-amber-400 text-[#0D0F0E] text-[11px] font-bold shadow-[0_0_18px_#E5A93C] animate-bounce cursor-pointer flex items-center gap-0.5">
+          <span>☄️</span><span>+60</span>
+        </button>
+      ` : "";
+
       const wrapper = document.createElement("div");
       wrapper.className = "absolute left-0 top-0 pointer-events-auto cursor-pointer will-change-transform";
       if (isFocus) wrapper.style.zIndex = "3";
       wrapper.innerHTML = `
         <div class="node-inner relative flex items-center justify-center transition-transform duration-200 ${isFocus ? "hover:scale-[1.03] pill-always" : "hover:scale-110"} ${isParent ? "pill-always" : ""}" style="width:${size}px;height:${size}px;">
+          ${cometBadgeHTML}
           <div class="absolute rounded-full pointer-events-none" style="width:${size * 1.95}px;height:${size * 1.95}px;top:${-size * 0.475}px;left:${-size * 0.475}px;background:radial-gradient(circle, ${auraColor}58 0%, transparent 70%);"></div>
           ${kind === "child" ? `<div class="reticle-wrap absolute pointer-events-none" style="inset:${-pad - 4}px;display:none"><div class="reticle w-full h-full rounded-full border border-dashed border-amber-300/60"></div></div>` : ""}
           <svg class="absolute pointer-events-none overflow-visible" width="${svgDim}" height="${svgDim}" style="top:${-pad}px;left:${-pad}px;">
             ${isFocus ? `<circle cx="${c}" cy="${c}" r="${r + 8}" fill="none" stroke="rgba(45,212,191,0.18)" stroke-dasharray="3 7"/>` : ""}
+            ${evoRingSVG}
             ${auraRingSVG}
             ${tetherRingSVG}
             <circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="${sw}"/>
@@ -1432,6 +1769,7 @@
               <span class="font-semibold" style="color:${hex}">${score}%</span>
               <span class="text-slate-400">·</span>
               <span class="text-amber-300 font-semibold">Lv ${Math.floor(lvl)}</span>
+              ${shields > 0 ? `<span class="text-slate-400">·</span><span class="text-teal-200" title="${shields} Solar Flare Streak Shield${shields > 1 ? "s" : ""}">🛡️${shields > 1 ? shields : ""}</span>` : ""}
               ${mc.stage > 0 ? `<span class="text-slate-400">·</span><span title="${esc(mc.name)}">${mc.icon}</span>` : ""}
               ${kids.length && !isFocus ? `<span class="text-slate-400">·</span><span class="text-teal-300">${kids.length} in orbit</span>` : ""}
             </div>
@@ -1447,7 +1785,7 @@
     function rebuildScene() {
       domContainer.innerHTML = "";
       svgEl.innerHTML = "";
-      scene = { focusEl: null, wbEl: null, kidEls: {}, kids: [], orbit: null, wbPath: null, arcs: [] };
+      scene = { focusEl: null, wbEl: null, kidEls: {}, kids: [], orbit: null, wbPath: null, arcs: [], alignPath: null };
       if (isMobile() && mobView !== "orbit") {
         svgEl.style.display = "none";
         domContainer.style.display = "none";
@@ -1473,13 +1811,29 @@
         svgEl.appendChild(wp); scene.wbPath = wp;
       }
       kids.forEach((cid, i) => {
+        const cp = P(cid);
+        const chScore = computeHealth(cp);
+        const hasDrag = chScore < 55 || (cp && taskStats(cp).overdue > 0);
         const a = document.createElementNS(SVGNS, "path");
         a.setAttribute("fill", "none");
-        a.setAttribute("stroke", i % 2 === 0 ? "rgba(45,212,191,0.20)" : "rgba(234,179,8,0.16)");
-        a.setAttribute("stroke-width", "1.5");
+        // §3.2 Visual Gravity Drag Lines: crimson/amber dashed tether when a satellite is dragging parent health down
+        a.setAttribute("stroke", hasDrag ? "rgba(239,68,68,0.48)" : (i % 2 === 0 ? "rgba(45,212,191,0.20)" : "rgba(234,179,8,0.16)"));
+        a.setAttribute("stroke-width", hasDrag ? "2" : "1.5");
         a.setAttribute("class", "arc-animated");
         svgEl.appendChild(a); scene.arcs.push(a);
       });
+
+      // §5.2 Orbital Alignment Golden Resonance Beam Path
+      if (!focusId) {
+        const alignP = document.createElementNS(SVGNS, "path");
+        alignP.setAttribute("fill", "none");
+        alignP.setAttribute("stroke", "rgba(229,169,60,0.42)");
+        alignP.setAttribute("stroke-width", "2");
+        alignP.setAttribute("stroke-dasharray", "6 6");
+        alignP.setAttribute("style", "filter:drop-shadow(0 0 8px rgba(229,169,60,0.5))");
+        svgEl.appendChild(alignP);
+        scene.alignPath = alignP;
+      }
 
       // Wayback parent
       if (fp) {
@@ -1499,6 +1853,7 @@
       kids.forEach(cid => {
         const el = createNode(P(cid), childSize, "child");
         el.addEventListener("click", (e) => {
+          if (e.target.closest("[data-act='claim-comet']")) return;
           e.stopPropagation();
           if (selectedId === cid) dive(cid); else select(cid);
         });
@@ -1534,16 +1889,32 @@
       if (scene.wbPath) scene.wbPath.setAttribute("d", `M ${wbX} ${wbY} Q ${cx - radius * (mob ? 0.55 : 0.7)} ${wbY + (cy - wbY) * 0.65} ${cx} ${cy}`);
 
       const n = scene.kids.length;
+      const kidCoords = {};
       for (let i = 0; i < n; i++) {
+        const cid = scene.kids[i];
         const angle = -90 + (360 / n) * i + orbitOffset;
         const rad = (angle * Math.PI) / 180;
         const ex = cx + Math.cos(rad) * radius, ey = cy + Math.sin(rad) * ry;
-        const el = scene.kidEls[scene.kids[i]];
+        kidCoords[cid] = { x: ex, y: ey };
+        const el = scene.kidEls[cid];
         if (el) place(el, ex, ey);
         const mx = (cx + ex) / 2, my = (cy + ey) / 2;
         const pRad = ((angle + 90) * Math.PI) / 180;
         const cpx = mx + Math.cos(pRad) * (radius * 0.34), cpy = my + Math.sin(pRad) * (ry * 0.34);
         scene.arcs[i].setAttribute("d", `M ${cx} ${cy} Q ${cpx} ${cpy} ${ex} ${ey}`);
+      }
+
+      // Update Orbital Alignment Golden Resonance Beams between active root sectors
+      if (scene.alignPath) {
+        const align = orbitalAlignmentStatus();
+        const pts = align.alignedRootIds.map(id => kidCoords[id]).filter(Boolean);
+        if (pts.length >= 2) {
+          const d = pts.map((pt, idx) => `${idx === 0 ? "M" : "L"} ${pt.x} ${pt.y}`).join(" ") + (pts.length >= 3 ? " Z" : "");
+          scene.alignPath.setAttribute("d", d);
+          scene.alignPath.setAttribute("stroke", align.active ? "rgba(229,169,60,0.65)" : "rgba(45,212,191,0.28)");
+        } else {
+          scene.alignPath.setAttribute("d", "");
+        }
       }
     }
 
@@ -1611,9 +1982,13 @@
       const attrWho = t.done && t.completedBy ? `✓ ${t.completedBy}` : (t.createdBy ? `by ${t.createdBy}` : "");
       const attrBadge = (p.tetherCode && attrWho) ? `<span class="px-2 py-0.5 rounded-full bg-amber-400/15 border border-amber-400/35 text-amber-200 font-medium">${esc(attrWho)}</span><span aria-hidden="true" class="text-slate-500">·</span>` : "";
       const reasonHTML = reasonBadge ? `<span class="px-2 py-0.5 rounded-full bg-amber-400/15 border border-amber-400/35 text-amber-200 font-medium">${reasonBadge}</span><span aria-hidden="true" class="text-slate-500">·</span>` : "";
+      // §3.3 Level Progress Preview on Task Hover
+      const estXP = taskXP(t.diff, strainCount(p));
+      const nextLi = levelInfo(xpOf(p) + estXP, tierBaseXP(p));
+      const hoverPreview = !t.done ? `+${estXP} XP → Lv ${nextLi.whole} (${Math.round(nextLi.pct)}%)` : "";
       return `
         <div class="group flex items-center gap-3.5 ${mobile ? "p-3.5" : "p-3.5"} rounded-xl bg-white/[0.035] border ${cycledToday ? "border-teal-400/35" : "border-white/10"} hover:border-teal-400/35 transition-colors ${t.done ? "opacity-55" : ""}">
-          <button data-act="toggle" data-pid="${p.id}" data-tid="${t.id}" title="${t.recur ? "Complete cycle & advance due date" : t.done ? "Reopen task" : "Complete task"}"
+          <button data-act="toggle" data-pid="${p.id}" data-tid="${t.id}" title="${t.recur ? `Complete cycle (${hoverPreview})` : t.done ? "Reopen task" : `Complete task (${hoverPreview})`}"
                   class="${cb} flex-shrink-0 rounded-md border flex items-center justify-center cursor-pointer transition-all ${t.done ? "bg-teal-400 border-teal-400 text-[#0D0F0E] font-bold" : cycledToday ? "border-teal-400 bg-teal-400/20 text-teal-200 hover:bg-teal-400/30" : "border-slate-400 hover:border-teal-400 hover:bg-teal-400/10 text-teal-300"}">${t.done ? "✓" : t.recur ? "↻" : ""}</button>
           <div class="flex-1 min-w-0">
             <p class="${mobile ? "text-base" : "text-[15px] xl:text-base"} font-medium text-slate-100 leading-snug line-clamp-2 break-words [overflow-wrap:anywhere] ${t.done ? "line-through text-slate-400" : ""}" title="${esc(t.title)}">${esc(t.title)}</p>
@@ -1623,10 +1998,10 @@
               ${attrBadge}
               ${recurBadge}
               ${cycledBadge}
-              <span class="text-amber-300/90 tracking-[0.12em]" title="Difficulty ${t.diff}">${"◆".repeat(t.diff)}<span class="text-slate-500">${"◆".repeat(5 - t.diff)}</span></span>
+              <span class="text-amber-300/90 tracking-[0.12em]" title="Difficulty ${t.diff} (${hoverPreview})">${"◆".repeat(t.diff)}<span class="text-slate-500">${"◆".repeat(5 - t.diff)}</span></span>
               <span aria-hidden="true" class="text-slate-500">·</span>
               ${dueLabel(t)}
-              ${t.done && t.xpAwarded ? `<span aria-hidden="true" class="text-slate-500">·</span><span class="text-teal-300 font-medium">+${t.xpAwarded} XP</span>` : ""}
+              ${t.done && t.xpAwarded ? `<span aria-hidden="true" class="text-slate-500">·</span><span class="text-teal-300 font-medium">+${t.xpAwarded} XP</span>` : `<span class="hidden group-hover:inline text-amber-300/90 font-medium">· ${hoverPreview}</span>`}
             </div>
           </div>
           <div class="flex items-center gap-1.5 flex-shrink-0">
@@ -1672,7 +2047,8 @@
     function strainBlock(target) {
       if (!target) return "";
       const n = strainCount(target), st = taskStats(target);
-      const need = Math.max(0, Math.ceil((15 * n) / 10) - st.doneToday);
+      const remDrag = strainPenalty(target, st);
+      const need = Math.ceil(remDrag / 12);
       const chip = (kind, label, on) => `<button data-act="strain" data-id="${target.id}" data-kind="${kind}"
           class="px-3.5 py-1.5 rounded-full text-xs font-medium border transition-all cursor-pointer ${on ? "bg-red-500/20 border-red-500/70 text-red-200 font-semibold shadow-[0_0_12px_rgba(239,68,68,0.3)]" : "border-slate-600 text-slate-300 hover:border-slate-400 hover:text-white"}">${label}</button>`;
       return `
@@ -1680,7 +2056,7 @@
           ${chip("fin", "$ Financial strain", target.strain.fin)}
           ${chip("psy", "🧠 Psyche strain", target.strain.psy)}
         </div>
-        ${n ? `<p class="mt-2.5 text-xs leading-snug text-amber-200/90">High gravity · tasks here earn <b>${100 + 25 * n}% XP</b> (Diff 4–5 trigger ⚡ Breakthrough). ${need ? `${need} more win${need > 1 ? "s" : ""} today neutralise drag.` : "Drag neutralised for today ✓"}</p>` : ""}`;
+        ${n ? `<p class="mt-2.5 text-xs leading-snug text-amber-200/90">High gravity · tasks here earn <b>${100 + 25 * n}% XP</b> (Diff 4–5 trigger ⚡ Breakthrough). 48h Shield: ${need ? `${need} more win${need > 1 ? "s" : ""} today neutralise −${remDrag}% drag.` : `Drag fully neutralised (${st.doneYesterday ? "includes 24h residual shield " : ""}✓)`}</p>` : ""}`;
     }
 
     function notesHTML(id, mobile) {
@@ -1749,9 +2125,10 @@
         let reason = "🎯 High Impact";
         const pHealth = computeHealth(x.p);
         const strains = strainCount(x.p);
+        const overdueGain = 8 + 2 * (parseInt(x.t.diff, 10) || 2);
         if (x.t.due && x.t.due < today) {
           pts += 60;
-          reason = "⚠ Overdue (+15% Health)";
+          reason = `⚠ Overdue (+${overdueGain}% Health)`;
         } else if (x.t.due === today) {
           pts += 42;
           reason = "📅 Due Today";
@@ -1852,6 +2229,32 @@
 
     function todayFocusContentHTML(mobile) {
       const td = curatedTodayData();
+      const align = orbitalAlignmentStatus();
+      const comet = STATE.dailyComet && !STATE.dailyComet.claimed && STATE.dailyComet.date === todayISO() ? P(STATE.dailyComet.targetPid) : null;
+
+      const cometBanner = comet ? `
+        <div class="p-3.5 rounded-xl bg-teal-400/10 border border-teal-400/40 flex flex-wrap items-center justify-between gap-2.5 text-xs">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <span class="text-xl leading-none">☄️</span>
+            <div class="min-w-0">
+              <p class="text-teal-200 font-semibold">Passing Comet Quest: Halley's Spark near ${esc(comet.icon)} ${esc(comet.name)}</p>
+              <p class="text-slate-300 mt-0.5">Complete any mission on ${esc(comet.name)} today or log a quick orbital check-in for <b>+60 Comet XP</b>!</p>
+            </div>
+          </div>
+          <button data-act="claim-comet" data-id="${comet.id}" class="px-3.5 py-1.5 rounded-full bg-teal-400 text-[#0D0F0E] font-semibold cursor-pointer shadow-md shrink-0">☄️ Harvest +60 XP</button>
+        </div>
+      ` : "";
+
+      const alignmentBanner = `
+        <div class="p-3 rounded-xl ${align.active ? "bg-amber-400/15 border-amber-400/50" : "bg-white/[0.03] border-white/10"} border flex items-center justify-between gap-2 text-xs">
+          <div class="flex items-center gap-2">
+            <span>⚡</span>
+            <span class="${align.active ? "text-amber-200 font-semibold" : "text-slate-300"}">${align.active ? "Orbital Alignment ACTIVE! All missions earn 1.25× XP today" : `Orbital Alignment Synergy: ${align.count} / 3 root sectors active today`}</span>
+          </div>
+          <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${align.active ? "bg-amber-400 text-[#0D0F0E]" : "bg-white/10 text-slate-300"}">${align.active ? "1.25× XP" : `${3 - align.count} more for 1.25×`}</span>
+        </div>
+      `;
+
       const triageBar = td.overdue.length ? `
         <div class="p-3.5 rounded-xl bg-red-500/10 border border-red-400/35 flex flex-wrap items-center justify-between gap-2 text-xs">
           <div>
@@ -1874,6 +2277,8 @@
             </div>
             <button data-act="open-cmd" class="px-3.5 py-2 rounded-full text-xs font-semibold text-[#0D0F0E] shrink-0 cursor-pointer shadow-md" style="background:var(--gold)">+ Quick Add</button>
           </div>
+          ${cometBanner}
+          ${alignmentBanner}
           ${triageBar}
           ${td.priority.length ? `
             <div class="space-y-2.5">
@@ -1892,7 +2297,8 @@
 
     function checkinContentHTML(mobile) {
       const td = curatedTodayData();
-      const ul = levelInfo(universeXP());
+      const ul = levelInfoOf(null);
+      const uTitle = cosmicTitle(ul.lvl);
       const reflId = mobile ? "inputReflectMob" : "inputReflectDesk";
       const sec = (title, cls, arr) => arr.length ? `<div class="space-y-2"><p class="text-xs font-semibold uppercase tracking-wider ${cls}">${title} · ${arr.length}</p>${arr.map(x => taskRow(x, mobile, true)).join("")}</div>` : "";
       return `
@@ -1910,7 +2316,10 @@
               <div class="rounded-xl bg-white/[0.04] border border-white/10 py-2.5"><p class="text-xl font-semibold text-amber-300">+${td.xpToday}</p><p class="text-[10px] uppercase tracking-wider text-slate-300">xp earned</p></div>
               <div class="rounded-xl bg-white/[0.04] border border-white/10 py-2.5"><p class="text-xl font-semibold" style="color:${healthHex(computeHealth(null))}">${computeHealth(null)}%</p><p class="text-[10px] uppercase tracking-wider text-slate-300">life health</p></div>
             </div>
-            <p class="mt-3 text-xs text-slate-300">Life Lv ${ul.whole} · ${ul.toNext} XP to Lv ${ul.whole + 1}</p>
+            <div class="mt-3 flex items-center justify-between text-xs text-slate-300">
+              <span>Life Lv ${ul.whole} · <b class="text-amber-200">🏆 ${esc(uTitle)}</b></span>
+              <span>${ul.toNext} XP to Lv ${ul.whole + 1}</span>
+            </div>
             <div class="mt-1.5 h-1.5 rounded-full bg-white/10 overflow-hidden"><div class="h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-300" style="width:${Math.max(ul.pct, 2)}%"></div></div>
           </div>
 
@@ -1942,7 +2351,7 @@
       if (deskNav) {
         deskNav.innerHTML = chain.map((item, idx) => `
           ${idx > 0 ? '<span class="text-slate-400 text-sm">›</span>' : ""}
-          <button data-act="dive" data-id="${item.id ?? ""}" class="px-3.5 py-1 rounded-full text-sm font-medium cursor-pointer truncate max-w-[160px] ${idx === chain.length - 1 ? "bg-teal-400/15 border border-teal-400/45 text-teal-200 font-semibold" : "text-slate-300 hover:text-white border border-transparent"}">${esc(item.name)}</button>
+          <button data-act="dive" data-id="${item.id ?? ""}" class="px-3 py-1 rounded-full text-sm font-medium font-fraunces cursor-pointer truncate max-w-[160px] ${idx === chain.length - 1 ? "bg-teal-400/15 border border-teal-400/45 text-teal-200 font-semibold" : "text-slate-200 hover:text-white border border-transparent"}">${esc(item.name)}</button>
         `).join("");
       }
       const mobNav = document.getElementById("mobBreadcrumbs");
@@ -1953,13 +2362,31 @@
           <button data-act="dive" data-id="${item.id ?? ""}" class="truncate max-w-[96px] min-w-0 px-1.5 py-0.5 rounded text-xs cursor-pointer ${idx === lastTwo.length - 1 ? "text-teal-200 font-semibold" : "text-slate-300"}">${esc(item.name)}</button>
         `).join("");
       }
-      const themeIcon = (SOUND_THEMES[STATE.soundTheme || "crystal"] || SOUND_THEMES.crystal).icon;
-      const btnSound = document.getElementById("btnSoundToggle");
-      if (btnSound) btnSound.textContent = STATE.soundOn ? `🔊 ${themeIcon}` : "🔇";
+      const themeObj = SOUND_THEMES[STATE.soundTheme || "crystal"] || SOUND_THEMES.crystal;
+      const lblSound = document.getElementById("lblSoundState");
+      if (lblSound) {
+        lblSound.textContent = STATE.soundOn ? `${themeObj.icon} ON` : "🔇 Muted";
+        lblSound.className = STATE.soundOn
+          ? "text-[10px] px-2 py-0.5 rounded-full bg-teal-400/15 text-teal-200"
+          : "text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-slate-400";
+      }
       const mobSound = document.getElementById("mobBtnSound");
       if (mobSound) mobSound.textContent = STATE.soundOn ? "🔊" : "🔇";
-      const comp = document.getElementById("compassFocusName");
-      if (comp) comp.textContent = fp ? fp.name : rootName;
+
+      const lblPause = document.getElementById("lblPauseOrbit");
+      const badgePause = document.getElementById("badgePauseState");
+      if (lblPause) lblPause.textContent = orbitPaused ? "Resume Orbit Drift" : "Pause Orbit Drift";
+      if (badgePause) {
+        badgePause.textContent = orbitPaused ? "⏸ Paused" : "▶ Flowing";
+        badgePause.className = orbitPaused
+          ? "text-[10px] px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-200"
+          : "text-[10px] px-2 py-0.5 rounded-full bg-teal-400/15 text-teal-200";
+      }
+
+      const ul = levelInfoOf(null);
+      const menuTitle = document.getElementById("menuUserTitle");
+      if (menuTitle) menuTitle.textContent = `🏆 ${cosmicTitle(ul.lvl)} · Life Lv ${ul.whole}`;
+
       const badgeToday = document.getElementById("badgeTodayCount");
       if (badgeToday) {
         const td = curatedTodayData();
@@ -1967,6 +2394,41 @@
       }
       const lblPush = document.getElementById("lblPushMenu");
       if (lblPush) lblPush.textContent = STATE.pushEnabled ? "Push Reminder: ON ✓" : "Enable Daily Push Reminder";
+
+      // Orbital Alignment & Passing Comet pills in Desktop Top Bar
+      const align = orbitalAlignmentStatus();
+      const alignEl = document.getElementById("badgeAlignmentHud");
+      if (alignEl) {
+        if (align.count > 0) {
+          alignEl.className = `px-2.5 py-1 rounded-full text-[11px] font-semibold border whitespace-nowrap ${align.active ? "bg-amber-400/20 border-amber-400/50 text-amber-200 shadow-[0_0_12px_rgba(229,169,60,0.3)]" : "bg-white/5 border-white/10 text-slate-300"}`;
+          alignEl.textContent = align.active ? "⚡ 1.25× Aligned" : `⚡ ${align.count}/3 Aligned`;
+          alignEl.title = "Complete 1 task in 3 root sectors on the same day to activate 1.25× XP Orbital Alignment!";
+        } else {
+          alignEl.className = "hidden";
+        }
+      }
+      const cometEl = document.getElementById("badgeCometHud");
+      if (cometEl) {
+        const cometP = STATE.dailyComet && !STATE.dailyComet.claimed && STATE.dailyComet.date === todayISO() ? P(STATE.dailyComet.targetPid) : null;
+        if (cometP) {
+          cometEl.className = "px-2.5 py-1 rounded-full text-[11px] font-semibold border border-teal-400/45 bg-teal-400/15 text-teal-200 cursor-pointer hover:bg-teal-400/25 whitespace-nowrap";
+          cometEl.dataset.act = "claim-comet";
+          cometEl.dataset.id = cometP.id;
+          cometEl.textContent = `☄️ Comet: ${cometP.name}`;
+          cometEl.title = `Click to harvest +60 Comet XP on ${cometP.name}!`;
+        } else {
+          cometEl.className = "hidden";
+        }
+      }
+
+      // Collapsible Top Bar state
+      const actionsDeck = document.getElementById("deskTopActions");
+      const btnCol = document.getElementById("btnCollapseTopBar");
+      if (actionsDeck) actionsDeck.classList.toggle("hidden", deskTopBarCollapsed);
+      if (btnCol) {
+        btnCol.textContent = deskTopBarCollapsed ? "»" : "«";
+        btnCol.title = deskTopBarCollapsed ? "Expand top action deck" : "Collapse top bar to minimal breadcrumb";
+      }
     }
 
     function renderHUD() {
@@ -1976,12 +2438,18 @@
       const node = target || lifeNode();
       const inspecting = !!selectedId && !!target;
       const score = computeHealth(target);
-      const li = levelInfo(xpOf(target));
+      const li = levelInfoOf(target);
+      const evo = target ? evolutionTier(li.lvl) : { badge: "🏆", name: cosmicTitle(li.lvl) };
       const mc = moonCompanion(target);
+      const shields = target ? (target.solarShields || 0) : 0;
       const kids = childIds(tid);
       const g = taskGroups(tid);
-      const parentName = target ? (P(target.parentId)?.name || "Life") : "";
-      const subtitle = inspecting ? `Inspecting · orbiting ${esc(parentName)}` : target ? `Focused · orbiting ${esc(parentName)}` : "Solar system core · overview";
+      const parentName = target ? (P(target.parentId)?.name || STATE.life?.name || "Life") : "";
+      const subtitle = inspecting
+        ? `Inspecting · ${evo.badge} ${evo.name} · orbiting ${esc(parentName)}`
+        : target
+        ? `Focused · ${evo.badge} ${evo.name} · orbiting ${esc(parentName)}`
+        : `Solar system core · 🏆 ${esc(evo.name)}`;
       const notesCount = (ownerOf(tid)?.notes || []).length;
 
       const tetherBtn = tid ? `<button data-act="open-tether" data-id="${tid}" title="Tether / Share planet with partner" class="w-9 h-9 rounded-full ${target?.tetherCode ? "bg-amber-400/20 border-amber-400/50 text-amber-200" : "bg-white/5 border-white/15 text-slate-200 hover:text-teal-300"} border text-sm cursor-pointer transition-colors">🔗</button>` : "";
@@ -2027,9 +2495,10 @@
             ${gaugeSVG(score, 72, 5.5, tid || "")}
             <div class="flex-1 min-w-0">
               <div class="flex items-baseline justify-between gap-2">
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-1.5 flex-wrap">
                   <span class="text-2xl font-semibold text-amber-300 leading-none">Lv ${li.whole}</span>
                   <button data-act="open-cosmetics" data-id="${tid || ""}" class="px-2 py-0.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/15 text-[11px] text-slate-200 cursor-pointer" title="${esc(mc.desc)}">${mc.icon} ${esc(mc.name)}</button>
+                  ${shields > 0 ? `<span class="px-2 py-0.5 rounded-full bg-teal-400/15 border border-teal-400/35 text-[11px] text-teal-200 font-semibold" title="${shields} Solar Flare Streak Shield${shields > 1 ? "s" : ""} active">🛡️ ${shields}</span>` : ""}
                 </div>
                 <span class="text-xs text-slate-300 font-medium shrink-0">${li.toNext} XP to Lv ${li.whole + 1}</span>
               </div>
@@ -2096,7 +2565,7 @@
         const tid = target ? target.id : null;
         const node = target || lifeNode();
         const score = computeHealth(target);
-        const li = levelInfo(xpOf(target));
+        const li = levelInfoOf(target);
         const mc = moonCompanion(target);
         const g = taskGroups(tid);
         const isPeek = mobSheetSnap === "peek";
@@ -2156,7 +2625,7 @@
         const fp = P(focusId);
         const node = fp || lifeNode();
         const score = computeHealth(fp);
-        const li = levelInfo(xpOf(fp));
+        const li = levelInfoOf(fp);
         const mc = moonCompanion(fp);
         const kids = childIds(focusId);
         const g = taskGroups(focusId);
@@ -2904,25 +3373,34 @@
       const node = target || lifeNode();
       const hb = healthBreakdown(target);
       const mc = moonCompanion(target);
-      const uLv = levelInfo(universeXP()).whole;
+      const uLv = levelInfoOf(null).whole;
+      const tLv = levelOf(target);
+      const evo = evolutionTier(tLv);
+      const cTitle = cosmicTitle(uLv);
       const curSkin = (target ? target.auraSkin : STATE.life?.auraSkin) || "classic";
       const curSound = STATE.soundTheme || "crystal";
 
       body.innerHTML = `
         <div class="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2.5">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold uppercase tracking-wider text-teal-300">📊 Orbital Health Formula · ${esc(node.icon)} ${esc(node.name)}</span>
+          <div class="flex items-center justify-between gap-2">
+            <div>
+              <span class="text-xs font-semibold uppercase tracking-wider text-teal-300">📊 Gravity-Weighted Health Inspector · ${esc(node.icon)} ${esc(node.name)}</span>
+              <p class="text-[11px] text-slate-400 mt-0.5">Lv ${tLv} · ${esc(evo.name)} (${evo.scale.toFixed(2)}× radius) ${!target ? `· 👑 ${esc(cTitle)}` : ""}</p>
+            </div>
             <span class="text-lg font-bold" style="color:${healthHex(hb.score)}">${hb.score}%</span>
           </div>
           <p class="text-xs text-slate-300 leading-relaxed">${esc(hb.formula)}</p>
           ${target ? `
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-center text-xs">
-              <div class="p-2 rounded-xl bg-white/[0.03] border border-white/10"><p class="text-slate-400 text-[10px]">Base</p><p class="font-semibold text-white">76%</p></div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1 text-center text-xs">
+              <div class="p-2 rounded-xl bg-white/[0.03] border border-white/10"><p class="text-slate-400 text-[10px]">Base / Child Mass</p><p class="font-semibold text-white">${hb.base}%</p></div>
               <div class="p-2 rounded-xl bg-white/[0.03] border border-white/10"><p class="text-slate-400 text-[10px]">7d Momentum</p><p class="font-semibold text-teal-300">+${hb.recentBonus}%</p></div>
-              <div class="p-2 rounded-xl bg-white/[0.03] border border-white/10"><p class="text-slate-400 text-[10px]">Overdue (${hb.overdue})</p><p class="font-semibold text-red-300">-${hb.overduePen}%</p></div>
-              <div class="p-2 rounded-xl bg-white/[0.03] border border-white/10"><p class="text-slate-400 text-[10px]">Strain Gravity</p><p class="font-semibold text-amber-300">-${hb.strainPen}%</p></div>
+              <div class="p-2 rounded-xl bg-white/[0.03] border border-white/10"><p class="text-slate-400 text-[10px]">Clear Orbit</p><p class="font-semibold text-emerald-300">+${hb.clearOrbitBonus || 0}%</p></div>
+              <div class="p-2 rounded-xl bg-white/[0.03] border border-white/10"><p class="text-slate-400 text-[10px]">Overdue (${hb.overdue})</p><p class="font-semibold text-red-300">-${hb.overduePenalty || 0}%</p></div>
+              <div class="p-2 rounded-xl bg-white/[0.03] border border-white/10"><p class="text-slate-400 text-[10px]">48h Strain Drag</p><p class="font-semibold text-amber-300">-${hb.strainDrag || 0}%</p></div>
+              <div class="p-2 rounded-xl bg-white/[0.03] border border-white/10"><p class="text-slate-400 text-[10px]">Solar Shields</p><p class="font-semibold text-cyan-300">🛡️ ${hb.solarShields || 0}/2</p></div>
             </div>
           ` : ""}
+          ${hb.tip ? `<p class="text-[11px] text-teal-200/90 bg-teal-400/10 border border-teal-400/20 rounded-xl px-3 py-2">${esc(hb.tip)}</p>` : ""}
         </div>
 
         <div class="p-4 rounded-2xl bg-amber-400/[0.07] border border-amber-400/30 flex items-center gap-3.5">
@@ -3061,6 +3539,11 @@
         case "toggle-completed": showCompleted = !showCompleted; renderHUD(); renderMobile(); break;
         case "toggle-sheet": mobSheetSnap = mobSheetSnap === "peek" ? "expanded" : "peek"; renderMobile(); rebuildScene(); break;
         case "top-menu": topMenu?.classList.toggle("hidden"); break;
+        case "toggle-desk-topbar": deskTopBarCollapsed = !deskTopBarCollapsed; renderTopBar(); break;
+        case "claim-comet":
+          claimCometQuest();
+          if (!document.getElementById("todayCheckinModal").classList.contains("hidden")) renderTodayCheckinModal();
+          break;
         case "mob-view": mobView = d.view; renderMobile(); rebuildScene(); document.getElementById("mobileView").scrollTop = 0; break;
         case "mob-checkin-sub": mobCheckinSubTab = d.sub || "today"; renderMobile(); break;
         case "open-today-focus": openTodayCheckinModal("today"); break;
@@ -3135,10 +3618,14 @@
             updateAuthUI();
           }
           break;
-        case "pause": orbitPaused = !orbitPaused; el.textContent = orbitPaused ? "▶ Resume Orbit" : "⏸ Pause Orbit"; break;
+        case "pause":
+          orbitPaused = !orbitPaused;
+          renderTopBar();
+          toast(orbitPaused ? "⏸ Orbit drift paused" : "▶ Orbit drift resumed");
+          break;
         case "reset":
           if (window.confirm("Reset Idemap to the 4 empty seed planets (Home, Business, Social, Hobbies)? All current planets and tasks will be cleared.")) {
-            STATE = seedState(); focusId = null; selectedId = null; save(); healthCache.clear(); render(); toast("Universe reset to 4 seed planets");
+            STATE = seedState(); focusId = null; selectedId = null; evaluateSolarShieldsAndComet(); save(); healthCache.clear(); render(); toast("Universe reset to 4 seed planets");
           }
           break;
         case "close-modal": closeModal(d.modal); break;
@@ -3444,6 +3931,7 @@
       } catch (e) {}
     }
 
+    evaluateSolarShieldsAndComet();
     render();
     initAuth();
     requestAnimationFrame(animateLoop);
