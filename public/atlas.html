@@ -1568,7 +1568,7 @@
         case "add-note": { const inp = document.getElementById(d.input); if (inp && inp.value.trim()) addNote(d.id || null, inp.value); break; }
         case "del-note": deleteNote(d.id || null, d.nid); break;
         case "sound": STATE.soundOn = !STATE.soundOn; save(); renderTopBar(); renderMobile(); if (STATE.soundOn) sfx.click(); break;
-        case "sync-cloud": saveToSupabase().then(() => toast("☁️ Synced with Supabase")); break;
+        case "sync-cloud": loadFromSupabase().then(() => toast("☁️ Cloud universe synced")); break;
         case "login-google": signInWithGoogle(); break;
         case "login-email": signInWithEmail(false); break;
         case "signup-email": signInWithEmail(true); break;
