@@ -4466,6 +4466,12 @@
           toggleStrain(p.id, kind);
         }
         broadcastContextToAssistant();
+      } else if (data.type === "IDEMAP_OPEN_MODAL") {
+        if (data.modal === "todayCheckinModal") {
+          openTodayCheckinModal(data.tab || "checkin");
+        } else if (data.modal) {
+          openModal(data.modal);
+        }
       }
     });
 
