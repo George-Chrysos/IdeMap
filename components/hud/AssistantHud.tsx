@@ -333,24 +333,24 @@ export default function AssistantHud() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="group hud-panel glass-surface flex items-center gap-3 px-4 py-2.5 rounded-full border border-teal-400/40 text-slate-100 shadow-[0_12px_40px_rgba(0,0,0,0.7),inset_0_1px_0_rgba(255,255,255,0.15),0_0_20px_rgba(45,212,191,0.18)] hover:border-teal-300 hover:scale-[1.02] transition-all cursor-pointer backdrop-blur-2xl"
+          className="group hud-panel flex items-center gap-3 px-3.5 py-2 rounded-lg border border-white/10 text-slate-100 shadow-[0_12px_40px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.08)] bg-[#101415] hover:border-white/20 transition-all cursor-pointer"
         >
-          <span className="w-8 h-8 rounded-full bg-teal-400/20 border border-teal-400/50 flex items-center justify-center text-teal-300 shrink-0 shadow-[0_0_12px_rgba(45,212,191,0.3)]">
-            <Sparkles className="w-4 h-4" />
+          <span className="w-7 h-7 rounded bg-[#E6A734]/15 border border-[#E6A734]/30 flex items-center justify-center text-[#E6A734] shrink-0">
+            <Sparkles className="w-3.5 h-3.5" />
           </span>
           <div className="text-left">
             <div className="flex items-center gap-2">
               <span className="font-fraunces text-xs sm:text-sm font-semibold tracking-wide text-white">
-                IdeMap Architect
+                IdeMap Co-Pilot
               </span>
               {pendingActions.length > 0 && (
-                <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-400 text-[#0D0F0E] shadow-sm">
-                  {pendingActions.length} Action{pendingActions.length === 1 ? "" : "s"}
+                <span className="px-1.5 py-0.2 text-[9px] font-mono font-bold rounded bg-[#E6A734] text-[#080A0A] shadow-sm">
+                  {pendingActions.length}
                 </span>
               )}
             </div>
-            <p className="text-[10px] sm:text-[11px] text-teal-300/90 font-medium">
-              {focusPlanetName} · Co-Pilot
+            <p className="text-[10px] text-[#869299] font-mono truncate max-w-[150px]">
+              {focusPlanetName} // Online
             </p>
           </div>
         </button>
@@ -359,40 +359,39 @@ export default function AssistantHud() {
       {/* Expanded Floating HUD Drawer */}
       {isOpen && (
         <div
-          className={`hud-panel glass-surface ${
+          className={`hud-panel ${
             isExpanded
               ? "w-[94vw] sm:w-[680px] md:w-[780px] lg:w-[860px] h-[85vh]"
               : "w-[360px] sm:w-[420px] md:w-[450px] h-[560px] sm:h-[620px] max-h-[82vh]"
-          } rounded-2xl sm:rounded-3xl border border-teal-400/35 shadow-[0_24px_70px_rgba(0,0,0,0.85),inset_0_1px_0_rgba(255,255,255,0.15)] backdrop-blur-3xl flex flex-col overflow-hidden text-slate-100 transition-all duration-300 fade-up`}
+          } rounded-xl border border-white/10 shadow-[0_24px_70px_rgba(0,0,0,0.85),inset_0_1px_0_rgba(255,255,255,0.08)] bg-[#101415] flex flex-col overflow-hidden text-slate-100 transition-all duration-300 fade-up`}
         >
           {/* Executive Header Bar (Clean 44px) */}
-          <div className="py-2.5 px-4 sm:px-5 border-b border-white/10 flex items-center justify-between bg-gradient-to-r from-teal-500/10 via-transparent to-amber-500/10 flex-shrink-0">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse shrink-0" />
-              <h3 className="font-fraunces text-sm sm:text-base font-semibold text-white tracking-wide shrink-0">
-                IdeMap Architect
+          <div className="py-2 px-3.5 sm:px-4 border-b border-white/10 flex items-center justify-between bg-[#121719] flex-shrink-0">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="w-2 h-2 rounded-full bg-[#E6A734] shrink-0" />
+              <h3 className="font-fraunces text-sm font-semibold text-white tracking-wide shrink-0">
+                IdeMap Co-Pilot
               </h3>
-              <span className="text-[11px] px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-slate-300 truncate max-w-[130px] sm:max-w-[180px] flex items-center gap-1">
-                <span className="text-amber-300 font-medium">⚡</span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[#869299] truncate max-w-[130px] sm:max-w-[170px] flex items-center gap-1">
                 <span className="truncate">{focusPlanetName}</span>
               </span>
             </div>
 
             <div className="flex items-center gap-1.5 shrink-0">
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-teal-400/15 border border-teal-400/30 text-teal-200 font-mono">
-                {preferN8n ? "n8n" : "AI"}
+              <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[#E6A734] font-mono">
+                {preferN8n ? "N8N" : "AI"}
               </span>
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="w-7 h-7 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 flex items-center justify-center transition-colors cursor-pointer"
+                className="w-7 h-7 rounded text-[#869299] hover:text-white hover:bg-white/10 flex items-center justify-center transition-colors cursor-pointer"
                 title={isExpanded ? "Collapse Window" : "Expand Window"}
               >
                 {isExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
               </button>
               <button
                 onClick={() => setIsOpen(false)}
-                className="w-7 h-7 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 flex items-center justify-center transition-colors cursor-pointer"
-                title="Minimize Assistant HUD"
+                className="w-7 h-7 rounded text-[#869299] hover:text-white hover:bg-white/10 flex items-center justify-center transition-colors cursor-pointer"
+                title="Minimize Co-Pilot"
               >
                 <ChevronDown className="w-4 h-4" />
               </button>
@@ -400,29 +399,29 @@ export default function AssistantHud() {
           </div>
 
           {/* Navigation Tabs (3 Streamlined Modes) */}
-          <div className="flex items-center gap-2 px-3 py-2 bg-[#090C0D]/90 border-b border-white/10 text-xs font-semibold flex-shrink-0">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-[#0A0D0E] border-b border-white/10 text-xs font-semibold flex-shrink-0">
             <button
               onClick={() => setActiveTab("chat")}
-              className={`px-3.5 py-1.5 rounded-full flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
+              className={`px-3 py-1.5 rounded font-mono text-xs flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
                 activeTab === "chat"
-                  ? "bg-teal-400/20 text-teal-200 border border-teal-400/50 shadow-[0_0_12px_rgba(45,212,191,0.2)]"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-white/5 border border-transparent"
+                  ? "bg-[#E6A734] text-[#080A0A] font-bold shadow-sm"
+                  : "text-[#869299] hover:text-white hover:bg-white/5"
               }`}
             >
               <Zap className="w-3.5 h-3.5" />
               <span>Chat & Co-Pilot</span>
               {pendingActions.length > 0 && (
-                <span className="w-4 h-4 rounded-full bg-amber-400 text-[#0D0F0E] text-[10px] font-bold inline-flex items-center justify-center ml-0.5">
+                <span className="w-4 h-4 rounded bg-[#080A0A] text-[#E6A734] text-[10px] font-bold inline-flex items-center justify-center ml-0.5">
                   {pendingActions.length}
                 </span>
               )}
             </button>
             <button
               onClick={() => setActiveTab("briefings")}
-              className={`px-3.5 py-1.5 rounded-full flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
+              className={`px-3 py-1.5 rounded font-mono text-xs flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
                 activeTab === "briefings"
-                  ? "bg-amber-400/20 text-amber-200 border border-amber-400/50 shadow-[0_0_12px_rgba(229,169,60,0.2)]"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-white/5 border border-transparent"
+                  ? "bg-[#E6A734] text-[#080A0A] font-bold shadow-sm"
+                  : "text-[#869299] hover:text-white hover:bg-white/5"
               }`}
             >
               <Sun className="w-3.5 h-3.5" />
@@ -430,10 +429,10 @@ export default function AssistantHud() {
             </button>
             <button
               onClick={() => setActiveTab("settings")}
-              className={`px-3.5 py-1.5 rounded-full flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
+              className={`px-3 py-1.5 rounded font-mono text-xs flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
                 activeTab === "settings"
-                  ? "bg-white/15 text-white border border-white/30"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-white/5 border border-transparent"
+                  ? "bg-[#E6A734] text-[#080A0A] font-bold shadow-sm"
+                  : "text-[#869299] hover:text-white hover:bg-white/5"
               }`}
             >
               <Settings className="w-3.5 h-3.5" />
@@ -443,7 +442,7 @@ export default function AssistantHud() {
 
           {/* Status Banner */}
           {statusBanner && (
-            <div className="px-4 py-2 bg-teal-400/15 border-b border-teal-400/30 text-xs text-teal-200 flex items-center justify-between font-medium">
+            <div className="px-4 py-1.5 bg-[#E6A734]/15 border-b border-[#E6A734]/30 text-xs font-mono text-[#E6A734] flex items-center justify-between font-medium">
               <span>{statusBanner}</span>
             </div>
           )}
@@ -455,38 +454,38 @@ export default function AssistantHud() {
                 
                 {/* Pending Actions Notification Banner */}
                 {pendingActions.length > 0 && (
-                  <div className="p-3 rounded-2xl bg-gradient-to-br from-amber-500/15 via-[#0E1214] to-transparent border border-amber-400/40 space-y-2.5 shadow-md">
+                  <div className="p-3 rounded-lg bg-[#0E1214] border border-[#E6A734]/40 space-y-2.5">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
+                      <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#E6A734] flex items-center gap-1.5">
                         <Layers className="w-3.5 h-3.5" />
                         <span>Action Proposal ({pendingActions.length})</span>
                       </span>
-                      <span className="text-[10px] text-amber-200/80">Pending Confirmation</span>
+                      <span className="text-[10px] font-mono text-[#869299]">Pending Confirmation</span>
                     </div>
 
                     {pendingActions.slice(0, 2).map((act) => (
-                      <div key={act.id} className="p-2.5 rounded-xl bg-black/40 border border-white/10 space-y-1.5">
+                      <div key={act.id} className="p-2.5 rounded bg-black/40 border border-white/10 space-y-1.5">
                         <div className="flex items-center justify-between gap-2">
                           <h4 className="font-fraunces text-xs sm:text-sm font-semibold text-white truncate">
                             {act.title}
                           </h4>
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-200 shrink-0 font-medium">
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#E6A734]/20 text-[#E6A734] shrink-0 font-medium">
                             {act.action_type.replace("_", " ")}
                           </span>
                         </div>
-                        <p className="text-[11px] text-slate-300 line-clamp-2">
+                        <p className="text-[11px] text-[#869299] line-clamp-2">
                           {act.description}
                         </p>
                         <div className="flex items-center gap-2 pt-1">
                           <button
                             onClick={() => handleResolveAction(act, "confirm")}
-                            className="flex-1 py-1.5 px-3 rounded-lg bg-[#E5A93C] hover:bg-amber-300 text-[#0D0F0E] font-bold text-xs flex items-center justify-center gap-1 cursor-pointer transition-all shadow-sm"
+                            className="flex-1 py-1.5 px-3 rounded bg-[#E6A734] hover:brightness-110 text-[#080A0A] font-mono font-bold text-xs flex items-center justify-center gap-1 cursor-pointer transition-all shadow-sm"
                           >
                             <Check className="w-3.5 h-3.5" /> Confirm & Apply
                           </button>
                           <button
                             onClick={() => handleResolveAction(act, "dismiss")}
-                            className="py-1.5 px-2.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 text-xs flex items-center justify-center cursor-pointer transition-colors"
+                            className="py-1.5 px-2.5 rounded bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 text-xs flex items-center justify-center cursor-pointer transition-colors"
                           >
                             <X className="w-3.5 h-3.5" />
                           </button>
@@ -498,18 +497,18 @@ export default function AssistantHud() {
 
                 {/* Empty State Card */}
                 {messages.length === 0 ? (
-                  <div className="p-4 sm:p-5 rounded-2xl bg-white/[0.025] border border-white/10 text-xs sm:text-sm text-slate-300 space-y-2.5">
-                    <div className="flex items-center gap-2 text-teal-300">
+                  <div className="p-4 sm:p-5 rounded-lg bg-[#0E1213] border border-white/10 text-xs sm:text-sm text-slate-300 space-y-2.5">
+                    <div className="flex items-center gap-2 text-[#E6A734]">
                       <Sparkles className="w-4 h-4" />
-                      <p className="font-fraunces text-sm font-semibold">Orbital Intelligence Online</p>
+                      <p className="font-fraunces text-sm font-semibold text-white">Astrodynamic Co-Pilot</p>
                     </div>
-                    <p className="text-xs text-slate-400 leading-relaxed">
-                      Ask anything about your planetary frontiers, mission priorities, strain flags, or XP momentum. I query your live Supabase database and queue actions directly to your solar system.
+                    <p className="text-xs text-[#869299] leading-relaxed">
+                      Awaiting query. Ready to inspect planetary orbits, strain flags, and task velocity across your frontiers.
                     </p>
                     <div className="pt-1 flex items-center gap-2">
                       <button
                         onClick={openDailyCheckinModal}
-                        className="text-xs px-3 py-1.5 rounded-xl bg-teal-400/15 border border-teal-400/35 text-teal-200 hover:bg-teal-400/25 transition-all flex items-center gap-1.5 cursor-pointer font-medium"
+                        className="text-xs font-mono px-3 py-1.5 rounded bg-[#E6A734]/15 border border-[#E6A734]/35 text-[#E6A734] hover:bg-[#E6A734]/25 transition-all flex items-center gap-1.5 cursor-pointer font-medium"
                       >
                         <span>🌙 Open Daily Check-In</span>
                         <ArrowUpRight className="w-3.5 h-3.5" />
@@ -525,10 +524,10 @@ export default function AssistantHud() {
                       }`}
                     >
                       <div
-                        className={`max-w-[88%] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap select-text ${
+                        className={`max-w-[88%] rounded-lg px-3.5 py-2.5 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap select-text ${
                           m.role === "user"
-                            ? "bg-gradient-to-br from-teal-500/25 to-teal-600/15 border border-teal-400/40 text-slate-100 shadow-sm"
-                            : "bg-[#0D1113]/90 border border-white/10 text-slate-200 shadow-sm"
+                            ? "bg-[#182022] border border-white/15 text-[#F5F7F8] shadow-sm"
+                            : "bg-[#0E1213] border border-white/10 text-[#F5F7F8] shadow-sm"
                         }`}
                       >
                         {m.content}
@@ -537,17 +536,17 @@ export default function AssistantHud() {
                       {/* Collapsible Supabase Data Sources */}
                       {m.tool_traces && m.tool_traces.length > 0 && (
                         <details className="mt-1.5 group max-w-[88%]">
-                          <summary className="inline-flex items-center gap-1.5 text-[10px] px-2.5 py-1 rounded-full bg-teal-950/70 border border-teal-400/25 text-teal-300 font-mono cursor-pointer hover:bg-teal-950 transition-colors list-none">
+                          <summary className="inline-flex items-center gap-1.5 text-[10px] px-2.5 py-1 rounded bg-[#080A0A] border border-white/15 text-[#E6A734] font-mono cursor-pointer hover:bg-white/5 transition-colors list-none">
                             <Database className="w-3 h-3" />
                             <span>{m.tool_traces.length} Supabase Sources Synced</span>
                             <span className="text-[9px] group-open:rotate-180 transition-transform">▼</span>
                           </summary>
-                          <div className="mt-1.5 flex flex-wrap gap-1 p-2 rounded-xl bg-[#090C0D] border border-white/10">
+                          <div className="mt-1.5 flex flex-wrap gap-1 p-2 rounded bg-[#080A0A] border border-white/10">
                             {m.tool_traces.map((tr, i) => (
                               <span
                                 key={i}
                                 title={tr.reason}
-                                className="text-[10px] px-2 py-0.5 rounded bg-white/5 border border-white/10 text-teal-200"
+                                className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[#869299]"
                               >
                                 {tr.table} ({tr.rowsFetched} rows)
                               </span>
@@ -560,16 +559,16 @@ export default function AssistantHud() {
                 )}
 
                 {isLoading && (
-                  <div className="text-xs text-teal-300 flex items-center gap-2 px-1">
+                  <div className="text-xs font-mono text-[#E6A734] flex items-center gap-2 px-1">
                     <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    <span>Querying Supabase telemetry...</span>
+                    <span>Reading sector telemetry...</span>
                   </div>
                 )}
                 <div ref={chatEndRef} />
               </div>
 
               {/* Horizontal Quick-Prompt Strip (Positioned Directly Above Input) */}
-              <div className="px-3 py-1.5 bg-[#090C0D] border-t border-white/10 flex items-center gap-1.5 overflow-x-auto hud-scroll whitespace-nowrap flex-shrink-0">
+              <div className="px-3 py-1.5 bg-[#0A0D0E] border-t border-white/10 flex items-center gap-1.5 overflow-x-auto hud-scroll whitespace-nowrap flex-shrink-0">
                 {[
                   "What should I focus on?",
                   "Check sector strain",
@@ -579,7 +578,7 @@ export default function AssistantHud() {
                   <button
                     key={prompt}
                     onClick={() => sendMessage(prompt)}
-                    className="text-[11px] px-2.5 py-1 rounded-full bg-white/5 hover:bg-teal-400/20 border border-white/10 text-slate-300 hover:text-teal-200 shrink-0 cursor-pointer transition-all font-medium"
+                    className="text-[11px] font-mono px-2.5 py-1 rounded border border-white/10 bg-white/[0.02] text-[#869299] hover:text-white hover:bg-white/5 hover:border-white/20 shrink-0 cursor-pointer transition-all font-medium"
                   >
                     {prompt}
                   </button>
@@ -587,7 +586,7 @@ export default function AssistantHud() {
               </div>
 
               {/* Ergonomic Input Bar */}
-              <div className="p-2.5 sm:p-3 bg-[#0B0E0F] border-t border-white/10 flex items-center gap-2 flex-shrink-0">
+              <div className="p-2.5 sm:p-3 bg-[#0E1213] border-t border-white/10 flex items-center gap-2 flex-shrink-0">
                 <input
                   type="text"
                   value={inputQuery}
@@ -595,13 +594,13 @@ export default function AssistantHud() {
                   onKeyDown={(e) => {
                     if (e.key === "Enter") sendMessage();
                   }}
-                  placeholder="Ask your Life Architect or propose a task..."
-                  className="flex-1 bg-[#121719] border border-white/15 focus:border-teal-400 rounded-xl px-3.5 py-2 text-xs sm:text-sm text-white placeholder:text-slate-500 focus:outline-none transition-all shadow-inner"
+                  placeholder="Enter command or query sector..."
+                  className="flex-1 bg-[#080A0A] border border-white/10 focus:border-[#E6A734] rounded px-3.5 py-2 text-xs sm:text-sm text-white placeholder:text-[#869299]/60 focus:outline-none transition-all shadow-inner font-mono"
                 />
                 <button
                   onClick={() => sendMessage()}
                   disabled={isLoading || !inputQuery.trim()}
-                  className="p-2 sm:p-2.5 rounded-xl bg-teal-400 hover:bg-teal-300 disabled:opacity-40 text-[#0D0F0E] font-bold cursor-pointer transition-all shadow-[0_0_12px_rgba(45,212,191,0.25)]"
+                  className="p-2 sm:p-2.5 rounded bg-[#E6A734] hover:brightness-110 disabled:opacity-40 text-[#080A0A] font-bold cursor-pointer transition-all shadow-sm"
                 >
                   <Send className="w-4 h-4" />
                 </button>
@@ -616,35 +615,35 @@ export default function AssistantHud() {
                 <button
                   onClick={() => handleGenerateBriefing("morning")}
                   disabled={isLoading}
-                  className="p-3 rounded-2xl bg-amber-400/15 hover:bg-amber-400/25 border border-amber-400/40 text-left cursor-pointer transition-all shadow-md group"
+                  className="p-3 rounded-lg bg-[#0E1213] hover:bg-[#141A1C] border border-white/10 text-left cursor-pointer transition-all shadow-sm group"
                 >
-                  <div className="flex items-center gap-1.5 text-amber-300 text-xs font-semibold">
+                  <div className="flex items-center gap-1.5 text-[#E6A734] font-mono text-xs font-semibold">
                     <Sun className="w-4 h-4" /> Morning Plan
                   </div>
-                  <p className="text-[10px] text-slate-300 mt-1">
-                    Calibrate today from last night&apos;s pulse
+                  <p className="text-[10px] text-[#869299] mt-1">
+                    Synthesize today from last night&apos;s pulse
                   </p>
                 </button>
                 <button
                   onClick={() => handleGenerateBriefing("night")}
                   disabled={isLoading}
-                  className="p-3 rounded-2xl bg-teal-400/15 hover:bg-teal-400/25 border border-teal-400/40 text-left cursor-pointer transition-all shadow-md group"
+                  className="p-3 rounded-lg bg-[#0E1213] hover:bg-[#141A1C] border border-white/10 text-left cursor-pointer transition-all shadow-sm group"
                 >
-                  <div className="flex items-center gap-1.5 text-teal-300 text-xs font-semibold">
+                  <div className="flex items-center gap-1.5 text-slate-300 font-mono text-xs font-semibold">
                     <Moon className="w-4 h-4" /> Night Debrief
                   </div>
-                  <p className="text-[10px] text-slate-300 mt-1">
+                  <p className="text-[10px] text-[#869299] mt-1">
                     Review wins & tomorrow&apos;s strategy
                   </p>
                 </button>
               </div>
 
               {briefings.length === 0 ? (
-                <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 text-center space-y-2">
+                <div className="p-5 rounded-lg bg-[#0E1213] border border-white/10 text-center space-y-2">
                   <p className="font-fraunces text-sm text-slate-300 font-semibold">
                     No Briefings generated for today yet.
                   </p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-[#869299]">
                     Click <b>Morning Plan</b> or <b>Night Debrief</b> above to synthesize from Supabase.
                   </p>
                 </div>
@@ -652,13 +651,13 @@ export default function AssistantHud() {
                 briefings.map((b) => (
                   <div
                     key={b.id}
-                    className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2.5 shadow-md"
+                    className="p-4 rounded-lg bg-[#0E1213] border border-white/10 space-y-2.5 shadow-sm"
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-fraunces text-xs sm:text-sm font-semibold text-white">
                         {b.title}
                       </span>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-slate-300">
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-[#869299]">
                         {b.briefing_date}
                       </span>
                     </div>
@@ -670,15 +669,15 @@ export default function AssistantHud() {
                         {b.sections.map((sec, idx) => (
                           <div
                             key={idx}
-                            className="p-2.5 rounded-xl bg-[#090C0D]/90 border border-white/10 space-y-1"
+                            className="p-2.5 rounded bg-[#080A0A] border border-white/10 space-y-1"
                           >
-                            <span className="text-[10px] font-semibold uppercase tracking-wider text-teal-300">
+                            <span className="text-[10px] font-mono font-semibold uppercase tracking-wider text-[#E6A734]">
                               {sec.badge}
                             </span>
                             <h5 className="font-fraunces text-xs font-semibold text-white">
                               {sec.title}
                             </h5>
-                            <p className="text-[11px] text-slate-300 leading-relaxed">
+                            <p className="text-[11px] text-[#869299] leading-relaxed">
                               {sec.body}
                             </p>
                           </div>
@@ -694,22 +693,22 @@ export default function AssistantHud() {
           {/* TAB 3: CONFIG & API KEYS */}
           {activeTab === "settings" && (
             <div className="flex-1 overflow-y-auto p-4 space-y-3.5 hud-scroll">
-              <div className="p-3.5 rounded-2xl bg-teal-400/10 border border-teal-400/30 space-y-1.5">
-                <p className="font-fraunces text-xs font-semibold text-teal-200">
+              <div className="p-3.5 rounded-lg bg-[#0E1213] border border-white/10 space-y-1.5">
+                <p className="font-mono text-xs font-semibold text-[#E6A734] uppercase tracking-wider">
                   ⚡ Autonomous Dual-Engine Architecture
                 </p>
-                <p className="text-[11px] text-slate-300 leading-relaxed">
+                <p className="text-[11px] text-[#869299] leading-relaxed">
                   When no API key is entered, IdeMap operates on a <b>deterministic Supabase heuristic engine</b> that queries your normalized database JSONs. Adding an OpenRouter or Google Gemini key unlocks generative conversational reasoning.
                 </p>
               </div>
 
               <div className="space-y-3">
-                <label className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.03] border border-white/10 cursor-pointer hover:border-teal-400/30 transition-all">
+                <label className="flex items-center justify-between p-3 rounded-lg bg-[#0E1213] border border-white/10 cursor-pointer hover:border-white/20 transition-all">
                   <div>
                     <p className="text-xs font-semibold text-white">
                       Route via Local n8n Container
                     </p>
-                    <p className="text-[10px] text-slate-400">
+                    <p className="text-[10px] text-[#869299]">
                       Webhook at http://localhost:5678/webhook/idemap-assistant (falls back cleanly if offline)
                     </p>
                   </div>
@@ -717,12 +716,12 @@ export default function AssistantHud() {
                     type="checkbox"
                     checked={preferN8n}
                     onChange={(e) => setPreferN8n(e.target.checked)}
-                    className="w-4 h-4 accent-teal-400"
+                    className="w-4 h-4 accent-[#E6A734]"
                   />
                 </label>
 
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">
+                  <label className="block text-xs font-mono text-[#869299] mb-1">
                     OpenRouter API Key (Optional)
                   </label>
                   <input
@@ -730,18 +729,18 @@ export default function AssistantHud() {
                     value={openRouterKey}
                     onChange={(e) => setOpenRouterKey(e.target.value)}
                     placeholder="sk-or-v1-..."
-                    className="w-full bg-[#121719] border border-white/15 focus:border-teal-400 rounded-xl px-3 py-2 text-xs text-white focus:outline-none transition-all shadow-inner"
+                    className="w-full bg-[#080A0A] border border-white/10 focus:border-[#E6A734] rounded px-3 py-2 text-xs text-white focus:outline-none transition-all shadow-inner font-mono"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">
+                  <label className="block text-xs font-mono text-[#869299] mb-1">
                     OpenRouter Model
                   </label>
                   <select
                     value={selectedModel}
                     onChange={(e) => setSelectedModel(e.target.value)}
-                    className="w-full bg-[#121719] border border-white/15 focus:border-teal-400 rounded-xl px-3 py-2 text-xs text-white focus:outline-none transition-all"
+                    className="w-full bg-[#080A0A] border border-white/10 focus:border-[#E6A734] rounded px-3 py-2 text-xs text-white focus:outline-none transition-all font-mono"
                   >
                     <option value="google/gemini-2.5-flash">
                       google/gemini-2.5-flash (Fast & Low Cost)
@@ -757,7 +756,7 @@ export default function AssistantHud() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">
+                  <label className="block text-xs font-mono text-[#869299] mb-1">
                     Google AI Studio / Gemini API Key (Optional)
                   </label>
                   <input
@@ -765,15 +764,15 @@ export default function AssistantHud() {
                     value={geminiKey}
                     onChange={(e) => setGeminiKey(e.target.value)}
                     placeholder="AIzaSy..."
-                    className="w-full bg-[#121719] border border-white/15 focus:border-teal-400 rounded-xl px-3 py-2 text-xs text-white focus:outline-none transition-all shadow-inner"
+                    className="w-full bg-[#080A0A] border border-white/10 focus:border-[#E6A734] rounded px-3 py-2 text-xs text-white focus:outline-none transition-all shadow-inner font-mono"
                   />
                 </div>
 
                 <button
                   onClick={saveSettings}
-                  className="w-full py-2.5 px-4 rounded-xl bg-teal-400 hover:bg-teal-300 text-[#0D0F0E] font-bold text-xs cursor-pointer transition-all shadow-[0_0_12px_rgba(45,212,191,0.25)]"
+                  className="w-full py-2.5 px-4 rounded font-mono bg-[#E6A734] hover:brightness-110 text-[#080A0A] font-bold text-xs cursor-pointer transition-all shadow-sm"
                 >
-                  Save Configuration
+                  Commit Engine Settings
                 </button>
               </div>
             </div>

@@ -1,17 +1,27 @@
 /* ============================================================
    IdeMap — Global CSS (Tailwind v4)
+   Observatory Precision Telemetry System
    ============================================================ */
-@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,400&family=Outfit:wght@300;400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,400&family=Outfit:wght@300;400;500;600;700&display=swap");
 @import "tailwindcss";
 
-/* ---- Design Tokens (CSS variables) ---- */
+/* ---- Design Tokens (Observatory Palette) ---- */
 :root {
-  --void: #0d0f0e;
-  --hud-bg: rgba(15, 19, 21, 0.88);
+  --void: #080a0a;
+  --surface-base: #101415;
+  --surface-elevated: #151a1c;
+  --hud-bg: #101415;
+  --ink: #f5f7f8;
+  --ink-muted: #869299;
+  --ink-faint: #4e595f;
+  --cadmium: #e6a734;
+  --cadmium-dim: rgba(230, 167, 52, 0.12);
+  --hairline: rgba(255, 255, 255, 0.08);
+
   --cyan: #2dd4bf;
-  --gold: #e5a93c;
+  --gold: #e6a734;
   --health-green: #2dd4bf;
-  --health-amber: #f59e0b;
+  --health-amber: #e6a734;
   --health-red: #ef4444;
 }
 
@@ -20,10 +30,13 @@
   --font-fraunces: "Fraunces", Georgia, serif;
   --font-outfit: "Outfit", system-ui, sans-serif;
 
-  --color-void: #0d0f0e;
-  --color-gold: #e5a93c;
+  --color-void: #080a0a;
+  --color-gold: #e6a734;
+  --color-cadmium: #e6a734;
+  --color-ink: #f5f7f8;
+  --color-ink-muted: #869299;
   --color-health-green: #2dd4bf;
-  --color-health-amber: #f59e0b;
+  --color-health-amber: #e6a734;
   --color-health-red: #ef4444;
 }
 
@@ -41,31 +54,36 @@ body {
   height: 100%;
   overflow: hidden;
   background: var(--void);
-  color: #e2e8f0;
+  color: #f5f7f8;
   font-family: "Outfit", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ---- Glassmorphism HUD panel ---- */
+/* ---- Observatory Instrument Panel ---- */
 .hud-panel {
-  background: rgba(15, 19, 21, 0.88);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(45, 212, 191, 0.2);
-  border-radius: 1rem;
+  background: #101415;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  border-radius: 0.75rem;
+}
+
+/* Tabular figures for telemetry readouts */
+.tabular-stat {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-feature-settings: "tnum" 1, "zero" 1;
 }
 
 /* ---- HUD scrollbar ---- */
 .hud-scroll {
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: rgba(45, 212, 191, 0.3) transparent;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
 }
 .hud-scroll::-webkit-scrollbar { width: 4px; }
 .hud-scroll::-webkit-scrollbar-track { background: transparent; }
 .hud-scroll::-webkit-scrollbar-thumb {
-  background: rgba(45, 212, 191, 0.3);
+  background: rgba(255, 255, 255, 0.18);
   border-radius: 2px;
 }
 

@@ -13,11 +13,15 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
-      --void: #0D0F0E;
-      --hud-bg: rgba(15, 19, 21, 0.9);
-      --border-cyan: rgba(45, 212, 191, 0.24);
+      --void: #080A0A;
+      --hud-bg: #101415;
+      --surface-elevated: #151A1C;
+      --ink: #F5F7F8;
+      --ink-muted: #869299;
+      --border-cyan: rgba(230, 167, 52, 0.28);
       --cyan: #2DD4BF;
-      --gold: #E5A93C;
+      --gold: #E6A734;
+      --cadmium: #E6A734;
     }
     html { font-size: 16px; }
     @media (min-width: 1280px) { html { font-size: 17px; } }
@@ -38,23 +42,20 @@
     input, textarea, select { color-scheme: dark; user-select: text; -webkit-user-select: text; }
     .font-fraunces { font-family: 'Fraunces', serif; }
 
-    /* Stationary HUD panels are the ONLY elements allowed to use backdrop-filter (GPU budget). */
+    /* Observatory Machined Instrument HUD Panels */
     .hud-panel {
-      background: linear-gradient(var(--hud-bg), var(--hud-bg)) padding-box,
-                  linear-gradient(160deg, rgba(45, 212, 191, 0.45), rgba(45, 212, 191, 0.08) 40%, rgba(229, 169, 60, 0.18)) border-box;
-      backdrop-filter: blur(18px) saturate(160%);
-      -webkit-backdrop-filter: blur(18px) saturate(160%);
-      border: 1px solid transparent;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), inset 0 0 40px rgba(45, 212, 191, 0.04), 0 24px 60px rgba(0, 0, 0, 0.6);
-      border-radius: 1rem;
+      background: #101415;
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 24px 60px rgba(0, 0, 0, 0.75);
+      border-radius: 0.75rem;
     }
     .hud-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
-    .hud-scroll::-webkit-scrollbar-thumb { background: rgba(45, 212, 191, 0.3); border-radius: 2px; }
+    .hud-scroll::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.16); border-radius: 2px; }
 
     @keyframes glow-pulse {
-      0%   { filter: brightness(1) drop-shadow(0 0 8px currentColor); transform: scale(1); }
-      45%  { filter: brightness(1.9) drop-shadow(0 0 30px currentColor); transform: scale(1.08); }
-      100% { filter: brightness(1) drop-shadow(0 0 8px currentColor); transform: scale(1); }
+      0%   { filter: brightness(1) drop-shadow(0 0 6px currentColor); transform: scale(1); }
+      45%  { filter: brightness(1.6) drop-shadow(0 0 16px currentColor); transform: scale(1.04); }
+      100% { filter: brightness(1) drop-shadow(0 0 6px currentColor); transform: scale(1); }
     }
     .planet-glow-pulse { animation: glow-pulse 0.45s ease-out; }
 
@@ -64,8 +65,8 @@
     @keyframes arc-drift { 0% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -32; } }
     .arc-animated { stroke-dasharray: 6 10; animation: arc-drift 2.6s linear infinite; }
 
-    @keyframes spin-slow { to { transform: rotate(360deg); } }
-    .reticle { animation: spin-slow 14s linear infinite; }
+    /* Stationary reticle: no dizzying infinite spin */
+    .reticle { transform-origin: center; }
 
     @media (prefers-reduced-motion: reduce) {
       .reticle, .arc-animated, .planet-glow-pulse, .strain-pulse { animation: none !important; }
@@ -417,16 +418,16 @@
   </div>
 
   <!-- Today Focus & Desktop Check-in / Constellation Modal -->
-  <div id="todayCheckinModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden items-center justify-center p-2 sm:p-4 md:p-6 lg:p-8">
-    <div class="hud-panel glass-surface p-0 w-full sm:w-[88vw] lg:w-[80vw] max-w-[1600px] h-[95vh] sm:h-[88vh] lg:h-[80vh] rounded-2xl sm:rounded-3xl flex flex-col overflow-hidden fade-up shadow-2xl border border-teal-400/30">
-      <div class="p-4 sm:p-5 lg:p-6 border-b border-white/10 flex items-center justify-between gap-3 sm:gap-4 flex-shrink-0 bg-gradient-to-r from-teal-500/10 via-transparent to-amber-500/10">
-        <div class="flex items-center gap-2 sm:gap-4">
-          <button data-act="switch-focus-tab" data-tab="today" id="tabBtnTodayFocus" class="px-4 sm:px-6 py-2 sm:py-2.5 rounded-full text-xs sm:text-base lg:text-lg font-semibold cursor-pointer transition-all">⚡ Today Focus</button>
-          <button data-act="switch-focus-tab" data-tab="checkin" id="tabBtnDeskCheckin" class="px-4 sm:px-6 py-2 sm:py-2.5 rounded-full text-xs sm:text-base lg:text-lg font-semibold cursor-pointer transition-all">🌙 Daily Check-In</button>
+  <div id="todayCheckinModal" class="fixed inset-0 bg-black/85 z-50 hidden items-center justify-center p-2 sm:p-4 md:p-6 lg:p-8">
+    <div class="hud-panel p-0 w-full sm:w-[88vw] lg:w-[80vw] max-w-[1550px] h-[95vh] sm:h-[88vh] lg:h-[82vh] rounded-xl flex flex-col overflow-hidden fade-up shadow-2xl border border-white/10">
+      <div class="px-4 py-3 sm:px-6 sm:py-3.5 border-b border-white/10 flex items-center justify-between gap-3 sm:gap-4 flex-shrink-0 bg-[#0E1213]">
+        <div class="flex items-center gap-2 sm:gap-3">
+          <button data-act="switch-focus-tab" data-tab="today" id="tabBtnTodayFocus" class="px-3.5 sm:px-5 py-1.5 sm:py-2 rounded font-mono text-xs sm:text-sm font-semibold cursor-pointer transition-all">⚡ Today Focus</button>
+          <button data-act="switch-focus-tab" data-tab="checkin" id="tabBtnDeskCheckin" class="px-3.5 sm:px-5 py-1.5 sm:py-2 rounded font-mono text-xs sm:text-sm font-semibold cursor-pointer transition-all">🌙 Daily Check-In</button>
         </div>
-        <button data-act="close-modal" data-modal="todayCheckinModal" class="w-9 h-9 sm:w-11 sm:h-11 rounded-full text-slate-300 hover:text-white hover:bg-white/10 cursor-pointer text-base sm:text-2xl flex items-center justify-center transition-colors">✕</button>
+        <button data-act="close-modal" data-modal="todayCheckinModal" class="w-8 h-8 sm:w-9 sm:h-9 rounded text-[#869299] hover:text-white hover:bg-white/10 cursor-pointer text-base sm:text-lg flex items-center justify-center transition-colors">✕</button>
       </div>
-      <div id="todayCheckinBody" class="p-4 sm:p-6 lg:p-8 xl:p-10 overflow-y-auto flex-1 hud-scroll space-y-6 lg:space-y-8 safe-bottom text-slate-100"></div>
+      <div id="todayCheckinBody" class="p-4 sm:p-6 lg:p-8 overflow-y-auto flex-1 hud-scroll space-y-6 safe-bottom text-slate-100"></div>
     </div>
   </div>
 
@@ -2437,7 +2438,7 @@
       const preset = dash.preset;
       const todayEntry = ensureDailyMetricsArray().find(m => m.date === todayISO());
 
-      // 1. Metric Sliders (Clarity, Sovereignty, Vitality)
+      // 1. Metric Sliders (Vernier Horizon Calibrated Steps)
       const metricSliders = [0, 1, 2].map(idx => {
         const lbl = preset.labels[idx];
         const icon = preset.icons[idx];
@@ -2446,21 +2447,22 @@
         const slot = idx + 1;
         const subtext = idx === 0 ? "Focus & Mental Vision" : idx === 1 ? "Autonomy & Value Alignment" : "Energy & Restorative Habits";
         return `
-          <div class="p-3.5 sm:p-4.5 rounded-2xl bg-[#0B0E0F]/90 border border-white/10 space-y-2.5 transition-all hover:border-white/20">
-            <div class="flex items-center justify-between">
-              <div>
-                <span class="font-bold text-sm sm:text-base lg:text-lg text-white flex items-center gap-2">
-                  <span class="text-lg sm:text-xl">${icon}</span>
-                  <span>${esc(lbl)}</span>
-                </span>
-                <p class="text-[11px] sm:text-xs text-slate-400 mt-0.5">${subtext}</p>
+          <div class="py-3.5 sm:py-4 border-b border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div class="min-w-[190px]">
+              <div class="flex items-center gap-2">
+                <span class="text-xs sm:text-sm font-semibold tracking-wide uppercase text-white">${icon} ${esc(lbl)}</span>
+                <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-white/5 tabular-nums" style="color:${col};border:1px solid ${col}44">${curVal}.0</span>
               </div>
-              <span class="px-3 py-1 rounded-full text-xs sm:text-sm font-bold shadow-sm" style="background:${col}22;color:${col};border:1px solid ${col}66">${curVal} / 5</span>
+              <p class="text-[11px] sm:text-xs text-[#869299] mt-0.5">${subtext}</p>
             </div>
-            <div class="grid grid-cols-5 gap-1.5 sm:gap-2">
+            <div class="flex items-center gap-1.5 sm:gap-2 flex-1 max-w-md">
               ${[1, 2, 3, 4, 5].map(v => `
-                <button data-act="set-trio-score" data-slot="${slot}" data-val="${v}" class="py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm lg:text-base font-bold border transition-all cursor-pointer ${curVal >= v ? "text-white shadow-md scale-[1.01]" : "bg-white/[0.03] border-white/10 text-slate-500 hover:text-slate-300 hover:bg-white/[0.06]"}" style="${curVal >= v ? `background:${col}33;border-color:${col};color:#fff` : ""}">
-                  ${v}
+                <button data-act="set-trio-score" data-slot="${slot}" data-val="${v}" class="flex-1 h-10 sm:h-11 rounded font-mono text-xs sm:text-sm font-bold border transition-colors cursor-pointer flex items-center justify-center ${
+                  curVal >= v
+                    ? "text-[#080A0A] shadow-sm font-black"
+                    : "bg-white/[0.03] border-white/10 text-[#869299] hover:bg-white/[0.08] hover:text-white"
+                }" style="${curVal >= v ? `background:${col};border-color:${col};color:#080A0A` : ""}">
+                  0${v}
                 </button>
               `).join("")}
             </div>
@@ -2474,13 +2476,13 @@
         const avg = e ? ((e.score_1 + e.score_2 + e.score_3) / 3).toFixed(1) : null;
         return `
           <div class="flex flex-col items-center gap-1">
-            <span class="text-[10px] sm:text-[11px] ${d.isToday ? "text-teal-300 font-bold" : "text-slate-400"}">${d.dayShort}</span>
-            <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold border transition-all ${
+            <span class="text-[10px] font-mono ${d.isToday ? "text-[#E6A734] font-bold" : "text-[#869299]"}">${d.dayShort}</span>
+            <div class="w-7 h-7 sm:w-8 sm:h-8 rounded flex items-center justify-center text-[10px] sm:text-xs font-mono font-bold border transition-all ${
               e
                 ? d.isToday
-                  ? "bg-teal-400/25 border-teal-400 text-teal-200 shadow-[0_0_12px_rgba(45,212,191,0.35)]"
+                  ? "bg-[#E6A734] border-[#E6A734] text-[#080A0A] shadow-sm"
                   : "bg-white/10 border-white/20 text-white"
-                : "bg-white/[0.03] border-white/5 text-slate-600"
+                : "bg-white/[0.03] border-white/5 text-[#869299]/50"
             }" title="${d.iso}: ${avg ? `${avg} / 5` : 'Not logged'}">
               ${avg || "—"}
             </div>
@@ -2497,12 +2499,12 @@
         const pct = Math.round((c.avg / 5) * 100);
         return `
           <div class="space-y-1">
-            <div class="flex items-center justify-between text-xs sm:text-sm">
+            <div class="flex items-center justify-between text-xs">
               <span class="text-slate-300 font-medium flex items-center gap-1.5">${c.icon} ${esc(c.lbl)}</span>
-              <span class="font-bold text-white" style="color:${c.col}">${c.avg} <span class="text-[10px] text-slate-400 font-normal">/ 5</span></span>
+              <span class="font-mono font-bold text-white tabular-nums" style="color:${c.col}">${c.avg} <span class="text-[10px] text-[#869299] font-normal">/ 5.0</span></span>
             </div>
-            <div class="h-1.5 sm:h-2 rounded-full bg-white/10 overflow-hidden">
-              <div class="h-full rounded-full transition-all duration-500" style="width:${pct}%;background:${c.col}"></div>
+            <div class="h-1.5 rounded-full bg-white/10 overflow-hidden">
+              <div class="h-full rounded-full transition-all duration-300" style="width:${pct}%;background:${c.col}"></div>
             </div>
           </div>
         `;
@@ -2516,14 +2518,14 @@
         const h3 = e ? Math.round((e.score_3 / 5) * 55) : 6;
         const dayAvg = e ? ((e.score_1 + e.score_2 + e.score_3) / 3).toFixed(1) : "—";
         return `
-          <div class="flex flex-col items-center p-2 rounded-xl border ${d.isToday ? "bg-teal-400/10 border-teal-400/50 shadow-sm" : "bg-white/[0.02] border-white/5"}">
-            <span class="text-[10px] sm:text-xs font-semibold ${d.isToday ? "text-teal-300" : "text-slate-400"}">${d.dayShort}</span>
+          <div class="flex flex-col items-center p-2 rounded border ${d.isToday ? "bg-amber-400/10 border-[#E6A734]/50 shadow-sm" : "bg-white/[0.02] border-white/5"}">
+            <span class="text-[10px] font-mono font-semibold ${d.isToday ? "text-[#E6A734]" : "text-[#869299]"}">${d.dayShort}</span>
             <div class="h-14 sm:h-16 flex items-end gap-1 my-1.5">
               <span class="w-2 sm:w-2.5 rounded-t" style="height:${h1}px;background:${e ? preset.colors[0] : "rgba(255,255,255,0.12)"}" title="${preset.labels[0]}: ${e ? e.score_1 : "N/A"}"></span>
               <span class="w-2 sm:w-2.5 rounded-t" style="height:${h2}px;background:${e ? preset.colors[1] : "rgba(255,255,255,0.12)"}" title="${preset.labels[1]}: ${e ? e.score_2 : "N/A"}"></span>
               <span class="w-2 sm:w-2.5 rounded-t" style="height:${h3}px;background:${e ? preset.colors[2] : "rgba(255,255,255,0.12)"}" title="${preset.labels[2]}: ${e ? e.score_3 : "N/A"}"></span>
             </div>
-            <span class="text-[10px] sm:text-xs font-bold ${e ? "text-slate-200" : "text-slate-500"}">${dayAvg}</span>
+            <span class="text-[10px] font-mono font-bold tabular-nums ${e ? "text-slate-200" : "text-[#869299]"}">${dayAvg}</span>
           </div>
         `;
       }).join("");
@@ -2534,59 +2536,59 @@
           <!-- LEFT COCKPIT: PRIMARY DAILY INPUTS (7 columns on desktop) -->
           <div class="lg:col-span-7 space-y-4 sm:space-y-5">
             
-            <!-- Calibration Header Card -->
-            <div class="p-4 sm:p-5 lg:p-6 rounded-3xl bg-white/[0.03] border border-white/10 space-y-3 shadow-md">
+            <!-- Calibration Header -->
+            <div class="p-4 sm:p-5 lg:p-6 rounded-xl bg-[#0E1213] border border-white/10 space-y-3">
               <div class="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p class="text-xs sm:text-sm uppercase tracking-widest text-teal-400 font-semibold flex items-center gap-1.5">
-                    <span>⚡ DAILY CHECK-IN</span>
-                    <span class="text-slate-500">·</span>
-                    <span class="text-slate-300">${new Date().toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" })}</span>
+                  <p class="text-xs font-mono uppercase tracking-widest text-[#E6A734] font-semibold flex items-center gap-1.5">
+                    <span>⚡ ORBITAL TELEMETRY</span>
+                    <span class="text-white/20">//</span>
+                    <span class="text-[#869299]">${new Date().toLocaleDateString([], { weekday: "short", month: "short", day: "numeric", year: "numeric" })}</span>
                   </p>
                   <h3 class="font-fraunces text-xl sm:text-2xl lg:text-3xl font-semibold text-white mt-1">
-                    Calibrate Your Frontiers
+                    Daily Telemetry Log
                   </h3>
                 </div>
                 <div class="flex items-center gap-2">
                   ${todayEntry
-                    ? `<span class="px-3.5 py-1 rounded-full bg-teal-400/20 border border-teal-400/40 text-xs sm:text-sm font-semibold text-teal-200 shadow-sm flex items-center gap-1.5">✓ Logged Today</span>`
-                    : `<span class="px-3.5 py-1 rounded-full bg-amber-400/15 border border-amber-400/35 text-xs font-semibold text-amber-200 flex items-center gap-1">⏳ Ready for Today</span>`
+                    ? `<span class="px-3 py-1 rounded bg-[#E6A734]/15 border border-[#E6A734]/40 text-xs font-mono font-semibold text-[#E6A734] flex items-center gap-1.5">✓ Synchronized Today</span>`
+                    : `<span class="px-3 py-1 rounded bg-white/5 border border-white/10 text-xs font-mono font-medium text-[#869299] flex items-center gap-1">⏳ Awaiting Entry</span>`
                   }
-                  <button data-act="toggle-push" class="px-3 py-1 rounded-full text-xs font-medium border ${STATE.pushEnabled ? "border-teal-400/45 bg-teal-400/15 text-teal-200" : "border-white/15 bg-white/5 text-slate-300"} cursor-pointer transition-colors" title="Toggle evening check-in reminder">
+                  <button data-act="toggle-push" class="px-3 py-1 rounded text-xs font-mono border ${STATE.pushEnabled ? "border-[#E6A734]/45 bg-[#E6A734]/15 text-[#E6A734]" : "border-white/10 bg-white/5 text-[#869299]"} cursor-pointer transition-colors" title="Toggle evening check-in reminder">
                     ${STATE.pushEnabled ? "🔔 Reminders ON" : "🔕 Off"}
                   </button>
                 </div>
               </div>
-              <p class="text-xs sm:text-sm text-slate-400 leading-relaxed">
-                Score your three life pillars from 1 to 5 to calibrate orbital momentum and feed tomorrow's morning strategy.
+              <p class="text-xs sm:text-sm text-[#869299] leading-relaxed">
+                Calibrate your core pillars to compute orbital momentum and synthesize morning directives.
               </p>
             </div>
 
-            <!-- The 3 Metric Rating Bars -->
-            <div class="space-y-3 sm:space-y-3.5">
+            <!-- The 3 Vernier Horizon Metric Bars (Clean, Unboxed) -->
+            <div class="px-1 py-1">
               ${metricSliders}
             </div>
 
             <!-- Evening Reflection Note Input -->
-            <div class="p-4 sm:p-5 rounded-3xl bg-white/[0.03] border border-white/10 space-y-2.5 shadow-md">
-              <label for="${reflId}" class="block text-xs sm:text-sm font-semibold uppercase tracking-wider text-teal-300">
-                ✨ Evening Note & Reflection (Optional)
+            <div class="p-4 sm:p-5 rounded-xl bg-[#0E1213] border border-white/10 space-y-2.5">
+              <label for="${reflId}" class="block text-xs font-mono font-semibold uppercase tracking-wider text-slate-300">
+                Evening Telemetry & Field Notes (Optional)
               </label>
               <textarea
                 id="${reflId}"
                 rows="3"
-                placeholder="What gave or drained energy today? What deserves focus tomorrow?"
-                class="w-full bg-[#0B0E0F]/80 border border-white/15 focus:border-teal-400 rounded-2xl p-3.5 text-xs sm:text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none transition-all resize-none min-h-[85px] sm:min-h-[100px] shadow-inner"
+                placeholder="Observations, energetic drains, breakthroughs, or focus shifts..."
+                class="w-full bg-[#080A0A] border border-white/10 focus:border-[#E6A734] rounded-lg p-3.5 text-xs sm:text-sm text-[#F5F7F8] placeholder:text-[#869299]/60 focus:outline-none transition-all resize-none min-h-[85px] sm:min-h-[95px]"
               >${esc(todayEntry?.reflection || "")}</textarea>
               <div class="flex items-center justify-between pt-1">
-                <span class="text-[11px] text-slate-400">Syncs directly to Supabase Life OS</span>
+                <span class="text-[11px] font-mono text-[#869299]">Persists to universe ledger</span>
                 <button
                   data-act="save-reflection"
                   data-input="${reflId}"
-                  class="px-8 sm:px-12 py-3 rounded-full text-sm sm:text-base font-bold text-[#0D0F0E] cursor-pointer hover:brightness-110 shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2"
-                  style="background:var(--gold)"
+                  class="px-6 sm:px-10 py-2.5 rounded font-mono text-xs sm:text-sm font-bold text-[#080A0A] cursor-pointer hover:brightness-110 shadow-md transition-all active:scale-95 flex items-center justify-center gap-2"
+                  style="background:#E6A734"
                 >
-                  Save
+                  Commit & Sync
                 </button>
               </div>
             </div>
@@ -2596,57 +2598,57 @@
           <!-- RIGHT COCKPIT: ORBITAL EQUILIBRIUM & SECONDARY INTEL (5 columns on desktop) -->
           <div class="lg:col-span-5 space-y-4 sm:space-y-5">
             
-            <!-- Today's Momentum Pulse Card -->
-            <div class="p-4 sm:p-5 rounded-3xl bg-white/[0.03] border border-white/10 space-y-3 shadow-md">
+            <!-- Universe Telemetry Pulse Card -->
+            <div class="p-4 sm:p-5 rounded-xl bg-[#0E1213] border border-white/10 space-y-3">
               <div class="flex items-center justify-between">
-                <span class="text-xs uppercase tracking-wider text-amber-300 font-semibold">Today's Universe Pulse</span>
-                <span class="text-xs text-slate-400 font-medium">Life Lv ${ul.whole} · <b class="text-amber-200">🏆 ${esc(uTitle)}</b></span>
+                <span class="text-xs font-mono uppercase tracking-wider text-[#E6A734] font-semibold">Universe Telemetry Pulse</span>
+                <span class="text-xs font-mono text-[#869299]">Life Lv ${ul.whole} · <b class="text-[#E6A734]">${esc(uTitle)}</b></span>
               </div>
               <div class="grid grid-cols-3 gap-2 sm:gap-3 text-center">
-                <div class="rounded-2xl bg-white/[0.03] border border-white/10 py-2.5 sm:py-3">
-                  <p class="text-xl sm:text-2xl font-bold text-teal-300">${td.doneToday.length}</p>
-                  <p class="text-[10px] sm:text-xs uppercase tracking-wider text-slate-400 mt-0.5">Done Today</p>
+                <div class="rounded-lg bg-white/[0.02] border border-white/10 py-2.5 sm:py-3">
+                  <p class="text-xl sm:text-2xl font-mono font-bold text-white tabular-nums">${td.doneToday.length}</p>
+                  <p class="text-[10px] sm:text-xs uppercase tracking-wider text-[#869299] mt-0.5">Done Today</p>
                 </div>
-                <div class="rounded-2xl bg-white/[0.03] border border-white/10 py-2.5 sm:py-3">
-                  <p class="text-xl sm:text-2xl font-bold text-amber-300">+${td.xpToday}</p>
-                  <p class="text-[10px] sm:text-xs uppercase tracking-wider text-slate-400 mt-0.5">XP Earned</p>
+                <div class="rounded-lg bg-white/[0.02] border border-white/10 py-2.5 sm:py-3">
+                  <p class="text-xl sm:text-2xl font-mono font-bold text-[#E6A734] tabular-nums">+${td.xpToday}</p>
+                  <p class="text-[10px] sm:text-xs uppercase tracking-wider text-[#869299] mt-0.5">XP Earned</p>
                 </div>
-                <div class="rounded-2xl bg-white/[0.03] border border-white/10 py-2.5 sm:py-3">
-                  <p class="text-xl sm:text-2xl font-bold" style="color:${healthHex(computeHealth(null))}">${computeHealth(null)}%</p>
-                  <p class="text-[10px] sm:text-xs uppercase tracking-wider text-slate-400 mt-0.5">Life Health</p>
+                <div class="rounded-lg bg-white/[0.02] border border-white/10 py-2.5 sm:py-3">
+                  <p class="text-xl sm:text-2xl font-mono font-bold tabular-nums" style="color:${healthHex(computeHealth(null))}">${computeHealth(null)}%</p>
+                  <p class="text-[10px] sm:text-xs uppercase tracking-wider text-[#869299] mt-0.5">Life Health</p>
                 </div>
               </div>
               <div class="space-y-1 pt-1">
-                <div class="flex items-center justify-between text-[11px] text-slate-400">
+                <div class="flex items-center justify-between text-[11px] font-mono text-[#869299]">
                   <span>Level Progress</span>
                   <span>${ul.toNext} XP to Lv ${ul.whole + 1}</span>
                 </div>
-                <div class="h-2 rounded-full bg-white/10 overflow-hidden">
-                  <div class="h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-300" style="width:${Math.max(ul.pct, 2)}%"></div>
+                <div class="h-1.5 rounded-full bg-white/10 overflow-hidden">
+                  <div class="h-full rounded-full bg-[#E6A734]" style="width:${Math.max(ul.pct, 2)}%"></div>
                 </div>
               </div>
             </div>
 
             <!-- 7-Day Orbital Equilibrium Glanceable Card -->
-            <div class="p-4 sm:p-5 rounded-3xl bg-gradient-to-br from-teal-500/10 via-[#0B0E0F] to-amber-500/10 border border-teal-400/35 space-y-4 shadow-lg">
+            <div class="p-4 sm:p-5 rounded-xl bg-[#0E1213] border border-white/10 space-y-4">
               <div class="flex items-center justify-between">
                 <div>
-                  <span class="text-xs uppercase tracking-wider text-teal-300 font-semibold">Orbital Equilibrium</span>
+                  <span class="text-xs font-mono uppercase tracking-wider text-[#E6A734] font-semibold">Orbital Equilibrium</span>
                   <h4 class="font-fraunces text-lg sm:text-xl font-semibold text-white mt-0.5">7-Day Composite Pulse</h4>
                 </div>
                 <div class="text-right">
-                  <span class="px-3 py-1 rounded-full bg-amber-400/20 border border-amber-400/40 text-xs sm:text-sm font-bold text-amber-200">
+                  <span class="px-2.5 py-1 rounded bg-[#E6A734]/15 border border-[#E6A734]/40 text-xs sm:text-sm font-mono font-bold text-[#E6A734] tabular-nums">
                     ${dash.composite} / 5.0
                   </span>
-                  <p class="text-[10px] text-slate-400 mt-1">${Math.round((dash.composite / 5) * 100)}% Harmony</p>
+                  <p class="text-[10px] font-mono text-[#869299] mt-1">${Math.round((dash.composite / 5) * 100)}% Harmony</p>
                 </div>
               </div>
 
               <!-- Mini 7-Day Sparkline Dots -->
-              <div class="p-3 rounded-2xl bg-[#090C0D]/90 border border-white/10">
+              <div class="p-3 rounded-lg bg-[#080A0A] border border-white/10">
                 <div class="flex items-center justify-between">
-                  <span class="text-[11px] font-semibold text-slate-300">Daily Composite History</span>
-                  <span class="text-[10px] text-slate-400">${dash.loggedCount} of 7 days logged</span>
+                  <span class="text-[11px] font-mono text-slate-300">Daily Composite History</span>
+                  <span class="text-[10px] font-mono text-[#869299]">${dash.loggedCount} of 7 days logged</span>
                 </div>
                 <div class="grid grid-cols-7 gap-1 pt-2.5 text-center">
                   ${miniSparkDots}
@@ -2663,17 +2665,17 @@
             <div class="space-y-3">
               
               <!-- Accordion 1: Full 7-Day Detailed Bar Charts -->
-              <details class="group rounded-2xl bg-white/[0.03] border border-white/10 overflow-hidden transition-all shadow-sm">
-                <summary class="p-3.5 sm:p-4 flex items-center justify-between cursor-pointer select-none text-xs sm:text-sm font-semibold text-teal-300 hover:text-teal-200 list-none transition-colors">
+              <details class="group rounded-xl bg-[#0E1213] border border-white/10 overflow-hidden transition-all">
+                <summary class="p-3.5 sm:p-4 flex items-center justify-between cursor-pointer select-none text-xs sm:text-sm font-mono text-slate-300 hover:text-white list-none transition-colors">
                   <span class="flex items-center gap-2">
                     <span>📊</span>
-                    <span>View 7-Day Day-by-Day Historical Bars</span>
+                    <span>View 7-Day Historical Bars</span>
                   </span>
-                  <span class="text-xs text-slate-400 group-open:rotate-180 transition-transform duration-200">▼</span>
+                  <span class="text-xs text-[#869299] group-open:rotate-180 transition-transform duration-200">▼</span>
                 </summary>
-                <div class="p-3 sm:p-4 border-t border-white/10 bg-[#090C0D]/90 space-y-3">
-                  <p class="text-[11px] text-slate-400 leading-relaxed">
-                    Comparison across 🔮 Clarity (cyan), 👑 Sovereignty (gold), and ⚡ Vitality (violet) for the past 7 days:
+                <div class="p-3 sm:p-4 border-t border-white/10 bg-[#080A0A] space-y-3">
+                  <p class="text-[11px] font-mono text-[#869299] leading-relaxed">
+                    Comparison across ${preset.labels[0]}, ${preset.labels[1]}, and ${preset.labels[2]} for the past 7 days:
                   </p>
                   <div class="grid grid-cols-7 gap-1 pt-1">
                     ${detailedStripCols}
@@ -2682,31 +2684,31 @@
               </details>
 
               <!-- Accordion 2: Weekly Celestial Star Constellation Quest -->
-              <details class="group rounded-2xl bg-white/[0.03] border border-white/10 overflow-hidden transition-all shadow-sm">
-                <summary class="p-3.5 sm:p-4 flex items-center justify-between cursor-pointer select-none text-xs sm:text-sm font-semibold text-amber-300 hover:text-amber-200 list-none transition-colors">
+              <details class="group rounded-xl bg-[#0E1213] border border-white/10 overflow-hidden transition-all">
+                <summary class="p-3.5 sm:p-4 flex items-center justify-between cursor-pointer select-none text-xs sm:text-sm font-mono text-[#E6A734] hover:text-amber-200 list-none transition-colors">
                   <span class="flex items-center gap-2">
                     <span>✨</span>
                     <span>View Weekly Star Constellation Quest</span>
                   </span>
-                  <span class="text-xs text-slate-400 group-open:rotate-180 transition-transform duration-200">▼</span>
+                  <span class="text-xs text-[#869299] group-open:rotate-180 transition-transform duration-200">▼</span>
                 </summary>
-                <div class="p-3 sm:p-4 border-t border-white/10 bg-[#090C0D]/90">
+                <div class="p-3 sm:p-4 border-t border-white/10 bg-[#080A0A]">
                   ${weeklyConstellationHTML()}
                 </div>
               </details>
 
               <!-- Mission Backlog Quick-Link Card -->
-              <div class="p-3.5 sm:p-4 rounded-2xl bg-white/[0.02] border border-white/10 flex items-center justify-between gap-3 text-xs">
+              <div class="p-3.5 sm:p-4 rounded-xl bg-[#0E1213] border border-white/10 flex items-center justify-between gap-3 text-xs">
                 <div>
                   <p class="font-semibold text-slate-200">Today's Mission Radar</p>
-                  <p class="text-[11px] text-slate-400 mt-0.5">
+                  <p class="text-[11px] font-mono text-[#869299] mt-0.5">
                     <b>${td.dueToday.length}</b> due today · <b>${td.overdue.length}</b> overdue · <b>${td.doneToday.length}</b> done
                   </p>
                 </div>
                 <button
                   data-act="switch-focus-tab"
                   data-tab="today"
-                  class="px-3.5 py-1.5 rounded-full text-xs font-semibold border border-teal-400/35 bg-teal-400/10 hover:bg-teal-400/20 text-teal-200 transition-all cursor-pointer whitespace-nowrap flex items-center gap-1 shadow-sm"
+                  class="px-3.5 py-1.5 rounded font-mono text-xs font-semibold border border-[#E6A734]/35 bg-[#E6A734]/10 hover:bg-[#E6A734]/20 text-[#E6A734] transition-all cursor-pointer whitespace-nowrap flex items-center gap-1 shadow-sm"
                 >
                   <span>⚡ Today Focus</span>
                   <span>→</span>
@@ -3353,8 +3355,8 @@
       const btnC = document.getElementById("tabBtnDeskCheckin");
       const body = document.getElementById("todayCheckinBody");
       if (!body) return;
-      if (btnT) btnT.className = `px-4 sm:px-6 py-2 sm:py-2.5 rounded-full text-xs sm:text-base lg:text-lg font-semibold cursor-pointer transition-all ${activeFocusTab === "today" ? "bg-amber-400/20 text-amber-200 border border-amber-400/45 shadow-sm" : "text-slate-300 hover:text-white border border-transparent"}`;
-      if (btnC) btnC.className = `px-4 sm:px-6 py-2 sm:py-2.5 rounded-full text-xs sm:text-base lg:text-lg font-semibold cursor-pointer transition-all ${activeFocusTab === "checkin" ? "bg-teal-400/20 text-teal-200 border border-teal-400/45 shadow-sm" : "text-slate-300 hover:text-white border border-transparent"}`;
+      if (btnT) btnT.className = `px-3.5 sm:px-5 py-1.5 sm:py-2 rounded font-mono text-xs sm:text-sm font-semibold cursor-pointer transition-all ${activeFocusTab === "today" ? "bg-[#E6A734] text-[#080A0A] font-bold shadow-sm" : "text-[#869299] hover:text-white hover:bg-white/5"}`;
+      if (btnC) btnC.className = `px-3.5 sm:px-5 py-1.5 sm:py-2 rounded font-mono text-xs sm:text-sm font-semibold cursor-pointer transition-all ${activeFocusTab === "checkin" ? "bg-[#E6A734] text-[#080A0A] font-bold shadow-sm" : "text-[#869299] hover:text-white hover:bg-white/5"}`;
       body.innerHTML = activeFocusTab === "today" ? todayFocusContentHTML(false) : checkinContentHTML(false);
     }
 
@@ -3374,9 +3376,9 @@
         }
       });
       if (moved > 0) {
-        logEvent(pid || null, "renamed", `Triaged ${moved} overdue mission${moved === 1 ? "" : "s"} to ${daysOffset === 0 ? "Today" : "Tomorrow"}`);
+        logEvent(pid || null, "renamed", `Rescheduled ${moved} overdue mission${moved === 1 ? "" : "s"} to ${daysOffset === 0 ? "Today" : "Tomorrow"}`);
         sfx.done();
-        toast(`⚡ Triaged ${moved} overdue mission${moved === 1 ? "" : "s"} to ${daysOffset === 0 ? "Today" : "Tomorrow"}`);
+        toast(`✓ Rescheduled ${moved} overdue mission${moved === 1 ? "" : "s"} to ${daysOffset === 0 ? "Today" : "Tomorrow"}`, "#E6A734");
         commit();
         if (!document.getElementById("todayCheckinModal").classList.contains("hidden")) renderTodayCheckinModal();
       } else {
@@ -3416,18 +3418,18 @@
       // Tactile button animation feedback
       const saveBtn = document.querySelector(`[data-act="save-reflection"][data-input="${inputId}"]`);
       if (saveBtn) {
-        saveBtn.innerHTML = `✓ Saved!`;
-        saveBtn.style.background = "#2DD4BF";
-        saveBtn.style.boxShadow = "0 0 30px rgba(45, 212, 191, 0.7)";
+        saveBtn.innerHTML = `✓ Committed`;
+        saveBtn.style.background = "#E6A734";
+        saveBtn.style.color = "#080A0A";
       }
 
       sfx.done();
-      toast("✓ Daily Check-In Saved!", "#2DD4BF");
+      toast("✓ Telemetry log committed", "#E6A734");
 
       setTimeout(() => {
         if (!document.getElementById("todayCheckinModal")?.classList.contains("hidden")) renderTodayCheckinModal();
         if (isMobile() && mobView === "checkin") renderMobile();
-      }, 550);
+      }, 320);
 
       try {
         const uidVal = universeId() === "default" ? "a1361b3c-32f2-4fed-a637-200ac9ecb861" : universeId();
