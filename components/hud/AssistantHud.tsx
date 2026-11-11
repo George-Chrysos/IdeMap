@@ -335,7 +335,7 @@ export default function AssistantHud() {
 
   const handleSaveMetrics = async () => {
     setSavingMetrics(true);
-    setStatusBanner("💾 Saving 3-Metric Check-in & generating Night Strategy...");
+    setStatusBanner("💾 Saving Daily Check-In...");
     try {
       const res = await fetch("/api/assistant", {
         method: "POST",
@@ -357,14 +357,13 @@ export default function AssistantHud() {
       if (data?.ok && data.snapshot) {
         setMetricsHistory(data.snapshot.daily_metrics || []);
         setReflection("");
-        await handleGenerateBriefing("night");
-        setActiveTab("briefings");
+        setStatusBanner("✓ Daily Check-In Saved!");
       }
     } catch {
-      setStatusBanner("Failed to save metrics");
+      setStatusBanner("Failed to save Daily Check-In");
     } finally {
       setSavingMetrics(false);
-      setTimeout(() => setStatusBanner(null), 3000);
+      setTimeout(() => setStatusBanner(null), 2500);
     }
   };
 
@@ -809,7 +808,7 @@ export default function AssistantHud() {
               <div className="p-4 sm:p-5 rounded-2xl bg-white/[0.03] border border-white/10 space-y-4 shadow-md">
                 <div className="flex items-center justify-between">
                   <span className="font-fraunces text-sm sm:text-base font-semibold text-teal-300">
-                    🌙 Night Trio Metric Check-In (1–5)
+                    🌙 Daily Check-In (1–5 Scale)
                   </span>
                 </div>
 
@@ -886,11 +885,9 @@ export default function AssistantHud() {
                 <button
                   onClick={handleSaveMetrics}
                   disabled={savingMetrics}
-                  className="w-full py-3 sm:py-3.5 px-4 rounded-xl bg-[#E5A93C] hover:bg-amber-300 text-[#0D0F0E] font-bold text-xs sm:text-sm cursor-pointer transition-all shadow-md"
+                  className="w-full py-3 sm:py-3.5 px-4 rounded-xl bg-[#E5A93C] hover:bg-amber-300 text-[#0D0F0E] font-bold text-xs sm:text-sm cursor-pointer transition-all shadow-md active:scale-95 flex items-center justify-center gap-2"
                 >
-                  {savingMetrics
-                    ? "Saving & Computing Strategy..."
-                    : "💾 Save Night Trio & Build Tomorrow Strategy"}
+                  {savingMetrics ? "Saving..." : "Save"}
                 </button>
               </div>
 

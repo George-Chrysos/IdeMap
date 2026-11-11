@@ -221,7 +221,7 @@
         <button data-act="open-today-focus" id="btnTodayFocus" class="px-3 py-1 rounded-full text-xs font-semibold border border-amber-400/45 bg-amber-400/15 hover:bg-amber-400/25 text-amber-200 transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap" title="Curated priority missions right now">
           <span>⚡</span><span>Today</span><span id="badgeTodayCount" class="px-1.5 py-0.2 rounded-full bg-amber-400/30 text-amber-100 text-[11px]">0</span>
         </button>
-        <button data-act="open-desk-checkin" id="btnDeskCheckin" class="px-3 py-1 rounded-full text-xs font-medium border border-teal-400/35 bg-teal-400/10 hover:bg-teal-400/20 text-teal-200 transition-all cursor-pointer whitespace-nowrap" title="Daily Check-in & Star Constellation">🌙 Check-in</button>
+        <button data-act="open-desk-checkin" id="btnDeskCheckin" class="px-3.5 py-1.5 rounded-full text-xs font-semibold border border-teal-400/35 bg-teal-400/10 hover:bg-teal-400/20 text-teal-200 transition-all cursor-pointer whitespace-nowrap" title="Daily Check-In">🌙 Daily Check-In</button>
         <button data-act="open-cmd" class="px-2.5 py-1 rounded-full text-xs font-medium border border-white/15 bg-white/5 hover:border-teal-400/45 text-slate-200 hover:text-teal-200 transition-all cursor-pointer whitespace-nowrap" title="Quick-Add & Global Search (Ctrl+K / ⌘K)">⌘K</button>
         <span id="badgeAlignmentHud" class="hidden"></span>
         <span id="badgeCometHud" class="hidden"></span>
@@ -422,7 +422,7 @@
       <div class="p-4 sm:p-5 lg:p-6 border-b border-white/10 flex items-center justify-between gap-3 sm:gap-4 flex-shrink-0 bg-gradient-to-r from-teal-500/10 via-transparent to-amber-500/10">
         <div class="flex items-center gap-2 sm:gap-4">
           <button data-act="switch-focus-tab" data-tab="today" id="tabBtnTodayFocus" class="px-4 sm:px-6 py-2 sm:py-2.5 rounded-full text-xs sm:text-base lg:text-lg font-semibold cursor-pointer transition-all">⚡ Today Focus</button>
-          <button data-act="switch-focus-tab" data-tab="checkin" id="tabBtnDeskCheckin" class="px-4 sm:px-6 py-2 sm:py-2.5 rounded-full text-xs sm:text-base lg:text-lg font-semibold cursor-pointer transition-all">🌙 Daily Check-in & Constellation</button>
+          <button data-act="switch-focus-tab" data-tab="checkin" id="tabBtnDeskCheckin" class="px-4 sm:px-6 py-2 sm:py-2.5 rounded-full text-xs sm:text-base lg:text-lg font-semibold cursor-pointer transition-all">🌙 Daily Check-In</button>
         </div>
         <button data-act="close-modal" data-modal="todayCheckinModal" class="w-9 h-9 sm:w-11 sm:h-11 rounded-full text-slate-300 hover:text-white hover:bg-white/10 cursor-pointer text-base sm:text-2xl flex items-center justify-center transition-colors">✕</button>
       </div>
@@ -2538,7 +2538,7 @@
             <label for="${reflId}" class="block text-xs sm:text-sm lg:text-base font-semibold uppercase tracking-wider text-teal-300">✨ Evening Reflection & Strategy Input</label>
             <textarea id="${reflId}" rows="3" placeholder="What gave you energy today, or what deserves your focus tomorrow morning?" class="w-full bg-white/5 border border-slate-700 rounded-2xl p-4 text-sm sm:text-base text-slate-100 focus:outline-none focus:border-teal-400 resize-none min-h-[90px] sm:min-h-[110px]">${esc(todayEntry?.reflection || "")}</textarea>
             <div class="flex justify-end pt-1">
-              <button data-act="save-reflection" data-input="${reflId}" class="px-6 sm:px-8 py-3 rounded-full text-xs sm:text-sm lg:text-base font-bold text-[#0D0F0E] cursor-pointer hover:brightness-110 shadow-lg transition-all" style="background:var(--gold)">💾 Save 3-Metric Check-In & Reflection</button>
+              <button data-act="save-reflection" data-input="${reflId}" class="px-8 sm:px-10 py-3 sm:py-3.5 rounded-full text-sm sm:text-base lg:text-lg font-bold text-[#0D0F0E] cursor-pointer hover:brightness-110 shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2" style="background:var(--gold)">Save</button>
             </div>
           </div>
         </div>
@@ -2556,7 +2556,7 @@
           <div class="p-5 sm:p-6 lg:p-8 rounded-3xl bg-white/[0.03] border border-white/10 space-y-4">
             <div class="flex items-center justify-between gap-3">
               <div>
-                <p class="text-xs sm:text-sm lg:text-base uppercase tracking-wider text-teal-400 font-semibold">Daily Celestial Check-in</p>
+                <p class="text-xs sm:text-sm lg:text-base uppercase tracking-wider text-teal-400 font-semibold">Daily Check-In</p>
                 <h3 class="font-fraunces text-2xl sm:text-3xl lg:text-4xl font-semibold text-white mt-1">${new Date().toLocaleDateString([], { weekday: "long", month: "short", day: "numeric" })}</h3>
               </div>
               <button data-act="toggle-push" class="px-4 py-2 rounded-full text-xs sm:text-sm font-medium border ${STATE.pushEnabled ? "border-teal-400/45 bg-teal-400/15 text-teal-200" : "border-white/15 bg-white/5 text-slate-300"} cursor-pointer">${STATE.pushEnabled ? "🔔 Reminder ON" : "🔕 Remind Me"}</button>
@@ -2935,7 +2935,7 @@
           <div class="px-4 pt-16 pb-28 space-y-4 fade-up">
             <div class="flex items-center gap-2 p-1 rounded-full bg-white/[0.04] border border-white/10">
               <button data-act="mob-checkin-sub" data-sub="today" class="flex-1 py-2 rounded-full text-xs font-semibold cursor-pointer ${mobCheckinSubTab === "today" ? "bg-amber-400/20 text-amber-200 border border-amber-400/45" : "text-slate-300"}">⚡ Today Focus</button>
-              <button data-act="mob-checkin-sub" data-sub="checkin" class="flex-1 py-2 rounded-full text-xs font-semibold cursor-pointer ${mobCheckinSubTab === "checkin" ? "bg-teal-400/20 text-teal-200 border border-teal-400/45" : "text-slate-300"}">🌙 Evening Check-in</button>
+              <button data-act="mob-checkin-sub" data-sub="checkin" class="flex-1 py-2 rounded-full text-xs font-semibold cursor-pointer ${mobCheckinSubTab === "checkin" ? "bg-teal-400/20 text-teal-200 border border-teal-400/45" : "text-slate-300"}">🌙 Daily Check-In</button>
             </div>
             ${mobCheckinSubTab === "today" ? todayFocusContentHTML(true) : checkinContentHTML(true)}
           </div>
@@ -3020,7 +3020,7 @@
           <button data-act="add-task" data-pid="${focusId || ""}" class="mx-2 w-12 h-12 rounded-full flex items-center justify-center text-neutral-900 font-bold text-2xl shadow-[0_0_20px_rgba(234,179,8,0.5)] active:scale-95 transition-transform flex-shrink-0 cursor-pointer" style="background:var(--gold)" title="Add task">
             <span>＋</span>
           </button>
-          ${navBtn("checkin", "⚡", "Check-in")}
+          ${navBtn("checkin", "🌙", "Daily Check-In")}
           ${navBtn("account", "👤", "Account")}
         </nav>
       `;
@@ -3250,7 +3250,7 @@
     async function saveReflection(inputId) {
       const inp = document.getElementById(inputId);
       const rawText = inp ? inp.value.trim() : "";
-      const preset = TRIO_PRESETS[draftTrio.presetKey] || TRIO_PRESETS.clarity_sovereignty_vitality;
+      const preset = TRIO_DEF;
       const today = todayISO();
       const list = ensureDailyMetricsArray();
       const entry = {
@@ -3270,16 +3270,27 @@
       STATE.trioPresetKey = preset.key;
 
       if (rawText) {
-        addNote(null, `🌙 Trio Check-In (${preset.labels[0]} ${draftTrio.s1}/5 · ${preset.labels[1]} ${draftTrio.s2}/5 · ${preset.labels[2]} ${draftTrio.s3}/5): ${rawText}`);
+        addNote(null, `🌙 Daily Check-In (${preset.labels[0]} ${draftTrio.s1}/5 · ${preset.labels[1]} ${draftTrio.s2}/5 · ${preset.labels[2]} ${draftTrio.s3}/5): ${rawText}`);
       } else {
-        logEvent(null, "done", `🌙 Logged Trio Metrics: ${preset.labels[0]} ${draftTrio.s1}/5 · ${preset.labels[1]} ${draftTrio.s2}/5 · ${preset.labels[2]} ${draftTrio.s3}/5`);
+        logEvent(null, "done", `🌙 Daily Check-In: ${preset.labels[0]} ${draftTrio.s1}/5 · ${preset.labels[1]} ${draftTrio.s2}/5 · ${preset.labels[2]} ${draftTrio.s3}/5`);
         commit();
       }
 
+      // Tactile button animation feedback
+      const saveBtn = document.querySelector(`[data-act="save-reflection"][data-input="${inputId}"]`);
+      if (saveBtn) {
+        saveBtn.innerHTML = `✓ Saved!`;
+        saveBtn.style.background = "#2DD4BF";
+        saveBtn.style.boxShadow = "0 0 30px rgba(45, 212, 191, 0.7)";
+      }
+
       sfx.done();
-      toast(`✦ Logged ${preset.labels[0]} ${draftTrio.s1}/5 · ${preset.labels[1]} ${draftTrio.s2}/5 · ${preset.labels[2]} ${draftTrio.s3}/5`);
-      if (!document.getElementById("todayCheckinModal")?.classList.contains("hidden")) renderTodayCheckinModal();
-      if (isMobile() && mobView === "checkin") renderMobile();
+      toast("✓ Daily Check-In Saved!", "#2DD4BF");
+
+      setTimeout(() => {
+        if (!document.getElementById("todayCheckinModal")?.classList.contains("hidden")) renderTodayCheckinModal();
+        if (isMobile() && mobView === "checkin") renderMobile();
+      }, 550);
 
       try {
         const uidVal = universeId() === "default" ? "a1361b3c-32f2-4fed-a637-200ac9ecb861" : universeId();
