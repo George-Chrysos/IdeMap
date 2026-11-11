@@ -1,0 +1,287 @@
+{
+  "id": "idemap-ai-assistant-01",
+  "name": "IdeMap — Dynamic AI Assistant & Supabase Tool Agent",
+  "active": true,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "idemap-assistant",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "node-webhook-assistant",
+      "name": "Assistant HUD Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [220, 340],
+      "webhookId": "idemap-assistant"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://fzynqetgqohgeqsdnttm.supabase.co/rest/v1/rpc/get_universe_ai_snapshot",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "sb_publishable_h5qp70G8q8wVfI9QrFa7mw_hiflEA4i"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer sb_publishable_h5qp70G8q8wVfI9QrFa7mw_hiflEA4i"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ p_universe_id: $json.body?.universeId || 'a1361b3c-32f2-4fed-a637-200ac9ecb861', p_planet_id: $json.body?.focusPlanetId || null }) }}",
+        "options": {}
+      },
+      "id": "node-initial-supabase-snapshot",
+      "name": "Fetch Initial Supabase Snapshot JSON",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 340]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=User Query: {{ $('Assistant HUD Webhook').item.json.body.message }}\nFocused Planet ID: {{ $('Assistant HUD Webhook').item.json.body.focusPlanetId || 'Life Core (All)' }}\nUniverse ID: {{ $('Assistant HUD Webhook').item.json.body.universeId || 'a1361b3c-32f2-4fed-a637-200ac9ecb861' }}\n\nInitial Supabase Snapshot JSON:\n{{ JSON.stringify($json, null, 2) }}\n\nInstructions:\n1. You are the IdeMap Celestial Life Architect & Personal Assistant.\n2. Read the Initial Supabase Snapshot JSON above. If the user's question requires deeper inspection of a specific planet, tasks, timeline history, or 3-metric trends (e.g. Clarity/Sovereignty/Vitality or Mind/Heart/Body), invoke the appropriate Supabase Tool (`tool_query_planet_tasks`, `tool_query_metric_trends`, `tool_query_timeline_events`) to fetch additional JSONs from Supabase.\n3. Whenever you recommend an actionable change (creating a task, completing a task, rescheduling an overdue task, or toggling a strain flag), call the `tool_propose_hud_action` tool so it appears as a Confirmation Button on the user's HUD.\n4. Keep your response concise, insightful, and grounded in their actual planets, XP levels, strain flags, and 3-metric trends.",
+        "options": {
+          "systemMessage": "You are the IdeMap Life OS AI Architect. You help the user navigate their life frontiers (Planets), complete missions (Tasks), manage Financial & Psychological strain flags, level up XP, and track their 3 daily life metrics (1-5 scale: e.g. Mind/Heart/Body or Clarity/Sovereignty/Vitality). Always use dynamic Supabase tools when you need more granular JSON data or when proposing an action for HUD button confirmation."
+        }
+      },
+      "id": "node-ai-agent",
+      "name": "IdeMap AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [740, 340]
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-2.5-flash",
+        "options": {
+          "temperature": 0.4
+        }
+      },
+      "id": "node-openrouter-llm",
+      "name": "OpenRouter / Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [620, 580]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Fetch additional JSON of tasks from Supabase filtered by planet_id or completion status when the user asks about specific missions, workloads, or planet bottlenecks.",
+        "method": "GET",
+        "url": "=https://fzynqetgqohgeqsdnttm.supabase.co/rest/v1/tasks?universe_id=eq.{{ $('Assistant HUD Webhook').item.json.body.universeId || 'a1361b3c-32f2-4fed-a637-200ac9ecb861' }}&is_archived=eq.false&select=id,planet_id,title,diff,due,recur,streak,done,xp_awarded",
+        "sendHeaders": true,
+        "parametersHeaders": {
+          "values": [
+            {
+              "name": "apikey",
+              "valueProvider": "fieldValue",
+              "value": "sb_publishable_h5qp70G8q8wVfI9QrFa7mw_hiflEA4i"
+            },
+            {
+              "name": "Authorization",
+              "valueProvider": "fieldValue",
+              "value": "Bearer sb_publishable_h5qp70G8q8wVfI9QrFa7mw_hiflEA4i"
+            }
+          ]
+        }
+      },
+      "id": "node-tool-query-tasks",
+      "name": "tool_query_planet_tasks",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [760, 580]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Fetch historical 3-metric daily check-in JSONs (e.g. Mind/Heart/Body or Clarity/Sovereignty/Vitality 1-5 scores and reflections) from Supabase to analyze life trends and correlations.",
+        "method": "GET",
+        "url": "=https://fzynqetgqohgeqsdnttm.supabase.co/rest/v1/daily_metrics?universe_id=eq.{{ $('Assistant HUD Webhook').item.json.body.universeId || 'a1361b3c-32f2-4fed-a637-200ac9ecb861' }}&order=check_in_date.desc&limit=14",
+        "sendHeaders": true,
+        "parametersHeaders": {
+          "values": [
+            {
+              "name": "apikey",
+              "valueProvider": "fieldValue",
+              "value": "sb_publishable_h5qp70G8q8wVfI9QrFa7mw_hiflEA4i"
+            },
+            {
+              "name": "Authorization",
+              "valueProvider": "fieldValue",
+              "value": "Bearer sb_publishable_h5qp70G8q8wVfI9QrFa7mw_hiflEA4i"
+            }
+          ]
+        }
+      },
+      "id": "node-tool-query-metrics",
+      "name": "tool_query_metric_trends",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [920, 580]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Propose an actionable change in Supabase `proposed_actions` table so the user can confirm it with a single button click in the IdeMap HUD. Allowed action_type values: create_task, complete_task, reschedule_task, toggle_strain, award_xp.",
+        "method": "POST",
+        "url": "https://fzynqetgqohgeqsdnttm.supabase.co/rest/v1/proposed_actions",
+        "sendHeaders": true,
+        "parametersHeaders": {
+          "values": [
+            {
+              "name": "apikey",
+              "valueProvider": "fieldValue",
+              "value": "sb_publishable_h5qp70G8q8wVfI9QrFa7mw_hiflEA4i"
+            },
+            {
+              "name": "Authorization",
+              "valueProvider": "fieldValue",
+              "value": "Bearer sb_publishable_h5qp70G8q8wVfI9QrFa7mw_hiflEA4i"
+            },
+            {
+              "name": "Prefer",
+              "valueProvider": "fieldValue",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "keypair",
+        "parametersBody": {
+          "values": [
+            {
+              "name": "universe_id",
+              "valueProvider": "fieldValue",
+              "value": "={{ $('Assistant HUD Webhook').item.json.body.universeId || 'a1361b3c-32f2-4fed-a637-200ac9ecb861' }}"
+            },
+            {
+              "name": "action_type",
+              "valueProvider": "modelRequired"
+            },
+            {
+              "name": "target_planet_id",
+              "valueProvider": "modelRequired"
+            },
+            {
+              "name": "title",
+              "valueProvider": "modelRequired"
+            },
+            {
+              "name": "description",
+              "valueProvider": "modelRequired"
+            }
+          ]
+        }
+      },
+      "id": "node-tool-propose-action",
+      "name": "tool_propose_hud_action",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [1080, 580]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true, source: 'n8n-agent', reply: $json.output }) }}",
+        "options": {}
+      },
+      "id": "node-respond-webhook",
+      "name": "Respond to HUD",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1080, 340]
+    }
+  ],
+  "connections": {
+    "Assistant HUD Webhook": {
+      "main": [
+        [
+          {
+            "node": "Fetch Initial Supabase Snapshot JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Initial Supabase Snapshot JSON": {
+      "main": [
+        [
+          {
+            "node": "IdeMap AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter / Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "IdeMap AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "tool_query_planet_tasks": {
+      "ai_tool": [
+        [
+          {
+            "node": "IdeMap AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "tool_query_metric_trends": {
+      "ai_tool": [
+        [
+          {
+            "node": "IdeMap AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "tool_propose_hud_action": {
+      "ai_tool": [
+        [
+          {
+            "node": "IdeMap AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IdeMap AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to HUD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

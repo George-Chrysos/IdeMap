@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import AssistantHud from "@/components/hud/AssistantHud";
 
 // ============================================================
-// IdeMap — Direct Orbital Solar System Atlas
+// IdeMap — Direct Orbital Solar System Atlas + Floating AI HUD
 // Forwards any Supabase OAuth hash/search tokens to /atlas.html
 // on first mount so the iframe receives the OAuth tokens immediately.
 // ============================================================
@@ -25,6 +26,7 @@ export default function Page() {
           className="w-full h-full border-0 m-0 p-0 block"
         />
       )}
+      <AssistantHud />
     </main>
   );
 }

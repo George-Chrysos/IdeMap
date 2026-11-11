@@ -2303,6 +2303,281 @@
       `;
     }
 
+    // =========================================================================
+    // 7b. 3-Metric Daily Check-In & 7-Day Averages Dashboard Engine
+    // =========================================================================
+    const TRIO_PRESETS = {
+      clarity_sovereignty_vitality: {
+        key: "clarity_sovereignty_vitality",
+        name: "Clarity · Sovereignty · Vitality",
+        labels: ["Clarity", "Sovereignty", "Vitality"],
+        icons: ["🔮", "👑", "⚡"],
+        colors: ["#2DD4BF", "#E5A93C", "#C084FC"],
+      },
+      mind_heart_body: {
+        key: "mind_heart_body",
+        name: "Mind · Heart · Body",
+        labels: ["Mind", "Heart", "Body"],
+        icons: ["🧠", "❤️", "🏋️"],
+        colors: ["#38BDF8", "#F43F5E", "#10B981"],
+      },
+      focus_peace_energy: {
+        key: "focus_peace_energy",
+        name: "Focus · Peace · Energy",
+        labels: ["Focus", "Peace", "Energy"],
+        icons: ["🎯", "🧘", "🔥"],
+        colors: ["#F59E0B", "#2DD4BF", "#EC4899"],
+      },
+    };
+
+    let draftTrio = {
+      presetKey: STATE.trioPresetKey || "clarity_sovereignty_vitality",
+      s1: 4,
+      s2: 4,
+      s3: 3,
+      hydratedDate: null,
+    };
+
+    function ensureDailyMetricsArray() {
+      if (!Array.isArray(STATE.dailyMetrics)) {
+        STATE.dailyMetrics = [
+          { date: addDays(-3), trio_key: "clarity_sovereignty_vitality", label_1: "Clarity", label_2: "Sovereignty", label_3: "Vitality", score_1: 4, score_2: 3, score_3: 4, reflection: "Strong deep work block on Signal; energy steady." },
+          { date: addDays(-2), trio_key: "clarity_sovereignty_vitality", label_1: "Clarity", label_2: "Sovereignty", label_3: "Vitality", score_1: 3, score_2: 4, score_3: 3, reflection: "Good social connection on Birthday planning." },
+          { date: addDays(-1), trio_key: "clarity_sovereignty_vitality", label_1: "Clarity", label_2: "Sovereignty", label_3: "Vitality", score_1: 4, score_2: 4, score_3: 3, reflection: "Ready to push Business & Cultivation orbits forward." },
+        ];
+      }
+      const today = todayISO();
+      if (draftTrio.hydratedDate !== today) {
+        draftTrio.hydratedDate = today;
+        const existingToday = STATE.dailyMetrics.find(m => m.date === today);
+        if (existingToday) {
+          draftTrio.presetKey = existingToday.trio_key || draftTrio.presetKey;
+          draftTrio.s1 = existingToday.score_1 || 4;
+          draftTrio.s2 = existingToday.score_2 || 4;
+          draftTrio.s3 = existingToday.score_3 || 3;
+        }
+      }
+      return STATE.dailyMetrics;
+    }
+
+    async function pullDailyMetricsFromSupabase() {
+      try {
+        const uidParam = encodeURIComponent(universeId() === "default" ? "a1361b3c-32f2-4fed-a637-200ac9ecb861" : universeId());
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/daily_metrics?universe_id=eq.${uidParam}&order=check_in_date.desc&limit=14`, {
+          headers: {
+            apikey: SUPABASE_KEY,
+            Authorization: `Bearer ${activeAccessToken || SUPABASE_KEY}`,
+          },
+          cache: "no-store",
+        });
+        if (!res.ok) return;
+        const rows = await res.json();
+        if (Array.isArray(rows) && rows.length > 0) {
+          const mapped = rows.map(r => ({
+            date: r.check_in_date,
+            trio_key: r.trio_key || "clarity_sovereignty_vitality",
+            label_1: r.label_1 || "Clarity",
+            label_2: r.label_2 || "Sovereignty",
+            label_3: r.label_3 || "Vitality",
+            score_1: Number(r.score_1) || 3,
+            score_2: Number(r.score_2) || 3,
+            score_3: Number(r.score_3) || 3,
+            reflection: r.reflection || "",
+          }));
+          STATE.dailyMetrics = mapped;
+          const todayRow = mapped.find(m => m.date === todayISO());
+          if (todayRow) {
+            draftTrio.presetKey = todayRow.trio_key;
+            draftTrio.s1 = todayRow.score_1;
+            draftTrio.s2 = todayRow.score_2;
+            draftTrio.s3 = todayRow.score_3;
+          }
+          if (!document.getElementById("todayCheckinModal")?.classList.contains("hidden")) {
+            renderTodayCheckinModal();
+          }
+          if (isMobile() && mobView === "checkin") {
+            renderMobile();
+          }
+        }
+      } catch (e) {}
+    }
+
+    function compute7DayMetricsDashboard() {
+      const list = ensureDailyMetricsArray();
+      const preset = TRIO_PRESETS[draftTrio.presetKey] || TRIO_PRESETS.clarity_sovereignty_vitality;
+      const cutoffISO = addDays(-6);
+      const last7 = list
+        .filter(m => m.date >= cutoffISO)
+        .sort((a, b) => (a.date < b.date ? -1 : 1));
+
+      const sample = last7.length > 0 ? last7 : list.slice(0, 7);
+      const count = sample.length || 1;
+      const sum1 = sample.reduce((acc, r) => acc + (Number(r.score_1) || 0), 0);
+      const sum2 = sample.reduce((acc, r) => acc + (Number(r.score_2) || 0), 0);
+      const sum3 = sample.reduce((acc, r) => acc + (Number(r.score_3) || 0), 0);
+
+      const avg1 = Number((sum1 / count).toFixed(1));
+      const avg2 = Number((sum2 / count).toFixed(1));
+      const avg3 = Number((sum3 / count).toFixed(1));
+      const composite = Number(((avg1 + avg2 + avg3) / 3).toFixed(1));
+
+      // Build 7-day calendar strip (oldest -> today)
+      const daysStrip = [];
+      for (let i = 6; i >= 0; i--) {
+        const dISO = addDays(-i);
+        const dt = new Date(dISO + "T12:00:00");
+        const dayShort = dt.toLocaleDateString([], { weekday: "short" });
+        const found = list.find(m => m.date === dISO) || null;
+        daysStrip.push({
+          iso: dISO,
+          dayShort,
+          isToday: i === 0,
+          entry: found,
+        });
+      }
+
+      return {
+        preset,
+        avg1,
+        avg2,
+        avg3,
+        composite,
+        loggedCount: last7.length,
+        daysStrip,
+      };
+    }
+
+    function trioMetricsDashboardHTML(reflId) {
+      const dash = compute7DayMetricsDashboard();
+      const preset = dash.preset;
+      const todayEntry = ensureDailyMetricsArray().find(m => m.date === todayISO());
+
+      const presetButtons = Object.values(TRIO_PRESETS).map(p => {
+        const active = p.key === preset.key;
+        return `
+          <button data-act="select-trio-preset" data-preset="${p.key}" class="px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer flex items-center gap-1.5 ${active ? "bg-teal-400/20 border-teal-400 text-white shadow-sm" : "bg-white/[0.03] border-white/10 text-slate-400 hover:text-slate-200"}">
+            <span>${p.icons.join("")}</span>
+            <span>${esc(p.name)}</span>
+          </button>
+        `;
+      }).join("");
+
+      const metricSliders = [0, 1, 2].map(idx => {
+        const lbl = preset.labels[idx];
+        const icon = preset.icons[idx];
+        const col = preset.colors[idx];
+        const curVal = idx === 0 ? draftTrio.s1 : idx === 1 ? draftTrio.s2 : draftTrio.s3;
+        const slot = idx + 1;
+        return `
+          <div class="p-3 rounded-xl bg-[#0B0E0F]/90 border border-white/10 space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-semibold text-white flex items-center gap-1.5">
+                <span>${icon}</span>
+                <span>${esc(lbl)}</span>
+              </span>
+              <span class="px-2 py-0.5 rounded-full text-[11px] font-bold" style="background:${col}22;color:${col};border:1px solid ${col}55">${curVal} / 5</span>
+            </div>
+            <div class="grid grid-cols-5 gap-1.5">
+              ${[1, 2, 3, 4, 5].map(v => `
+                <button data-act="set-trio-score" data-slot="${slot}" data-val="${v}" class="py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer ${curVal >= v ? "text-white shadow-sm" : "bg-white/[0.03] border-white/10 text-slate-500 hover:text-slate-300"}" style="${curVal >= v ? `background:${col}33;border-color:${col};color:#fff` : ""}">
+                  ${v}
+                </button>
+              `).join("")}
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      const avgCards = [
+        { lbl: preset.labels[0], icon: preset.icons[0], avg: dash.avg1, col: preset.colors[0] },
+        { lbl: preset.labels[1], icon: preset.icons[1], avg: dash.avg2, col: preset.colors[1] },
+        { lbl: preset.labels[2], icon: preset.icons[2], avg: dash.avg3, col: preset.colors[2] },
+      ].map(c => {
+        const pct = Math.round((c.avg / 5) * 100);
+        return `
+          <div class="p-3 rounded-xl bg-[#0B0E0F]/90 border border-white/10 space-y-1.5">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-slate-300 font-medium truncate">${c.icon} ${esc(c.lbl)}</span>
+              <span class="font-bold text-sm" style="color:${c.col}">${c.avg}<span class="text-[10px] text-slate-400">/5</span></span>
+            </div>
+            <div class="h-1.5 rounded-full bg-white/10 overflow-hidden">
+              <div class="h-full rounded-full transition-all duration-500" style="width:${pct}%;background:${c.col}"></div>
+            </div>
+            <p class="text-[10px] text-slate-400">7-Day Avg · ${pct}% capacity</p>
+          </div>
+        `;
+      }).join("");
+
+      const stripCols = dash.daysStrip.map(d => {
+        const e = d.entry;
+        const h1 = e ? Math.round((e.score_1 / 5) * 36) : 4;
+        const h2 = e ? Math.round((e.score_2 / 5) * 36) : 4;
+        const h3 = e ? Math.round((e.score_3 / 5) * 36) : 4;
+        const dayAvg = e ? ((e.score_1 + e.score_2 + e.score_3) / 3).toFixed(1) : "—";
+        return `
+          <div class="flex flex-col items-center p-2 rounded-xl border ${d.isToday ? "bg-teal-400/10 border-teal-400/40" : "bg-white/[0.02] border-white/5"}">
+            <span class="text-[10px] font-semibold ${d.isToday ? "text-teal-300" : "text-slate-400"}">${d.dayShort}</span>
+            <div class="h-10 flex items-end gap-1 my-1.5">
+              <span class="w-2 rounded-t" style="height:${h1}px;background:${e ? preset.colors[0] : "rgba(255,255,255,0.12)"}" title="${preset.labels[0]}: ${e ? e.score_1 : "N/A"}"></span>
+              <span class="w-2 rounded-t" style="height:${h2}px;background:${e ? preset.colors[1] : "rgba(255,255,255,0.12)"}" title="${preset.labels[1]}: ${e ? e.score_2 : "N/A"}"></span>
+              <span class="w-2 rounded-t" style="height:${h3}px;background:${e ? preset.colors[2] : "rgba(255,255,255,0.12)"}" title="${preset.labels[2]}: ${e ? e.score_3 : "N/A"}"></span>
+            </div>
+            <span class="text-[10px] font-bold ${e ? "text-slate-200" : "text-slate-500"}">${dayAvg}</span>
+          </div>
+        `;
+      }).join("");
+
+      return `
+        <!-- 7-Day Averages Dashboard for the 3 Metrics -->
+        <div class="p-4 rounded-2xl bg-gradient-to-br from-teal-500/10 via-[#0B0E0F] to-amber-500/10 border border-teal-400/30 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <p class="text-[11px] uppercase tracking-wider text-teal-300 font-semibold">📊 7-Day Trio Metrics Dashboard</p>
+              <h4 class="font-fraunces text-base sm:text-lg text-white">${esc(preset.name)} · 7-Day Averages</h4>
+            </div>
+            <div class="px-3 py-1 rounded-full bg-amber-400/15 border border-amber-400/40 text-xs font-semibold text-amber-200">
+              Composite: ${dash.composite} / 5.0 (${Math.round((dash.composite / 5) * 100)}%)
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            ${avgCards}
+          </div>
+
+          <div class="grid grid-cols-7 gap-1.5 pt-1">
+            ${stripCols}
+          </div>
+        </div>
+
+        <!-- Daily Night 3-Metric Check-In Inputs (1-5) + Evening Reflection -->
+        <div class="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-3.5">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-wider text-amber-300">🌙 Daily 3-Metric Check-In (1–5 Scale)</p>
+              <p class="text-[11px] text-slate-400 mt-0.5">Rate your 3 core life frontiers for today. Switch between trio expressions anytime:</p>
+            </div>
+            ${todayEntry ? `<span class="px-2.5 py-0.5 rounded-full bg-teal-400/20 border border-teal-400/40 text-[11px] font-semibold text-teal-200">✓ Logged Today</span>` : ""}
+          </div>
+
+          <div class="flex flex-wrap gap-1.5">
+            ${presetButtons}
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            ${metricSliders}
+          </div>
+
+          <div class="space-y-2 pt-1">
+            <label for="${reflId}" class="block text-xs font-semibold uppercase tracking-wider text-teal-300">✨ Evening Reflection & Strategy Input</label>
+            <textarea id="${reflId}" rows="2" placeholder="What gave you energy today, or what deserves your focus tomorrow morning?" class="w-full bg-white/5 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-slate-100 focus:outline-none focus:border-teal-400 resize-none">${esc(todayEntry?.reflection || "")}</textarea>
+            <div class="flex justify-end">
+              <button data-act="save-reflection" data-input="${reflId}" class="px-4 py-2 rounded-full text-xs font-semibold text-[#0D0F0E] cursor-pointer hover:brightness-110 shadow-md" style="background:var(--gold)">💾 Save 3-Metric Check-In & Reflection</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
     function checkinContentHTML(mobile) {
       const td = curatedTodayData();
       const ul = levelInfoOf(null);
@@ -2331,15 +2606,9 @@
             <div class="mt-1.5 h-1.5 rounded-full bg-white/10 overflow-hidden"><div class="h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-300" style="width:${Math.max(ul.pct, 2)}%"></div></div>
           </div>
 
-          ${weeklyConstellationHTML()}
+          ${trioMetricsDashboardHTML(reflId)}
 
-          <div class="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2.5">
-            <p class="text-xs font-semibold uppercase tracking-wider text-amber-300">✨ Evening Reflection Journal</p>
-            <textarea id="${reflId}" rows="2" placeholder="What gave you energy today, or what deserves your focus tomorrow?" class="w-full bg-white/5 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-slate-100 focus:outline-none focus:border-teal-400 resize-none"></textarea>
-            <div class="flex justify-end">
-              <button data-act="save-reflection" data-input="${reflId}" class="px-4 py-1.5 rounded-full text-xs font-semibold text-[#0D0F0E] cursor-pointer hover:brightness-110" style="background:var(--gold)">Save Reflection to Life Journal</button>
-            </div>
-          </div>
+          ${weeklyConstellationHTML()}
 
           ${sec("⚠ Overdue", "text-red-300", td.overdue)}
           ${sec("Due Today", "text-amber-300", td.dueToday)}
@@ -2971,6 +3240,7 @@
     let activeFocusTab = "today"; // "today" | "checkin"
     function openTodayCheckinModal(tab = "today") {
       activeFocusTab = tab;
+      pullDailyMetricsFromSupabase();
       renderTodayCheckinModal();
       openModal("todayCheckinModal");
     }
@@ -3010,14 +3280,59 @@
       }
     }
 
-    function saveReflection(inputId) {
+    async function saveReflection(inputId) {
       const inp = document.getElementById(inputId);
-      if (!inp || !inp.value.trim()) { toast("Write a short reflection first", "#F59E0B"); return; }
-      const text = `🌙 Evening Reflection: ${inp.value.trim()}`;
-      addNote(null, text);
-      inp.value = "";
-      toast("✦ Reflection saved to your Life Journal");
-      if (!document.getElementById("todayCheckinModal").classList.contains("hidden")) renderTodayCheckinModal();
+      const rawText = inp ? inp.value.trim() : "";
+      const preset = TRIO_PRESETS[draftTrio.presetKey] || TRIO_PRESETS.clarity_sovereignty_vitality;
+      const today = todayISO();
+      const list = ensureDailyMetricsArray();
+      const entry = {
+        date: today,
+        trio_key: preset.key,
+        label_1: preset.labels[0],
+        label_2: preset.labels[1],
+        label_3: preset.labels[2],
+        score_1: draftTrio.s1,
+        score_2: draftTrio.s2,
+        score_3: draftTrio.s3,
+        reflection: rawText,
+      };
+      const existingIdx = list.findIndex(m => m.date === today);
+      if (existingIdx >= 0) list[existingIdx] = entry;
+      else list.unshift(entry);
+      STATE.trioPresetKey = preset.key;
+
+      if (rawText) {
+        addNote(null, `🌙 Trio Check-In (${preset.labels[0]} ${draftTrio.s1}/5 · ${preset.labels[1]} ${draftTrio.s2}/5 · ${preset.labels[2]} ${draftTrio.s3}/5): ${rawText}`);
+      } else {
+        logEvent(null, "done", `🌙 Logged Trio Metrics: ${preset.labels[0]} ${draftTrio.s1}/5 · ${preset.labels[1]} ${draftTrio.s2}/5 · ${preset.labels[2]} ${draftTrio.s3}/5`);
+        commit();
+      }
+
+      sfx.done();
+      toast(`✦ Logged ${preset.labels[0]} ${draftTrio.s1}/5 · ${preset.labels[1]} ${draftTrio.s2}/5 · ${preset.labels[2]} ${draftTrio.s3}/5`);
+      if (!document.getElementById("todayCheckinModal")?.classList.contains("hidden")) renderTodayCheckinModal();
+      if (isMobile() && mobView === "checkin") renderMobile();
+
+      try {
+        const uidVal = universeId() === "default" ? "a1361b3c-32f2-4fed-a637-200ac9ecb861" : universeId();
+        await fetch("/api/assistant", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            intent: "save_metrics",
+            universeId: uidVal,
+            trioKey: preset.key,
+            label1: preset.labels[0],
+            label2: preset.labels[1],
+            label3: preset.labels[2],
+            score1: draftTrio.s1,
+            score2: draftTrio.s2,
+            score3: draftTrio.s3,
+            reflection: rawText,
+          }),
+        });
+      } catch (e) {}
     }
 
     // Natural-Language Quick-Add & Global Command Deck (⌘K / Ctrl+K)
@@ -3572,9 +3887,29 @@
         case "mob-checkin-sub": mobCheckinSubTab = d.sub || "today"; renderMobile(); break;
         case "open-today-focus": openTodayCheckinModal("today"); break;
         case "open-desk-checkin": openTodayCheckinModal("checkin"); break;
-        case "switch-focus-tab": activeFocusTab = d.tab || "today"; renderTodayCheckinModal(); break;
+        case "switch-focus-tab": activeFocusTab = d.tab || "today"; if (activeFocusTab === "checkin") pullDailyMetricsFromSupabase(); renderTodayCheckinModal(); break;
         case "triage-overdue": triageOverdueTasks(d.id || null, parseInt(d.days || "0", 10)); break;
         case "save-reflection": saveReflection(d.input); break;
+        case "select-trio-preset":
+          if (d.preset && TRIO_PRESETS[d.preset]) {
+            draftTrio.presetKey = d.preset;
+            STATE.trioPresetKey = d.preset;
+            sfx.click();
+            if (!document.getElementById("todayCheckinModal")?.classList.contains("hidden")) renderTodayCheckinModal();
+            if (isMobile() && mobView === "checkin") renderMobile();
+          }
+          break;
+        case "set-trio-score": {
+          const slot = parseInt(d.slot || "1", 10);
+          const val = clamp(parseInt(d.val || "3", 10), 1, 5);
+          if (slot === 1) draftTrio.s1 = val;
+          else if (slot === 2) draftTrio.s2 = val;
+          else if (slot === 3) draftTrio.s3 = val;
+          sfx.click();
+          if (!document.getElementById("todayCheckinModal")?.classList.contains("hidden")) renderTodayCheckinModal();
+          if (isMobile() && mobView === "checkin") renderMobile();
+          break;
+        }
         case "open-cmd": openCmdModal(); break;
         case "cmd-quick-create": executeCmdQuickCreate(); break;
         case "cmd-jump-planet": closeModal("cmdModal"); dive(d.id || null); break;
@@ -3959,9 +4294,80 @@
       } catch (e) {}
     }
 
+    // Bridge with Parent Floating AI Assistant HUD
+    function broadcastContextToAssistant() {
+      try {
+        if (window.parent && window.parent !== window) {
+          const activePid = selectedId || focusId || null;
+          const activeP = activePid ? P(activePid) : null;
+          window.parent.postMessage({
+            type: "IDEMAP_CONTEXT",
+            universeId: universeId(),
+            focusPlanetId: activePid,
+            focusPlanetName: activeP ? `${activeP.icon} ${activeP.name}` : `${STATE.life?.icon || "☀️"} ${STATE.life?.name || "Life"}`,
+          }, "*");
+        }
+      } catch (e) {}
+    }
+
+    window.addEventListener("message", (ev) => {
+      const data = ev.data;
+      if (!data || typeof data !== "object") return;
+      if (data.type === "IDEMAP_REQUEST_CONTEXT") {
+        broadcastContextToAssistant();
+      } else if (data.type === "IDEMAP_APPLY_ACTION" && data.action) {
+        const act = data.action;
+        const payload = act.payload || {};
+        const pid = act.target_planet_id || payload.planetId;
+        const p = pid ? P(pid) : null;
+        if (act.action_type === "create_task" && p) {
+          const tid = payload.taskId || uid("t");
+          if (!p.tasks.some(x => x.id === tid)) {
+            p.tasks.push({
+              id: tid,
+              title: String(payload.title || act.title),
+              diff: Number(payload.diff) || 2,
+              due: payload.due || todayISO(),
+              recur: String(payload.recur || ""),
+              streak: 0,
+              history: [],
+              done: false,
+              doneAt: null,
+              xpAwarded: 0,
+              createdBy: "AI Architect",
+            });
+            logEvent(p.id, "added", `🤖 AI Assistant added task “${payload.title || act.title}”`);
+            sfx.add();
+            toast(`🤖 Added “${payload.title || act.title}” to ${p.icon} ${p.name}`);
+            commit();
+          }
+        } else if (act.action_type === "complete_task" && p && act.target_task_id) {
+          const t = p.tasks.find(x => x.id === act.target_task_id);
+          if (t && !t.done) {
+            toggleTask(p.id, t.id);
+          }
+        } else if (act.action_type === "reschedule_task" && p && act.target_task_id) {
+          const t = p.tasks.find(x => x.id === act.target_task_id);
+          if (t) {
+            t.due = payload.due || todayISO();
+            logEvent(p.id, "renamed", `🤖 AI rescheduled “${t.title}” to ${t.due}`);
+            sfx.done();
+            toast(`🤖 Rescheduled “${t.title}” to ${t.due}`);
+            commit();
+          }
+        } else if (act.action_type === "toggle_strain" && p) {
+          const kind = payload.strainKind === "fin" ? "fin" : "psy";
+          toggleStrain(p.id, kind);
+        }
+        broadcastContextToAssistant();
+      }
+    });
+
+    document.addEventListener("click", () => { setTimeout(broadcastContextToAssistant, 80); });
+
     evaluateSolarShieldsAndComet();
     render();
-    initAuth();
+    initAuth().then(() => setTimeout(broadcastContextToAssistant, 250));
     requestAnimationFrame(animateLoop);
   </script>
 </body>
