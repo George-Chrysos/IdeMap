@@ -2428,29 +2428,38 @@
       };
     }
 
-    function trioMetricsDashboardHTML(reflId) {
+    function checkinContentHTML(mobile) {
+      const td = curatedTodayData();
+      const ul = levelInfoOf(null);
+      const uTitle = cosmicTitle(ul.lvl);
+      const reflId = mobile ? "inputReflectMob" : "inputReflectDesk";
       const dash = compute7DayMetricsDashboard();
       const preset = dash.preset;
       const todayEntry = ensureDailyMetricsArray().find(m => m.date === todayISO());
 
+      // 1. Metric Sliders (Clarity, Sovereignty, Vitality)
       const metricSliders = [0, 1, 2].map(idx => {
         const lbl = preset.labels[idx];
         const icon = preset.icons[idx];
         const col = preset.colors[idx];
         const curVal = idx === 0 ? draftTrio.s1 : idx === 1 ? draftTrio.s2 : draftTrio.s3;
         const slot = idx + 1;
+        const subtext = idx === 0 ? "Focus & Mental Vision" : idx === 1 ? "Autonomy & Value Alignment" : "Energy & Restorative Habits";
         return `
-          <div class="p-4 sm:p-5 lg:p-6 rounded-2xl sm:rounded-3xl bg-[#0B0E0F]/90 border border-white/10 space-y-3 lg:space-y-4">
+          <div class="p-3.5 sm:p-4.5 rounded-2xl bg-[#0B0E0F]/90 border border-white/10 space-y-2.5 transition-all hover:border-white/20">
             <div class="flex items-center justify-between">
-              <span class="font-bold text-base sm:text-lg lg:text-xl text-white flex items-center gap-2">
-                <span class="text-xl sm:text-2xl">${icon}</span>
-                <span>${esc(lbl)}</span>
-              </span>
-              <span class="px-3.5 py-1 rounded-full text-xs sm:text-sm lg:text-base font-bold shadow-sm" style="background:${col}22;color:${col};border:1px solid ${col}66">${curVal} / 5</span>
+              <div>
+                <span class="font-bold text-sm sm:text-base lg:text-lg text-white flex items-center gap-2">
+                  <span class="text-lg sm:text-xl">${icon}</span>
+                  <span>${esc(lbl)}</span>
+                </span>
+                <p class="text-[11px] sm:text-xs text-slate-400 mt-0.5">${subtext}</p>
+              </div>
+              <span class="px-3 py-1 rounded-full text-xs sm:text-sm font-bold shadow-sm" style="background:${col}22;color:${col};border:1px solid ${col}66">${curVal} / 5</span>
             </div>
-            <div class="grid grid-cols-5 gap-2 sm:gap-2.5">
+            <div class="grid grid-cols-5 gap-1.5 sm:gap-2">
               ${[1, 2, 3, 4, 5].map(v => `
-                <button data-act="set-trio-score" data-slot="${slot}" data-val="${v}" class="py-2.5 sm:py-3.5 lg:py-4 rounded-xl text-sm sm:text-base lg:text-lg font-bold border transition-all cursor-pointer ${curVal >= v ? "text-white shadow-md scale-[1.01]" : "bg-white/[0.03] border-white/10 text-slate-500 hover:text-slate-300 hover:bg-white/[0.06]"}" style="${curVal >= v ? `background:${col}33;border-color:${col};color:#fff` : ""}">
+                <button data-act="set-trio-score" data-slot="${slot}" data-val="${v}" class="py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm lg:text-base font-bold border transition-all cursor-pointer ${curVal >= v ? "text-white shadow-md scale-[1.01]" : "bg-white/[0.03] border-white/10 text-slate-500 hover:text-slate-300 hover:bg-white/[0.06]"}" style="${curVal >= v ? `background:${col}33;border-color:${col};color:#fff` : ""}">
                   ${v}
                 </button>
               `).join("")}
@@ -2459,127 +2468,255 @@
         `;
       }).join("");
 
-      const avgCards = [
+      // 2. Mini 7-Day Sparkline Dots
+      const miniSparkDots = dash.daysStrip.map(d => {
+        const e = d.entry;
+        const avg = e ? ((e.score_1 + e.score_2 + e.score_3) / 3).toFixed(1) : null;
+        return `
+          <div class="flex flex-col items-center gap-1">
+            <span class="text-[10px] sm:text-[11px] ${d.isToday ? "text-teal-300 font-bold" : "text-slate-400"}">${d.dayShort}</span>
+            <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold border transition-all ${
+              e
+                ? d.isToday
+                  ? "bg-teal-400/25 border-teal-400 text-teal-200 shadow-[0_0_12px_rgba(45,212,191,0.35)]"
+                  : "bg-white/10 border-white/20 text-white"
+                : "bg-white/[0.03] border-white/5 text-slate-600"
+            }" title="${d.iso}: ${avg ? `${avg} / 5` : 'Not logged'}">
+              ${avg || "—"}
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      // 3. Mini Bars for Averages
+      const miniAverages = [
         { lbl: preset.labels[0], icon: preset.icons[0], avg: dash.avg1, col: preset.colors[0] },
         { lbl: preset.labels[1], icon: preset.icons[1], avg: dash.avg2, col: preset.colors[1] },
         { lbl: preset.labels[2], icon: preset.icons[2], avg: dash.avg3, col: preset.colors[2] },
       ].map(c => {
         const pct = Math.round((c.avg / 5) * 100);
         return `
-          <div class="p-4 sm:p-5 lg:p-6 rounded-2xl sm:rounded-3xl bg-[#0B0E0F]/90 border border-white/10 space-y-2.5 sm:space-y-3">
-            <div class="flex items-center justify-between">
-              <span class="text-sm sm:text-base lg:text-lg text-slate-200 font-semibold flex items-center gap-2"><span class="text-lg sm:text-xl">${c.icon}</span> ${esc(c.lbl)}</span>
-              <span class="font-bold text-2xl sm:text-3xl lg:text-4xl" style="color:${c.col}">${c.avg}<span class="text-xs sm:text-sm text-slate-400 font-normal">/5</span></span>
+          <div class="space-y-1">
+            <div class="flex items-center justify-between text-xs sm:text-sm">
+              <span class="text-slate-300 font-medium flex items-center gap-1.5">${c.icon} ${esc(c.lbl)}</span>
+              <span class="font-bold text-white" style="color:${c.col}">${c.avg} <span class="text-[10px] text-slate-400 font-normal">/ 5</span></span>
             </div>
-            <div class="h-2 sm:h-2.5 lg:h-3 rounded-full bg-white/10 overflow-hidden shadow-inner">
+            <div class="h-1.5 sm:h-2 rounded-full bg-white/10 overflow-hidden">
               <div class="h-full rounded-full transition-all duration-500" style="width:${pct}%;background:${c.col}"></div>
             </div>
-            <p class="text-xs sm:text-sm text-slate-400">7-Day Avg · ${pct}% equilibrium</p>
           </div>
         `;
       }).join("");
 
-      const stripCols = dash.daysStrip.map(d => {
+      // 4. Detailed 7-Day Multi-Bar Strip for Accordion
+      const detailedStripCols = dash.daysStrip.map(d => {
         const e = d.entry;
-        const h1 = e ? Math.round((e.score_1 / 5) * 60) : 6;
-        const h2 = e ? Math.round((e.score_2 / 5) * 60) : 6;
-        const h3 = e ? Math.round((e.score_3 / 5) * 60) : 6;
+        const h1 = e ? Math.round((e.score_1 / 5) * 55) : 6;
+        const h2 = e ? Math.round((e.score_2 / 5) * 55) : 6;
+        const h3 = e ? Math.round((e.score_3 / 5) * 55) : 6;
         const dayAvg = e ? ((e.score_1 + e.score_2 + e.score_3) / 3).toFixed(1) : "—";
         return `
-          <div class="flex flex-col items-center p-2.5 sm:p-3.5 rounded-2xl border ${d.isToday ? "bg-teal-400/10 border-teal-400/50 shadow-sm" : "bg-white/[0.02] border-white/5"}">
-            <span class="text-xs sm:text-sm font-semibold ${d.isToday ? "text-teal-300" : "text-slate-400"}">${d.dayShort}</span>
-            <div class="h-16 sm:h-20 lg:h-24 flex items-end gap-1.5 my-2">
-              <span class="w-2.5 sm:w-3 lg:w-3.5 rounded-t" style="height:${h1}px;background:${e ? preset.colors[0] : "rgba(255,255,255,0.12)"}" title="${preset.labels[0]}: ${e ? e.score_1 : "N/A"}"></span>
-              <span class="w-2.5 sm:w-3 lg:w-3.5 rounded-t" style="height:${h2}px;background:${e ? preset.colors[1] : "rgba(255,255,255,0.12)"}" title="${preset.labels[1]}: ${e ? e.score_2 : "N/A"}"></span>
-              <span class="w-2.5 sm:w-3 lg:w-3.5 rounded-t" style="height:${h3}px;background:${e ? preset.colors[2] : "rgba(255,255,255,0.12)"}" title="${preset.labels[2]}: ${e ? e.score_3 : "N/A"}"></span>
+          <div class="flex flex-col items-center p-2 rounded-xl border ${d.isToday ? "bg-teal-400/10 border-teal-400/50 shadow-sm" : "bg-white/[0.02] border-white/5"}">
+            <span class="text-[10px] sm:text-xs font-semibold ${d.isToday ? "text-teal-300" : "text-slate-400"}">${d.dayShort}</span>
+            <div class="h-14 sm:h-16 flex items-end gap-1 my-1.5">
+              <span class="w-2 sm:w-2.5 rounded-t" style="height:${h1}px;background:${e ? preset.colors[0] : "rgba(255,255,255,0.12)"}" title="${preset.labels[0]}: ${e ? e.score_1 : "N/A"}"></span>
+              <span class="w-2 sm:w-2.5 rounded-t" style="height:${h2}px;background:${e ? preset.colors[1] : "rgba(255,255,255,0.12)"}" title="${preset.labels[1]}: ${e ? e.score_2 : "N/A"}"></span>
+              <span class="w-2 sm:w-2.5 rounded-t" style="height:${h3}px;background:${e ? preset.colors[2] : "rgba(255,255,255,0.12)"}" title="${preset.labels[2]}: ${e ? e.score_3 : "N/A"}"></span>
             </div>
-            <span class="text-xs sm:text-sm font-bold ${e ? "text-slate-200" : "text-slate-500"}">${dayAvg}</span>
+            <span class="text-[10px] sm:text-xs font-bold ${e ? "text-slate-200" : "text-slate-500"}">${dayAvg}</span>
           </div>
         `;
       }).join("");
 
       return `
-        <!-- 7-Day Averages Dashboard for Clarity, Sovereignty & Vitality -->
-        <div class="p-5 sm:p-6 lg:p-8 rounded-3xl bg-gradient-to-br from-teal-500/15 via-[#0B0E0F] to-amber-500/15 border border-teal-400/35 space-y-4 lg:space-y-6">
-          <div class="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p class="text-xs sm:text-sm uppercase tracking-wider text-teal-300 font-semibold">📊 Life Frontier Telemetry</p>
-              <h4 class="font-fraunces text-xl sm:text-2xl lg:text-3xl text-white mt-0.5">Clarity · Sovereignty · Vitality · 7-Day Averages</h4>
-            </div>
-            <div class="px-4 py-1.5 rounded-full bg-amber-400/20 border border-amber-400/40 text-xs sm:text-sm lg:text-base font-semibold text-amber-200">
-              Composite: ${dash.composite} / 5.0 (${Math.round((dash.composite / 5) * 100)}%)
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 lg:gap-5">
-            ${avgCards}
-          </div>
-
-          <div class="grid grid-cols-7 gap-2 sm:gap-3 pt-2">
-            ${stripCols}
-          </div>
-        </div>
-
-        <!-- Daily Night 3-Metric Check-In Inputs (1-5) + Evening Reflection -->
-        <div class="p-5 sm:p-6 lg:p-8 rounded-3xl bg-white/[0.03] border border-white/10 space-y-4 sm:space-y-5">
-          <div class="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p class="text-sm sm:text-base lg:text-lg font-bold uppercase tracking-wider text-amber-300">🌙 Daily Frontier Check-In (1–5 Scale)</p>
-              <p class="text-xs sm:text-sm lg:text-base text-slate-300 mt-0.5">Log today's Clarity, Sovereignty & Vitality to calibrate your orbital momentum.</p>
-            </div>
-            ${todayEntry ? `<span class="px-3.5 py-1 rounded-full bg-teal-400/20 border border-teal-400/40 text-xs sm:text-sm font-semibold text-teal-200">✓ Logged Today</span>` : ""}
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-            ${metricSliders}
-          </div>
-
-          <div class="space-y-2.5 pt-2">
-            <label for="${reflId}" class="block text-xs sm:text-sm lg:text-base font-semibold uppercase tracking-wider text-teal-300">✨ Evening Reflection & Strategy Input</label>
-            <textarea id="${reflId}" rows="3" placeholder="What gave you energy today, or what deserves your focus tomorrow morning?" class="w-full bg-white/5 border border-slate-700 rounded-2xl p-4 text-sm sm:text-base text-slate-100 focus:outline-none focus:border-teal-400 resize-none min-h-[90px] sm:min-h-[110px]">${esc(todayEntry?.reflection || "")}</textarea>
-            <div class="flex justify-end pt-1">
-              <button data-act="save-reflection" data-input="${reflId}" class="px-8 sm:px-10 py-3 sm:py-3.5 rounded-full text-sm sm:text-base lg:text-lg font-bold text-[#0D0F0E] cursor-pointer hover:brightness-110 shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2" style="background:var(--gold)">Save</button>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    function checkinContentHTML(mobile) {
-      const td = curatedTodayData();
-      const ul = levelInfoOf(null);
-      const uTitle = cosmicTitle(ul.lvl);
-      const reflId = mobile ? "inputReflectMob" : "inputReflectDesk";
-      const sec = (title, cls, arr) => arr.length ? `<div class="space-y-2.5 sm:space-y-3"><p class="text-xs sm:text-sm lg:text-base font-semibold uppercase tracking-wider ${cls}">${title} · ${arr.length}</p>${arr.map(x => taskRow(x, mobile, true)).join("")}</div>` : "";
-      return `
-        <div class="space-y-5 sm:space-y-6 lg:space-y-8">
-          <div class="p-5 sm:p-6 lg:p-8 rounded-3xl bg-white/[0.03] border border-white/10 space-y-4">
-            <div class="flex items-center justify-between gap-3">
-              <div>
-                <p class="text-xs sm:text-sm lg:text-base uppercase tracking-wider text-teal-400 font-semibold">Daily Check-In</p>
-                <h3 class="font-fraunces text-2xl sm:text-3xl lg:text-4xl font-semibold text-white mt-1">${new Date().toLocaleDateString([], { weekday: "long", month: "short", day: "numeric" })}</h3>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 lg:gap-8 items-start">
+          
+          <!-- LEFT COCKPIT: PRIMARY DAILY INPUTS (7 columns on desktop) -->
+          <div class="lg:col-span-7 space-y-4 sm:space-y-5">
+            
+            <!-- Calibration Header Card -->
+            <div class="p-4 sm:p-5 lg:p-6 rounded-3xl bg-white/[0.03] border border-white/10 space-y-3 shadow-md">
+              <div class="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p class="text-xs sm:text-sm uppercase tracking-widest text-teal-400 font-semibold flex items-center gap-1.5">
+                    <span>⚡ DAILY CHECK-IN</span>
+                    <span class="text-slate-500">·</span>
+                    <span class="text-slate-300">${new Date().toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" })}</span>
+                  </p>
+                  <h3 class="font-fraunces text-xl sm:text-2xl lg:text-3xl font-semibold text-white mt-1">
+                    Calibrate Your Frontiers
+                  </h3>
+                </div>
+                <div class="flex items-center gap-2">
+                  ${todayEntry
+                    ? `<span class="px-3.5 py-1 rounded-full bg-teal-400/20 border border-teal-400/40 text-xs sm:text-sm font-semibold text-teal-200 shadow-sm flex items-center gap-1.5">✓ Logged Today</span>`
+                    : `<span class="px-3.5 py-1 rounded-full bg-amber-400/15 border border-amber-400/35 text-xs font-semibold text-amber-200 flex items-center gap-1">⏳ Ready for Today</span>`
+                  }
+                  <button data-act="toggle-push" class="px-3 py-1 rounded-full text-xs font-medium border ${STATE.pushEnabled ? "border-teal-400/45 bg-teal-400/15 text-teal-200" : "border-white/15 bg-white/5 text-slate-300"} cursor-pointer transition-colors" title="Toggle evening check-in reminder">
+                    ${STATE.pushEnabled ? "🔔 Reminders ON" : "🔕 Off"}
+                  </button>
+                </div>
               </div>
-              <button data-act="toggle-push" class="px-4 py-2 rounded-full text-xs sm:text-sm font-medium border ${STATE.pushEnabled ? "border-teal-400/45 bg-teal-400/15 text-teal-200" : "border-white/15 bg-white/5 text-slate-300"} cursor-pointer">${STATE.pushEnabled ? "🔔 Reminder ON" : "🔕 Remind Me"}</button>
+              <p class="text-xs sm:text-sm text-slate-400 leading-relaxed">
+                Score your three life pillars from 1 to 5 to calibrate orbital momentum and feed tomorrow's morning strategy.
+              </p>
             </div>
-            <div class="mt-4 grid grid-cols-3 gap-3 sm:gap-4 text-center">
-              <div class="rounded-2xl bg-white/[0.04] border border-white/10 py-3 sm:py-4"><p class="text-2xl sm:text-3xl lg:text-4xl font-bold text-teal-300">${td.doneToday.length}</p><p class="text-xs sm:text-sm uppercase tracking-wider text-slate-300 mt-1">done today</p></div>
-              <div class="rounded-2xl bg-white/[0.04] border border-white/10 py-3 sm:py-4"><p class="text-2xl sm:text-3xl lg:text-4xl font-bold text-amber-300">+${td.xpToday}</p><p class="text-xs sm:text-sm uppercase tracking-wider text-slate-300 mt-1">xp earned</p></div>
-              <div class="rounded-2xl bg-white/[0.04] border border-white/10 py-3 sm:py-4"><p class="text-2xl sm:text-3xl lg:text-4xl font-bold" style="color:${healthHex(computeHealth(null))}">${computeHealth(null)}%</p><p class="text-xs sm:text-sm uppercase tracking-wider text-slate-300 mt-1">life health</p></div>
+
+            <!-- The 3 Metric Rating Bars -->
+            <div class="space-y-3 sm:space-y-3.5">
+              ${metricSliders}
             </div>
-            <div class="mt-4 flex items-center justify-between text-xs sm:text-sm lg:text-base text-slate-300">
-              <span>Life Lv ${ul.whole} · <b class="text-amber-200">🏆 ${esc(uTitle)}</b></span>
-              <span>${ul.toNext} XP to Lv ${ul.whole + 1}</span>
+
+            <!-- Evening Reflection Note Input -->
+            <div class="p-4 sm:p-5 rounded-3xl bg-white/[0.03] border border-white/10 space-y-2.5 shadow-md">
+              <label for="${reflId}" class="block text-xs sm:text-sm font-semibold uppercase tracking-wider text-teal-300">
+                ✨ Evening Note & Reflection (Optional)
+              </label>
+              <textarea
+                id="${reflId}"
+                rows="3"
+                placeholder="What gave or drained energy today? What deserves focus tomorrow?"
+                class="w-full bg-[#0B0E0F]/80 border border-white/15 focus:border-teal-400 rounded-2xl p-3.5 text-xs sm:text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none transition-all resize-none min-h-[85px] sm:min-h-[100px] shadow-inner"
+              >${esc(todayEntry?.reflection || "")}</textarea>
+              <div class="flex items-center justify-between pt-1">
+                <span class="text-[11px] text-slate-400">Syncs directly to Supabase Life OS</span>
+                <button
+                  data-act="save-reflection"
+                  data-input="${reflId}"
+                  class="px-8 sm:px-12 py-3 rounded-full text-sm sm:text-base font-bold text-[#0D0F0E] cursor-pointer hover:brightness-110 shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2"
+                  style="background:var(--gold)"
+                >
+                  Save
+                </button>
+              </div>
             </div>
-            <div class="mt-2 h-2 sm:h-2.5 rounded-full bg-white/10 overflow-hidden"><div class="h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-300" style="width:${Math.max(ul.pct, 2)}%"></div></div>
+
           </div>
 
-          ${trioMetricsDashboardHTML(reflId)}
+          <!-- RIGHT COCKPIT: ORBITAL EQUILIBRIUM & SECONDARY INTEL (5 columns on desktop) -->
+          <div class="lg:col-span-5 space-y-4 sm:space-y-5">
+            
+            <!-- Today's Momentum Pulse Card -->
+            <div class="p-4 sm:p-5 rounded-3xl bg-white/[0.03] border border-white/10 space-y-3 shadow-md">
+              <div class="flex items-center justify-between">
+                <span class="text-xs uppercase tracking-wider text-amber-300 font-semibold">Today's Universe Pulse</span>
+                <span class="text-xs text-slate-400 font-medium">Life Lv ${ul.whole} · <b class="text-amber-200">🏆 ${esc(uTitle)}</b></span>
+              </div>
+              <div class="grid grid-cols-3 gap-2 sm:gap-3 text-center">
+                <div class="rounded-2xl bg-white/[0.03] border border-white/10 py-2.5 sm:py-3">
+                  <p class="text-xl sm:text-2xl font-bold text-teal-300">${td.doneToday.length}</p>
+                  <p class="text-[10px] sm:text-xs uppercase tracking-wider text-slate-400 mt-0.5">Done Today</p>
+                </div>
+                <div class="rounded-2xl bg-white/[0.03] border border-white/10 py-2.5 sm:py-3">
+                  <p class="text-xl sm:text-2xl font-bold text-amber-300">+${td.xpToday}</p>
+                  <p class="text-[10px] sm:text-xs uppercase tracking-wider text-slate-400 mt-0.5">XP Earned</p>
+                </div>
+                <div class="rounded-2xl bg-white/[0.03] border border-white/10 py-2.5 sm:py-3">
+                  <p class="text-xl sm:text-2xl font-bold" style="color:${healthHex(computeHealth(null))}">${computeHealth(null)}%</p>
+                  <p class="text-[10px] sm:text-xs uppercase tracking-wider text-slate-400 mt-0.5">Life Health</p>
+                </div>
+              </div>
+              <div class="space-y-1 pt-1">
+                <div class="flex items-center justify-between text-[11px] text-slate-400">
+                  <span>Level Progress</span>
+                  <span>${ul.toNext} XP to Lv ${ul.whole + 1}</span>
+                </div>
+                <div class="h-2 rounded-full bg-white/10 overflow-hidden">
+                  <div class="h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-300" style="width:${Math.max(ul.pct, 2)}%"></div>
+                </div>
+              </div>
+            </div>
 
-          ${weeklyConstellationHTML()}
+            <!-- 7-Day Orbital Equilibrium Glanceable Card -->
+            <div class="p-4 sm:p-5 rounded-3xl bg-gradient-to-br from-teal-500/10 via-[#0B0E0F] to-amber-500/10 border border-teal-400/35 space-y-4 shadow-lg">
+              <div class="flex items-center justify-between">
+                <div>
+                  <span class="text-xs uppercase tracking-wider text-teal-300 font-semibold">Orbital Equilibrium</span>
+                  <h4 class="font-fraunces text-lg sm:text-xl font-semibold text-white mt-0.5">7-Day Composite Pulse</h4>
+                </div>
+                <div class="text-right">
+                  <span class="px-3 py-1 rounded-full bg-amber-400/20 border border-amber-400/40 text-xs sm:text-sm font-bold text-amber-200">
+                    ${dash.composite} / 5.0
+                  </span>
+                  <p class="text-[10px] text-slate-400 mt-1">${Math.round((dash.composite / 5) * 100)}% Harmony</p>
+                </div>
+              </div>
 
-          ${sec("⚠ Overdue", "text-red-300", td.overdue)}
-          ${sec("Due Today", "text-amber-300", td.dueToday)}
-          ${td.doneToday.length ? sec("Completed / Cycled Today", "text-teal-300", td.doneToday) : ""}
+              <!-- Mini 7-Day Sparkline Dots -->
+              <div class="p-3 rounded-2xl bg-[#090C0D]/90 border border-white/10">
+                <div class="flex items-center justify-between">
+                  <span class="text-[11px] font-semibold text-slate-300">Daily Composite History</span>
+                  <span class="text-[10px] text-slate-400">${dash.loggedCount} of 7 days logged</span>
+                </div>
+                <div class="grid grid-cols-7 gap-1 pt-2.5 text-center">
+                  ${miniSparkDots}
+                </div>
+              </div>
+
+              <!-- Mini Metric Breakdown Bars -->
+              <div class="space-y-2 pt-1">
+                ${miniAverages}
+              </div>
+            </div>
+
+            <!-- TIER 2: PROGRESSIVE DISCLOSURE ACCORDIONS -->
+            <div class="space-y-3">
+              
+              <!-- Accordion 1: Full 7-Day Detailed Bar Charts -->
+              <details class="group rounded-2xl bg-white/[0.03] border border-white/10 overflow-hidden transition-all shadow-sm">
+                <summary class="p-3.5 sm:p-4 flex items-center justify-between cursor-pointer select-none text-xs sm:text-sm font-semibold text-teal-300 hover:text-teal-200 list-none transition-colors">
+                  <span class="flex items-center gap-2">
+                    <span>📊</span>
+                    <span>View 7-Day Day-by-Day Historical Bars</span>
+                  </span>
+                  <span class="text-xs text-slate-400 group-open:rotate-180 transition-transform duration-200">▼</span>
+                </summary>
+                <div class="p-3 sm:p-4 border-t border-white/10 bg-[#090C0D]/90 space-y-3">
+                  <p class="text-[11px] text-slate-400 leading-relaxed">
+                    Comparison across 🔮 Clarity (cyan), 👑 Sovereignty (gold), and ⚡ Vitality (violet) for the past 7 days:
+                  </p>
+                  <div class="grid grid-cols-7 gap-1 pt-1">
+                    ${detailedStripCols}
+                  </div>
+                </div>
+              </details>
+
+              <!-- Accordion 2: Weekly Celestial Star Constellation Quest -->
+              <details class="group rounded-2xl bg-white/[0.03] border border-white/10 overflow-hidden transition-all shadow-sm">
+                <summary class="p-3.5 sm:p-4 flex items-center justify-between cursor-pointer select-none text-xs sm:text-sm font-semibold text-amber-300 hover:text-amber-200 list-none transition-colors">
+                  <span class="flex items-center gap-2">
+                    <span>✨</span>
+                    <span>View Weekly Star Constellation Quest</span>
+                  </span>
+                  <span class="text-xs text-slate-400 group-open:rotate-180 transition-transform duration-200">▼</span>
+                </summary>
+                <div class="p-3 sm:p-4 border-t border-white/10 bg-[#090C0D]/90">
+                  ${weeklyConstellationHTML()}
+                </div>
+              </details>
+
+              <!-- Mission Backlog Quick-Link Card -->
+              <div class="p-3.5 sm:p-4 rounded-2xl bg-white/[0.02] border border-white/10 flex items-center justify-between gap-3 text-xs">
+                <div>
+                  <p class="font-semibold text-slate-200">Today's Mission Radar</p>
+                  <p class="text-[11px] text-slate-400 mt-0.5">
+                    <b>${td.dueToday.length}</b> due today · <b>${td.overdue.length}</b> overdue · <b>${td.doneToday.length}</b> done
+                  </p>
+                </div>
+                <button
+                  data-act="switch-focus-tab"
+                  data-tab="today"
+                  class="px-3.5 py-1.5 rounded-full text-xs font-semibold border border-teal-400/35 bg-teal-400/10 hover:bg-teal-400/20 text-teal-200 transition-all cursor-pointer whitespace-nowrap flex items-center gap-1 shadow-sm"
+                >
+                  <span>⚡ Today Focus</span>
+                  <span>→</span>
+                </button>
+              </div>
+
+            </div>
+
+          </div>
+
         </div>
       `;
     }
@@ -3216,8 +3353,8 @@
       const btnC = document.getElementById("tabBtnDeskCheckin");
       const body = document.getElementById("todayCheckinBody");
       if (!body) return;
-      if (btnT) btnT.className = `px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold cursor-pointer transition-all ${activeFocusTab === "today" ? "bg-amber-400/20 text-amber-200 border border-amber-400/45 shadow-sm" : "text-slate-300 hover:text-white border border-transparent"}`;
-      if (btnC) btnC.className = `px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold cursor-pointer transition-all ${activeFocusTab === "checkin" ? "bg-teal-400/20 text-teal-200 border border-teal-400/45 shadow-sm" : "text-slate-300 hover:text-white border border-transparent"}`;
+      if (btnT) btnT.className = `px-4 sm:px-6 py-2 sm:py-2.5 rounded-full text-xs sm:text-base lg:text-lg font-semibold cursor-pointer transition-all ${activeFocusTab === "today" ? "bg-amber-400/20 text-amber-200 border border-amber-400/45 shadow-sm" : "text-slate-300 hover:text-white border border-transparent"}`;
+      if (btnC) btnC.className = `px-4 sm:px-6 py-2 sm:py-2.5 rounded-full text-xs sm:text-base lg:text-lg font-semibold cursor-pointer transition-all ${activeFocusTab === "checkin" ? "bg-teal-400/20 text-teal-200 border border-teal-400/45 shadow-sm" : "text-slate-300 hover:text-white border border-transparent"}`;
       body.innerHTML = activeFocusTab === "today" ? todayFocusContentHTML(false) : checkinContentHTML(false);
     }
 
