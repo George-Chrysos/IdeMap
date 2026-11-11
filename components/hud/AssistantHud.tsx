@@ -569,6 +569,14 @@ export default function AssistantHud() {
 
               {/* Horizontal Quick-Prompt Strip (Positioned Directly Above Input) */}
               <div className="px-3 py-1.5 bg-[#0A0D0E] border-t border-white/10 flex items-center gap-1.5 overflow-x-auto hud-scroll whitespace-nowrap flex-shrink-0">
+                <a
+                  href="/console"
+                  className="text-[11px] font-mono px-2.5 py-1 rounded border border-emerald-400/30 bg-emerald-400/10 text-emerald-300 hover:text-white hover:bg-emerald-400/20 shrink-0 cursor-pointer transition-all font-medium flex items-center gap-1"
+                  title="Open Biophilic Frosted Glass Console"
+                >
+                  <span>✨ Glass Console</span>
+                  <ArrowUpRight className="w-3 h-3" />
+                </a>
                 {[
                   "What should I focus on?",
                   "Check sector strain",
