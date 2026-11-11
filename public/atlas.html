@@ -287,10 +287,10 @@
   <div id="mobileView" class="mob-only fixed inset-0 z-30"></div>
 
   <!-- Toast -->
-  <div id="toast" class="fixed left-1/2 bottom-24 md:bottom-8 z-[70] hidden px-5 py-2.5 rounded-full bg-[#0B0E0F] border border-teal-400/35 text-base font-medium text-slate-100 shadow-[0_0_30px_rgba(45,212,191,0.25)] whitespace-nowrap" style="transform:translateX(-50%)"></div>
+  <div id="toast" class="fixed left-1/2 bottom-24 md:bottom-8 z-[90] hidden px-5 py-2.5 rounded-full bg-[#0B0E0F] border border-teal-400/35 text-base font-medium text-slate-100 shadow-[0_0_30px_rgba(45,212,191,0.25)] whitespace-nowrap" style="transform:translateX(-50%)"></div>
 
   <!-- Planet Forge / Customize Modal (Responsive Bottom Sheet on Mobile) -->
-  <div id="forgeModal" class="fixed inset-0 bg-black/75 backdrop-blur-md z-50 hidden items-end sm:items-center justify-center p-0 sm:p-4">
+  <div id="forgeModal" class="fixed inset-0 bg-black/75 backdrop-blur-md z-[65] hidden items-end sm:items-center justify-center p-0 sm:p-4">
     <div class="hud-panel glass-surface p-0 w-full sm:max-w-md max-h-[90vh] sm:max-h-[85vh] rounded-t-3xl sm:rounded-2xl flex flex-col overflow-hidden fade-up">
       <div class="p-5 sm:p-6 pb-3 flex justify-between items-center border-b border-white/10 flex-shrink-0">
         <div>
@@ -334,7 +334,7 @@
   </div>
 
   <!-- Add / Edit Task Modal (Responsive Bottom Sheet on Mobile) -->
-  <div id="taskModal" class="fixed inset-0 bg-black/75 backdrop-blur-md z-50 hidden items-end sm:items-center justify-center p-0 sm:p-4">
+  <div id="taskModal" class="fixed inset-0 bg-black/75 backdrop-blur-md z-[65] hidden items-end sm:items-center justify-center p-0 sm:p-4">
     <div class="hud-panel glass-surface p-0 w-full sm:max-w-lg max-h-[90vh] sm:max-h-[85vh] rounded-t-3xl sm:rounded-2xl flex flex-col overflow-hidden fade-up">
       <div class="p-5 sm:p-6 pb-3 flex justify-between items-center border-b border-white/10 flex-shrink-0">
         <div>
@@ -395,12 +395,12 @@
   </div>
 
   <!-- Supernova Level-Up & Gravitational Breakthrough Banner -->
-  <div id="supernovaBanner" class="fixed top-20 left-1/2 -translate-x-1/2 z-[80] hidden pointer-events-none">
+  <div id="supernovaBanner" class="fixed top-20 left-1/2 -translate-x-1/2 z-[95] hidden pointer-events-none">
     <div id="supernovaBannerInner" class="hud-panel glass-surface px-6 py-4 rounded-2xl border border-amber-400/60 shadow-[0_0_60px_rgba(229,169,60,0.45)] flex items-center gap-4 fade-up"></div>
   </div>
 
   <!-- Command Deck Modal (⌘K / Ctrl+K: Natural Language Quick-Add & Global Search) -->
-  <div id="cmdModal" class="fixed inset-0 bg-black/75 backdrop-blur-md z-50 hidden items-start sm:items-center justify-center p-3 sm:p-4 pt-16 sm:pt-4">
+  <div id="cmdModal" class="fixed inset-0 bg-black/75 backdrop-blur-md z-[65] hidden items-start sm:items-center justify-center p-3 sm:p-4 pt-16 sm:pt-4">
     <div class="hud-panel glass-surface p-0 w-full max-w-xl max-h-[82vh] rounded-2xl flex flex-col overflow-hidden fade-up border border-teal-400/35 shadow-[0_0_70px_rgba(45,212,191,0.2)]">
       <div class="p-4 border-b border-white/10 flex items-center gap-3 bg-white/[0.02]">
         <span class="text-teal-300 text-lg leading-none">⌘</span>
@@ -1192,25 +1192,28 @@
         if (typeof p.shieldHealthyDays !== "number") p.shieldHealthyDays = 0;
 
         // Auto-consume Solar Shield if a recurring habit slipped past due date
+        let consumedShieldNow = false;
         for (const t of (p.tasks || [])) {
           if (t.recur && !t.done && t.due && t.due < today && (t.streak || 0) > 0 && p.solarShields > 0) {
             p.solarShields = Math.max(0, p.solarShields - 1);
             t.due = today;
+            consumedShieldNow = true;
+            healthCache.clear();
             logEvent(p.id, "done", `🛡️ Solar Flare Shield froze ${t.streak}🔥 streak on “${t.title}”`);
             setTimeout(() => toast(`🛡️ Solar Shield protected your ${t.streak}🔥 streak on “${t.title}”!`, "#E5A93C"), 400);
             stateMutated = true;
           }
         }
 
-        // Condense Solar Shield from 90%+ Health
+        // Condense Solar Shield from 90%+ Health (only if a shield wasn't just consumed to rescue an overdue habit)
         const h = computeHealth(p);
         const st = taskStats(p);
-        if (h >= 90 && st.everCompleted && !p._starterShieldGranted) {
+        if (!consumedShieldNow && h >= 90 && st.everCompleted && !p._starterShieldGranted) {
           p._starterShieldGranted = true;
           p.solarShields = Math.min(2, (p.solarShields || 0) + 1);
           p.lastShieldCheckISO = today;
           stateMutated = true;
-        } else if (p.lastShieldCheckISO !== today) {
+        } else if (!consumedShieldNow && p.lastShieldCheckISO !== today) {
           p.lastShieldCheckISO = today;
           if (h >= 90) {
             p.shieldHealthyDays = (p.shieldHealthyDays || 0) + 1;
@@ -1252,7 +1255,7 @@
       }
     }
 
-    function claimCometQuest(fromTaskTitle = null) {
+    function claimCometQuest(fromTaskTitle = null, skipCommit = false) {
       const comet = STATE.dailyComet;
       if (!comet || comet.claimed || comet.date !== todayISO()) return false;
       const p = P(comet.targetPid);
@@ -1265,7 +1268,7 @@
       setTimeout(() => {
         triggerSupernova(p.id, `☄️ PASSING COMET HARVESTED! (+${bonus} XP)`, `${p.icon} ${p.name} absorbed Halley's Spark bonus energy!`, "#2DD4BF");
       }, 260);
-      commit();
+      if (!skipCommit) commit();
       return true;
     }
 
@@ -1456,33 +1459,34 @@
         p.xp = (p.xp || 0) + gain;
         logEvent(pid, "done", `Cycled ${RECUR_LABEL[t.recur] || "↻"} “${t.title}” (🔥 ${t.streak}) · +${gain} XP`);
         sfx.done();
+        if (hitsComet) claimCometQuest(t.title, true);
         const alignAfter = orbitalAlignmentStatus().active;
         const ups = chain.filter((c, i) => Math.floor(levelOf(c)) > before[i]);
         const uUp = Math.floor(levelOf(null)) > uBefore;
-        if (hitsComet) {
-          claimCometQuest(t.title);
-        } else if (!alignBefore && alignAfter) {
-          setTimeout(() => {
-            sfx.levelUp();
-            triggerSupernova(pid, `⚡ ORBITAL ALIGNMENT ACTIVATED! (1.25× XP)`, `3+ root sectors active today — golden resonance beams online!`, "#E5A93C");
-          }, 220);
-        } else if (ups.length || uUp) {
-          ups.forEach(c => logEvent(c.id, "levelup", `Reached Level ${Math.floor(levelOf(c))} (${evolutionTier(levelOf(c)).name})`));
-          if (uUp) logEvent(null, "levelup", `Life reached Level ${Math.floor(levelOf(null))} · ${cosmicTitle(levelOf(null))}`);
-          const upName = ups[0] ? ups[0].name : (STATE.life?.name || "Life");
-          const newLv = Math.floor(ups[0] ? levelOf(ups[0]) : levelOf(null));
-          setTimeout(() => {
-            sfx.levelUp();
-            triggerSupernova(pid, `✦ SUPERNOVA LEVEL UP! · ${upName} Lv ${newLv}`, `Evolved into ${ups[0] ? evolutionTier(newLv).name : cosmicTitle(newLv)} (+${gain} XP)!`, "#E5A93C");
-          }, 220);
-        } else if (t.streak === 3 || t.streak === 7 || t.streak === 14) {
-          const mc = moonCompanion(p);
-          setTimeout(() => {
-            sfx.levelUp();
-            triggerSupernova(pid, `${mc.icon} MOON HATCHED: ${mc.name}!`, `${p.name} reached a ${t.streak}-day streak!`, mc.color);
-          }, 220);
-        } else {
-          toast(`↻ +${gain} XP · 🔥 ${t.streak} streak · next due ${t.due}`);
+        ups.forEach(c => logEvent(c.id, "levelup", `Reached Level ${Math.floor(levelOf(c))} (${evolutionTier(levelOf(c)).name})`));
+        if (uUp) logEvent(null, "levelup", `Life reached Level ${Math.floor(levelOf(null))} · ${cosmicTitle(levelOf(null))}`);
+        if (!hitsComet) {
+          if (!alignBefore && alignAfter) {
+            setTimeout(() => {
+              sfx.levelUp();
+              triggerSupernova(pid, `⚡ ORBITAL ALIGNMENT ACTIVATED! (1.25× XP)`, `3+ root sectors active today — golden resonance beams online!`, "#E5A93C");
+            }, 220);
+          } else if (ups.length || uUp) {
+            const upName = ups[0] ? ups[0].name : (STATE.life?.name || "Life");
+            const newLv = Math.floor(ups[0] ? levelOf(ups[0]) : levelOf(null));
+            setTimeout(() => {
+              sfx.levelUp();
+              triggerSupernova(pid, `✦ SUPERNOVA LEVEL UP! · ${upName} Lv ${newLv}`, `Evolved into ${ups[0] ? evolutionTier(newLv).name : cosmicTitle(newLv)} (+${gain} XP)!`, "#E5A93C");
+            }, 220);
+          } else if (t.streak === 3 || t.streak === 7 || t.streak === 14) {
+            const mc = moonCompanion(p);
+            setTimeout(() => {
+              sfx.levelUp();
+              triggerSupernova(pid, `${mc.icon} MOON HATCHED: ${mc.name}!`, `${p.name} reached a ${t.streak}-day streak!`, mc.color);
+            }, 220);
+          } else {
+            toast(`↻ +${gain} XP · 🔥 ${t.streak} streak · next due ${t.due}`);
+          }
         }
         commit();
         pulse(pid);
@@ -1498,29 +1502,30 @@
         p.xp = (p.xp || 0) + gain;
         logEvent(pid, "done", `Completed “${t.title}” · +${gain} XP${isBreakthrough ? " (Gravitational Breakthrough!)" : ""}`);
         if (isBreakthrough) sfx.breakthrough(); else sfx.done();
+        if (hitsComet) claimCometQuest(t.title, true);
         const alignAfter = orbitalAlignmentStatus().active;
         const ups = chain.filter((c, i) => Math.floor(levelOf(c)) > before[i]);
         const uUp = Math.floor(levelOf(null)) > uBefore;
-        if (hitsComet) {
-          claimCometQuest(t.title);
-        } else if (!alignBefore && alignAfter) {
-          setTimeout(() => {
-            sfx.levelUp();
-            triggerSupernova(pid, `⚡ ORBITAL ALIGNMENT ACTIVATED! (1.25× XP)`, `3+ root sectors active today — golden resonance beams online!`, "#E5A93C");
-          }, 220);
-        } else if (ups.length || uUp) {
-          ups.forEach(c => logEvent(c.id, "levelup", `Reached Level ${Math.floor(levelOf(c))} (${evolutionTier(levelOf(c)).name})`));
-          if (uUp) logEvent(null, "levelup", `Life reached Level ${Math.floor(levelOf(null))} · ${cosmicTitle(levelOf(null))}`);
-          const upName = ups[0] ? ups[0].name : (STATE.life?.name || "Life");
-          const newLv = Math.floor(ups[0] ? levelOf(ups[0]) : levelOf(null));
-          setTimeout(() => {
-            sfx.levelUp();
-            triggerSupernova(pid, `✦ SUPERNOVA LEVEL UP! · ${upName} Lv ${newLv}`, `Evolved into ${ups[0] ? evolutionTier(newLv).name : cosmicTitle(newLv)} (+${gain} XP)!`, "#E5A93C");
-          }, 220);
-        } else if (isBreakthrough) {
-          triggerSupernova(pid, `⚡ GRAVITATIONAL BREAKTHROUGH!`, `Conquered high-gravity mission on ${p.name} · +${gain} XP!`, "#F59E0B");
-        } else {
-          toast(`+${gain} XP · ${p.name}${strains ? " · resilience bonus" : ""}${alignAfter ? " · ⚡ 1.25× Aligned" : ""}`);
+        ups.forEach(c => logEvent(c.id, "levelup", `Reached Level ${Math.floor(levelOf(c))} (${evolutionTier(levelOf(c)).name})`));
+        if (uUp) logEvent(null, "levelup", `Life reached Level ${Math.floor(levelOf(null))} · ${cosmicTitle(levelOf(null))}`);
+        if (!hitsComet) {
+          if (!alignBefore && alignAfter) {
+            setTimeout(() => {
+              sfx.levelUp();
+              triggerSupernova(pid, `⚡ ORBITAL ALIGNMENT ACTIVATED! (1.25× XP)`, `3+ root sectors active today — golden resonance beams online!`, "#E5A93C");
+            }, 220);
+          } else if (ups.length || uUp) {
+            const upName = ups[0] ? ups[0].name : (STATE.life?.name || "Life");
+            const newLv = Math.floor(ups[0] ? levelOf(ups[0]) : levelOf(null));
+            setTimeout(() => {
+              sfx.levelUp();
+              triggerSupernova(pid, `✦ SUPERNOVA LEVEL UP! · ${upName} Lv ${newLv}`, `Evolved into ${ups[0] ? evolutionTier(newLv).name : cosmicTitle(newLv)} (+${gain} XP)!`, "#E5A93C");
+            }, 220);
+          } else if (isBreakthrough) {
+            triggerSupernova(pid, `⚡ GRAVITATIONAL BREAKTHROUGH!`, `Conquered high-gravity mission on ${p.name} · +${gain} XP!`, "#F59E0B");
+          } else {
+            toast(`+${gain} XP · ${p.name}${strains ? " · resilience bonus" : ""}${alignAfter ? " · ⚡ 1.25× Aligned" : ""}`);
+          }
         }
       } else {
         p.xp = Math.max(0, (p.xp || 0) - (t.xpAwarded || 0));
@@ -1543,6 +1548,7 @@
       logEvent(pid, "undo", `Undid cycle on “${t.title}”`);
       sfx.undo();
       commit();
+      if (!document.getElementById("todayCheckinModal")?.classList.contains("hidden")) renderTodayCheckinModal();
     }
 
     function deleteTask(pid, tid) {
@@ -1553,6 +1559,8 @@
       logEvent(pid, "deleted", `Removed task “${t.title}”`);
       sfx.del();
       commit();
+      if (!document.getElementById("todayCheckinModal")?.classList.contains("hidden")) renderTodayCheckinModal();
+      if (!document.getElementById("cmdModal")?.classList.contains("hidden")) renderCmdModal(document.getElementById("inputCmdQuery")?.value || "");
     }
 
     function deletePlanet(id) {
@@ -1848,14 +1856,14 @@
       center.addEventListener("click", (e) => { e.stopPropagation(); select(null); });
       domContainer.appendChild(center); scene.focusEl = center;
 
-      // Orbiting children: click = inspect, click again = dive
+      // Orbiting children: single click navigates directly inside the planet
       const childSize = mob ? clamp(Math.round(g.radius * 0.40), 42, 52) : Math.round(78 * s);
       kids.forEach(cid => {
         const el = createNode(P(cid), childSize, "child");
         el.addEventListener("click", (e) => {
           if (e.target.closest("[data-act='claim-comet']")) return;
           e.stopPropagation();
-          if (selectedId === cid) dive(cid); else select(cid);
+          dive(cid);
         });
         domContainer.appendChild(el); scene.kidEls[cid] = el;
       });
@@ -2275,7 +2283,7 @@
               <h3 class="font-fraunces text-xl sm:text-2xl font-semibold text-white mt-0.5">Today's Priority Queue</h3>
               <p class="text-xs text-slate-300 mt-1">Auto-ranked by urgency, overdue recovery, high-gravity strain, and streak protection.</p>
             </div>
-            <button data-act="open-cmd" class="px-3.5 py-2 rounded-full text-xs font-semibold text-[#0D0F0E] shrink-0 cursor-pointer shadow-md" style="background:var(--gold)">+ Quick Add</button>
+            <button data-act="add-task" data-pid="${focusId || ""}" class="px-3.5 py-2 rounded-full text-xs font-semibold text-[#0D0F0E] shrink-0 cursor-pointer shadow-md hover:brightness-110 transition-all" style="background:var(--gold)">+ Add Task</button>
           </div>
           ${cometBanner}
           ${alignmentBanner}
@@ -2797,8 +2805,21 @@
     const FORGE_ICONS = ["✨", "🌱", "🏠", "💼", "📡", "🎮", "❤️", "👥", "🏋️", "📖", "💰", "🧘", "🎨", "✈️", "🧠", "🎵", "☀️", "🪐", "⚡", "🔬", "🍳", "🏔️", "🛠️", "🎯"];
     const FORGE_COLORS = ["#0F766E", "#3B7A57", "#4A6FA5", "#6B4A8A", "#2D7A8A", "#8A6B2D", "#8A2D5A", "#C04A4A", "#7A853B", "#2D5A8A", "#B45309", "#4F46E5"];
     let forge = { parentId: null, editId: undefined, icon: "✨", color: "#3B7A57" };
-    function openModal(id) { const m = document.getElementById(id); m.classList.remove("hidden"); m.classList.add("flex"); }
-    function closeModal(id) { const m = document.getElementById(id); m.classList.add("hidden"); m.classList.remove("flex"); }
+    let modalZCounter = 65;
+    function openModal(id) {
+      const m = document.getElementById(id);
+      if (!m) return;
+      modalZCounter += 1;
+      m.style.zIndex = String(modalZCounter);
+      m.classList.remove("hidden");
+      m.classList.add("flex");
+    }
+    function closeModal(id) {
+      const m = document.getElementById(id);
+      if (!m) return;
+      m.classList.add("hidden");
+      m.classList.remove("flex");
+    }
     function renderForgePickers() {
       document.getElementById("forgeIcons").innerHTML = FORGE_ICONS.map(i => `<button data-act="forge-icon" data-v="${i}" class="w-9 h-9 rounded-lg text-lg inline-flex items-center justify-center cursor-pointer border ${forge.icon === i ? "border-teal-400 bg-teal-400/15 text-teal-200" : "border-white/10 bg-white/5 hover:border-white/30 text-slate-200"}">${renderNodeIcon(i, 18)}</button>`).join("");
       document.getElementById("forgeColors").innerHTML = FORGE_COLORS.map(c => `<button data-act="forge-color" data-v="${c}" class="w-8 h-8 rounded-full cursor-pointer ${forge.color.toLowerCase() === c.toLowerCase() ? "ring-2 ring-offset-2 ring-offset-[#0F1315] ring-teal-300" : ""}" style="background:${c}"></button>`).join("");
@@ -2940,6 +2961,8 @@
       editingTask = null;
       sfx.add();
       commit();
+      if (!document.getElementById("todayCheckinModal")?.classList.contains("hidden")) renderTodayCheckinModal();
+      if (!document.getElementById("cmdModal")?.classList.contains("hidden")) renderCmdModal(document.getElementById("inputCmdQuery")?.value || "");
     }
 
     // =========================================================================
@@ -3151,6 +3174,7 @@
       sfx.add();
       toast(`⚡ Added “${parsed.title}” to ${p.icon} ${p.name}`);
       commit();
+      if (!document.getElementById("todayCheckinModal")?.classList.contains("hidden")) renderTodayCheckinModal();
     }
 
     // Shared Solar System / Partner Tether Modal & Actions
@@ -3614,6 +3638,7 @@
           if (currentUser) {
             if (window.confirm("Sign out of your Idemap account?")) signOutUser();
           } else {
+            ["forgeModal", "taskModal", "cmdModal", "todayCheckinModal", "tetherModal", "cosmeticsModal"].forEach(closeModal);
             guestMode = false;
             updateAuthUI();
           }
@@ -3663,13 +3688,16 @@
       const cosmOpen = !document.getElementById("cosmeticsModal").classList.contains("hidden");
 
       if (e.key === "Escape") {
-        if (cmdOpen) closeModal("cmdModal");
-        else if (forgeOpen) closeModal("forgeModal");
-        else if (taskOpen) closeModal("taskModal");
-        else if (todayOpen) closeModal("todayCheckinModal");
-        else if (tetherOpen) closeModal("tetherModal");
-        else if (cosmOpen) closeModal("cosmeticsModal");
-        else if (selectedId) { selectedId = null; updateSelectionVisuals(); renderHUD(); }
+        const modalIds = ["cmdModal", "taskModal", "forgeModal", "todayCheckinModal", "tetherModal", "cosmeticsModal"];
+        const openModals = modalIds
+          .map(id => document.getElementById(id))
+          .filter(el => el && !el.classList.contains("hidden"))
+          .sort((a, b) => (parseInt(b.style.zIndex || "50", 10) - parseInt(a.style.zIndex || "50", 10)));
+        if (openModals.length) {
+          closeModal(openModals[0].id);
+        } else if (selectedId) {
+          selectedId = null; updateSelectionVisuals(); renderHUD();
+        }
       }
       if (e.key === "Enter" && !e.shiftKey && e.target.tagName !== "TEXTAREA") {
         if (cmdOpen && document.activeElement?.id === "inputCmdQuery") { e.preventDefault(); executeCmdQuickCreate(); }
