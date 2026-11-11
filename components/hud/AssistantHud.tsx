@@ -81,26 +81,13 @@ interface ChatMessage {
   created_at?: string;
 }
 
-const TRIO_PRESETS = [
-  {
-    key: "clarity_sovereignty_vitality",
-    name: "Clarity · Sovereignty · Vitality",
-    labels: ["Clarity", "Sovereignty", "Vitality"] as const,
-    icons: ["🔮", "👑", "⚡"] as const,
-  },
-  {
-    key: "mind_heart_body",
-    name: "Mind · Heart · Body",
-    labels: ["Mind", "Heart", "Body"] as const,
-    icons: ["🧠", "❤️", "🏋️"] as const,
-  },
-  {
-    key: "focus_peace_energy",
-    name: "Focus · Peace · Energy",
-    labels: ["Focus", "Peace", "Energy"] as const,
-    icons: ["🎯", "🧘", "🔥"] as const,
-  },
-];
+const TRIO_DEF = {
+  key: "clarity_sovereignty_vitality",
+  name: "Clarity · Sovereignty · Vitality",
+  labels: ["Clarity", "Sovereignty", "Vitality"] as const,
+  icons: ["🔮", "👑", "⚡"] as const,
+  colors: ["#2DD4BF", "#E5A93C", "#C084FC"] as const,
+};
 
 const DEFAULT_UNIVERSE_ID = "a1361b3c-32f2-4fed-a637-200ac9ecb861";
 
@@ -125,7 +112,6 @@ export default function AssistantHud() {
   const [statusBanner, setStatusBanner] = useState<string | null>(null);
 
   // 3-Metric Night Check-in state
-  const [selectedTrioIdx, setSelectedTrioIdx] = useState(0);
   const [score1, setScore1] = useState(4);
   const [score2, setScore2] = useState(4);
   const [score3, setScore3] = useState(3);
@@ -348,7 +334,6 @@ export default function AssistantHud() {
   };
 
   const handleSaveMetrics = async () => {
-    const preset = TRIO_PRESETS[selectedTrioIdx];
     setSavingMetrics(true);
     setStatusBanner("💾 Saving 3-Metric Check-in & generating Night Strategy...");
     try {
@@ -358,10 +343,10 @@ export default function AssistantHud() {
         body: JSON.stringify({
           intent: "save_metrics",
           universeId,
-          trioKey: preset.key,
-          label1: preset.labels[0],
-          label2: preset.labels[1],
-          label3: preset.labels[2],
+          trioKey: TRIO_DEF.key,
+          label1: TRIO_DEF.labels[0],
+          label2: TRIO_DEF.labels[1],
+          label3: TRIO_DEF.labels[2],
           score1,
           score2,
           score3,
@@ -395,8 +380,6 @@ export default function AssistantHud() {
     }
   };
 
-  const currentTrio = TRIO_PRESETS[selectedTrioIdx];
-
   return (
     <div className="fixed bottom-4 left-4 z-50 font-sans select-none">
       {/* Floating Launcher Pill */}
@@ -428,38 +411,38 @@ export default function AssistantHud() {
 
       {/* Expanded Floating HUD Drawer */}
       {isOpen && (
-        <div className="w-[370px] sm:w-[420px] h-[600px] max-h-[86vh] rounded-2xl bg-[#0D1113]/95 border border-teal-400/35 shadow-[0_24px_70px_rgba(0,0,0,0.85),0_0_35px_rgba(45,212,191,0.12)] backdrop-blur-2xl flex flex-col overflow-hidden text-slate-100">
+        <div className="w-[370px] sm:w-[500px] md:w-[580px] lg:w-[680px] xl:w-[760px] h-[640px] sm:h-[720px] lg:h-[820px] max-h-[90vh] rounded-2xl sm:rounded-3xl bg-[#0D1113]/95 border border-teal-400/35 shadow-[0_24px_70px_rgba(0,0,0,0.85),0_0_35px_rgba(45,212,191,0.12)] backdrop-blur-2xl flex flex-col overflow-hidden text-slate-100">
           {/* Header */}
-          <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between bg-gradient-to-r from-teal-500/10 via-transparent to-amber-500/10">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-8 h-8 rounded-xl bg-teal-400/20 border border-teal-400/40 flex items-center justify-center text-teal-300 shrink-0">
-                <Sparkles className="w-4 h-4" />
+          <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-white/10 flex items-center justify-between bg-gradient-to-r from-teal-500/10 via-transparent to-amber-500/10">
+            <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-teal-400/20 border border-teal-400/40 flex items-center justify-center text-teal-300 shrink-0">
+                <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
               <div className="min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <h3 className="text-xs font-semibold uppercase tracking-wider text-teal-300 truncate">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-xs sm:text-sm lg:text-base font-semibold uppercase tracking-wider text-teal-300 truncate">
                     IdeMap AI Architect
                   </h3>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-teal-400/15 border border-teal-400/30 text-teal-200">
+                  <span className="text-[10px] sm:text-xs px-2 py-0.5 rounded-full bg-teal-400/15 border border-teal-400/30 text-teal-200">
                     {preferN8n ? "n8n Flow" : "Hybrid Agent"}
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-400 truncate">
-                  Target: <span className="text-slate-200">{focusPlanetName}</span>
+                <p className="text-[11px] sm:text-xs text-slate-400 truncate">
+                  Target: <span className="text-slate-200 font-medium">{focusPlanetName}</span>
                 </p>
               </div>
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer"
+              className="p-1.5 sm:p-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer"
               title="Minimize Assistant HUD"
             >
-              <ChevronDown className="w-4 h-4" />
+              <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
           </div>
 
           {/* Navigation Tabs */}
-          <div className="grid grid-cols-4 gap-1 p-1.5 bg-[#090C0D] border-b border-white/10 text-[11px] font-medium">
+          <div className="grid grid-cols-4 gap-1 p-1.5 sm:p-2 bg-[#090C0D] border-b border-white/10 text-[11px] sm:text-xs font-medium">
             <button
               onClick={() => setActiveTab("chat")}
               className={`py-1.5 px-2 rounded-lg flex items-center justify-center gap-1 transition-all cursor-pointer ${
@@ -765,47 +748,47 @@ export default function AssistantHud() {
                   3
                 ).toFixed(1);
                 return (
-                  <div className="p-3.5 rounded-2xl bg-gradient-to-br from-teal-500/10 via-[#090C0D] to-amber-500/10 border border-teal-400/35 space-y-2.5">
+                  <div className="p-3.5 sm:p-5 rounded-2xl bg-gradient-to-br from-teal-500/10 via-[#090C0D] to-amber-500/10 border border-teal-400/35 space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-semibold uppercase tracking-wider text-teal-300">
+                      <span className="text-[11px] sm:text-xs lg:text-sm font-semibold uppercase tracking-wider text-teal-300">
                         📊 7-Day Trio Averages
                       </span>
-                      <span className="px-2 py-0.5 rounded-full bg-amber-400/20 border border-amber-400/40 text-[10px] font-bold text-amber-200">
+                      <span className="px-2.5 py-1 rounded-full bg-amber-400/20 border border-amber-400/40 text-[10px] sm:text-xs font-bold text-amber-200">
                         Composite {comp} / 5.0
                       </span>
                     </div>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-3 gap-2.5 sm:gap-3.5">
                       {[
                         {
-                          lbl: currentTrio.labels[0],
-                          icon: currentTrio.icons[0],
+                          lbl: TRIO_DEF.labels[0],
+                          icon: TRIO_DEF.icons[0],
                           avg: avg1,
                           bar: "bg-teal-400",
                         },
                         {
-                          lbl: currentTrio.labels[1],
-                          icon: currentTrio.icons[1],
+                          lbl: TRIO_DEF.labels[1],
+                          icon: TRIO_DEF.icons[1],
                           avg: avg2,
                           bar: "bg-amber-400",
                         },
                         {
-                          lbl: currentTrio.labels[2],
-                          icon: currentTrio.icons[2],
+                          lbl: TRIO_DEF.labels[2],
+                          icon: TRIO_DEF.icons[2],
                           avg: avg3,
                           bar: "bg-purple-400",
                         },
                       ].map((c) => (
                         <div
                           key={c.lbl}
-                          className="p-2 rounded-xl bg-white/[0.03] border border-white/10 space-y-1"
+                          className="p-2.5 sm:p-3.5 rounded-xl bg-white/[0.03] border border-white/10 space-y-1.5"
                         >
-                          <div className="flex items-center justify-between text-[11px]">
-                            <span className="text-slate-300 truncate">
+                          <div className="flex items-center justify-between text-xs sm:text-sm">
+                            <span className="text-slate-300 truncate font-medium">
                               {c.icon} {c.lbl}
                             </span>
-                            <span className="font-bold text-white">{c.avg}</span>
+                            <span className="font-bold text-white text-sm sm:text-base">{c.avg}</span>
                           </div>
-                          <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
+                          <div className="h-2 rounded-full bg-white/10 overflow-hidden">
                             <div
                               className={`h-full rounded-full ${c.bar}`}
                               style={{
@@ -820,67 +803,59 @@ export default function AssistantHud() {
                 );
               })()}
 
-              <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 space-y-3">
+              <div className="p-3.5 sm:p-5 rounded-2xl bg-white/[0.03] border border-white/10 space-y-3.5 sm:space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-teal-300">
+                  <span className="text-xs sm:text-sm lg:text-base font-semibold uppercase tracking-wider text-teal-300">
                     🌙 Night Trio Metric Check-In (1–5)
                   </span>
                 </div>
 
-                {/* Preset Selector */}
-                <div className="grid grid-cols-1 gap-1.5">
-                  {TRIO_PRESETS.map((preset, idx) => (
-                    <button
-                      key={preset.key}
-                      onClick={() => setSelectedTrioIdx(idx)}
-                      className={`px-3 py-1.5 rounded-xl text-left text-xs font-medium border transition-all cursor-pointer flex items-center justify-between ${
-                        selectedTrioIdx === idx
-                          ? "bg-teal-400/20 border-teal-400 text-white"
-                          : "bg-white/[0.02] border-white/10 text-slate-400 hover:text-slate-200"
-                      }`}
-                    >
-                      <span>{preset.name}</span>
-                      <span>{preset.icons.join(" ")}</span>
-                    </button>
-                  ))}
+                {/* Active Trio Indicator */}
+                <div className="flex items-center justify-between p-2.5 sm:p-3 rounded-xl bg-teal-400/10 border border-teal-400/30">
+                  <span className="text-xs sm:text-sm font-semibold text-teal-200">
+                    🔮 Clarity · 👑 Sovereignty · ⚡ Vitality
+                  </span>
+                  <span className="text-[10px] sm:text-xs px-2 py-0.5 rounded-full bg-teal-400/20 text-teal-300 font-medium">
+                    Standard Life Trio
+                  </span>
                 </div>
 
                 {/* 1-5 Rating Bars for Each of the 3 Metrics */}
                 {[
                   {
-                    label: currentTrio.labels[0],
-                    icon: currentTrio.icons[0],
+                    label: TRIO_DEF.labels[0],
+                    icon: TRIO_DEF.icons[0],
                     val: score1,
                     setVal: setScore1,
                   },
                   {
-                    label: currentTrio.labels[1],
-                    icon: currentTrio.icons[1],
+                    label: TRIO_DEF.labels[1],
+                    icon: TRIO_DEF.icons[1],
                     val: score2,
                     setVal: setScore2,
                   },
                   {
-                    label: currentTrio.labels[2],
-                    icon: currentTrio.icons[2],
+                    label: TRIO_DEF.labels[2],
+                    icon: TRIO_DEF.icons[2],
                     val: score3,
                     setVal: setScore3,
                   },
                 ].map((m) => (
-                  <div key={m.label} className="space-y-1">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-medium text-slate-200">
+                  <div key={m.label} className="space-y-1.5">
+                    <div className="flex items-center justify-between text-xs sm:text-sm">
+                      <span className="font-semibold text-slate-200">
                         {m.icon} {m.label}
                       </span>
-                      <span className="font-bold text-teal-300">{m.val} / 5</span>
+                      <span className="font-bold text-teal-300 text-xs sm:text-sm">{m.val} / 5</span>
                     </div>
-                    <div className="grid grid-cols-5 gap-1.5">
+                    <div className="grid grid-cols-5 gap-2">
                       {[1, 2, 3, 4, 5].map((num) => (
                         <button
                           key={num}
                           onClick={() => m.setVal(num)}
-                          className={`py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer ${
+                          className={`py-2 sm:py-3 rounded-xl text-xs sm:text-base font-bold border transition-all cursor-pointer ${
                             m.val >= num
-                              ? "bg-teal-400/30 border-teal-400 text-teal-100"
+                              ? "bg-teal-400/30 border-teal-400 text-teal-100 shadow-sm"
                               : "bg-white/5 border-white/10 text-slate-500 hover:text-slate-300"
                           }`}
                         >
@@ -892,23 +867,23 @@ export default function AssistantHud() {
                 ))}
 
                 {/* Evening Reflection */}
-                <div>
-                  <label className="block text-[11px] text-slate-400 mb-1">
+                <div className="space-y-1">
+                  <label className="block text-[11px] sm:text-xs text-slate-400">
                     Evening Note & Reflection (feeds tomorrow&apos;s Morning Plan)
                   </label>
                   <textarea
-                    rows={2}
+                    rows={3}
                     value={reflection}
                     onChange={(e) => setReflection(e.target.value)}
                     placeholder="What gave or drained energy today?"
-                    className="w-full bg-[#121719] border border-white/15 rounded-xl px-3 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-teal-400"
+                    className="w-full bg-[#121719] border border-white/15 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-teal-400"
                   />
                 </div>
 
                 <button
                   onClick={handleSaveMetrics}
                   disabled={savingMetrics}
-                  className="w-full py-2 px-4 rounded-xl bg-[#E5A93C] hover:bg-amber-400 text-[#0D0F0E] font-semibold text-xs cursor-pointer transition-all shadow-md"
+                  className="w-full py-3 sm:py-3.5 px-4 rounded-xl bg-[#E5A93C] hover:bg-amber-400 text-[#0D0F0E] font-bold text-xs sm:text-sm cursor-pointer transition-all shadow-md"
                 >
                   {savingMetrics
                     ? "Saving & Computing Strategy..."
