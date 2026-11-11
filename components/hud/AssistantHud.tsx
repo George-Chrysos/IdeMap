@@ -386,23 +386,23 @@ export default function AssistantHud() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="group flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-[#0F1315]/95 border border-teal-400/40 text-slate-100 shadow-[0_12px_40px_rgba(0,0,0,0.75),0_0_20px_rgba(45,212,191,0.18)] hover:border-teal-300 hover:scale-[1.02] transition-all cursor-pointer backdrop-blur-xl"
+          className="group hud-panel glass-surface flex items-center gap-3 px-4 py-2.5 rounded-full border border-teal-400/40 text-slate-100 shadow-[0_12px_40px_rgba(0,0,0,0.7),inset_0_1px_0_rgba(255,255,255,0.15),0_0_20px_rgba(45,212,191,0.18)] hover:border-teal-300 hover:scale-[1.02] transition-all cursor-pointer backdrop-blur-2xl"
         >
-          <span className="w-7 h-7 rounded-full bg-teal-400/20 border border-teal-400/50 flex items-center justify-center text-teal-300">
+          <span className="w-8 h-8 rounded-full bg-teal-400/20 border border-teal-400/50 flex items-center justify-center text-teal-300 shrink-0 shadow-[0_0_12px_rgba(45,212,191,0.3)]">
             <Sparkles className="w-4 h-4" />
           </span>
           <div className="text-left">
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs font-semibold tracking-wide text-white">
+            <div className="flex items-center gap-2">
+              <span className="font-fraunces text-xs sm:text-sm font-semibold tracking-wide text-white">
                 AI Orbital Architect
               </span>
               {pendingActions.length > 0 && (
-                <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-amber-400 text-[#0D0F0E]">
+                <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-400 text-[#0D0F0E] shadow-sm">
                   {pendingActions.length} Action{pendingActions.length === 1 ? "" : "s"}
                 </span>
               )}
             </div>
-            <p className="text-[10px] text-teal-300/90">
+            <p className="text-[10px] sm:text-[11px] text-teal-300/90 font-medium">
               {focusPlanetName} · Trio & Briefings
             </p>
           </div>
@@ -411,71 +411,74 @@ export default function AssistantHud() {
 
       {/* Expanded Floating HUD Drawer */}
       {isOpen && (
-        <div className="w-[370px] sm:w-[500px] md:w-[580px] lg:w-[680px] xl:w-[760px] h-[640px] sm:h-[720px] lg:h-[820px] max-h-[90vh] rounded-2xl sm:rounded-3xl bg-[#0D1113]/95 border border-teal-400/35 shadow-[0_24px_70px_rgba(0,0,0,0.85),0_0_35px_rgba(45,212,191,0.12)] backdrop-blur-2xl flex flex-col overflow-hidden text-slate-100">
+        <div className="hud-panel glass-surface w-[370px] sm:w-[500px] md:w-[580px] lg:w-[680px] xl:w-[760px] h-[640px] sm:h-[720px] lg:h-[820px] max-h-[90vh] rounded-2xl sm:rounded-3xl border border-teal-400/35 shadow-[0_24px_70px_rgba(0,0,0,0.85),inset_0_1px_0_rgba(255,255,255,0.15)] backdrop-blur-3xl flex flex-col overflow-hidden text-slate-100 fade-up">
           {/* Header */}
-          <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-white/10 flex items-center justify-between bg-gradient-to-r from-teal-500/10 via-transparent to-amber-500/10">
-            <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-teal-400/20 border border-teal-400/40 flex items-center justify-center text-teal-300 shrink-0">
-                <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
+          <div className="px-5 sm:px-6 py-4 border-b border-white/10 flex items-center justify-between bg-gradient-to-r from-teal-500/10 via-transparent to-amber-500/10 flex-shrink-0">
+            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+              <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-2xl bg-teal-400/20 border border-teal-400/50 flex items-center justify-center text-teal-300 shrink-0 shadow-[0_0_15px_rgba(45,212,191,0.25)]">
+                <Sparkles className="w-5 h-5" />
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <h3 className="text-xs sm:text-sm lg:text-base font-semibold uppercase tracking-wider text-teal-300 truncate">
-                    IdeMap AI Architect
-                  </h3>
+                  <p className="text-[10px] sm:text-xs uppercase tracking-widest text-teal-400 font-semibold truncate">
+                    Autonomous Life OS
+                  </p>
                   <span className="text-[10px] sm:text-xs px-2 py-0.5 rounded-full bg-teal-400/15 border border-teal-400/30 text-teal-200">
                     {preferN8n ? "n8n Flow" : "Hybrid Agent"}
                   </span>
                 </div>
-                <p className="text-[11px] sm:text-xs text-slate-400 truncate">
-                  Target: <span className="text-slate-200 font-medium">{focusPlanetName}</span>
+                <h3 className="font-fraunces text-base sm:text-lg lg:text-xl font-semibold text-white truncate mt-0.5">
+                  Orbital AI Architect
+                </h3>
+                <p className="text-[11px] sm:text-xs text-slate-400 truncate mt-0.5">
+                  Target Sector: <span className="text-amber-300 font-medium">{focusPlanetName}</span>
                 </p>
               </div>
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="p-1.5 sm:p-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer"
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full text-slate-300 hover:text-white hover:bg-white/10 cursor-pointer flex items-center justify-center transition-colors shrink-0"
               title="Minimize Assistant HUD"
             >
-              <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5" />
+              <ChevronDown className="w-5 h-5" />
             </button>
           </div>
 
-          {/* Navigation Tabs */}
-          <div className="grid grid-cols-4 gap-1 p-1.5 sm:p-2 bg-[#090C0D] border-b border-white/10 text-[11px] sm:text-xs font-medium">
+          {/* Navigation Tabs (Aligned with atlas pill buttons) */}
+          <div className="flex items-center gap-1.5 sm:gap-2 p-2 sm:p-2.5 bg-[#090C0D]/80 border-b border-white/10 text-xs sm:text-sm font-semibold overflow-x-auto hud-scroll flex-shrink-0">
             <button
               onClick={() => setActiveTab("chat")}
-              className={`py-1.5 px-2 rounded-lg flex items-center justify-center gap-1 transition-all cursor-pointer ${
+              className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
                 activeTab === "chat"
-                  ? "bg-teal-400/20 text-teal-200 border border-teal-400/40"
-                  : "text-slate-400 hover:text-slate-200"
+                  ? "bg-teal-400/20 text-teal-200 border border-teal-400/50 shadow-[0_0_15px_rgba(45,212,191,0.2)]"
+                  : "text-slate-400 hover:text-slate-200 hover:bg-white/5 border border-transparent"
               }`}
             >
               <Zap className="w-3.5 h-3.5" />
               <span>Assistant</span>
               {pendingActions.length > 0 && (
-                <span className="w-4 h-4 rounded-full bg-amber-400 text-[#0D0F0E] text-[10px] font-bold inline-flex items-center justify-center">
+                <span className="w-4 h-4 rounded-full bg-amber-400 text-[#0D0F0E] text-[10px] font-bold inline-flex items-center justify-center ml-0.5">
                   {pendingActions.length}
                 </span>
               )}
             </button>
             <button
               onClick={() => setActiveTab("briefings")}
-              className={`py-1.5 px-2 rounded-lg flex items-center justify-center gap-1 transition-all cursor-pointer ${
+              className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
                 activeTab === "briefings"
-                  ? "bg-amber-400/20 text-amber-200 border border-amber-400/40"
-                  : "text-slate-400 hover:text-slate-200"
+                  ? "bg-amber-400/20 text-amber-200 border border-amber-400/50 shadow-[0_0_15px_rgba(229,169,60,0.2)]"
+                  : "text-slate-400 hover:text-slate-200 hover:bg-white/5 border border-transparent"
               }`}
             >
               <Sun className="w-3.5 h-3.5" />
-              <span>AM / PM</span>
+              <span>AM / PM Briefings</span>
             </button>
             <button
               onClick={() => setActiveTab("metrics")}
-              className={`py-1.5 px-2 rounded-lg flex items-center justify-center gap-1 transition-all cursor-pointer ${
+              className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
                 activeTab === "metrics"
-                  ? "bg-teal-400/20 text-teal-200 border border-teal-400/40"
-                  : "text-slate-400 hover:text-slate-200"
+                  ? "bg-teal-400/20 text-teal-200 border border-teal-400/50 shadow-[0_0_15px_rgba(45,212,191,0.2)]"
+                  : "text-slate-400 hover:text-slate-200 hover:bg-white/5 border border-transparent"
               }`}
             >
               <Activity className="w-3.5 h-3.5" />
@@ -483,20 +486,20 @@ export default function AssistantHud() {
             </button>
             <button
               onClick={() => setActiveTab("settings")}
-              className={`py-1.5 px-2 rounded-lg flex items-center justify-center gap-1 transition-all cursor-pointer ${
+              className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
                 activeTab === "settings"
                   ? "bg-white/15 text-white border border-white/30"
-                  : "text-slate-400 hover:text-slate-200"
+                  : "text-slate-400 hover:text-slate-200 hover:bg-white/5 border border-transparent"
               }`}
             >
               <Settings className="w-3.5 h-3.5" />
-              <span>n8n/AI</span>
+              <span>n8n / AI Keys</span>
             </button>
           </div>
 
           {/* Status Banner */}
           {statusBanner && (
-            <div className="px-3 py-1.5 bg-teal-400/15 border-b border-teal-400/30 text-[11px] text-teal-200 flex items-center justify-between">
+            <div className="px-4 py-2 bg-teal-400/15 border-b border-teal-400/30 text-xs text-teal-200 flex items-center justify-between font-medium">
               <span>{statusBanner}</span>
             </div>
           )}
@@ -504,9 +507,9 @@ export default function AssistantHud() {
           {/* TAB 1: CHAT & PROPOSED HUD ACTIONS */}
           {activeTab === "chat" && (
             <div className="flex-1 flex flex-col min-h-0">
-              <div className="flex-1 overflow-y-auto p-3.5 space-y-3">
+              <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 hud-scroll">
                 {/* Quick Prompt Suggestions */}
-                <div className="flex flex-wrap gap-1.5">
+                <div className="flex flex-wrap gap-2">
                   {[
                     "What should I focus on today?",
                     "Analyze my 3-metrics & XP trends",
@@ -516,7 +519,7 @@ export default function AssistantHud() {
                     <button
                       key={prompt}
                       onClick={() => sendMessage(prompt)}
-                      className="text-[11px] px-2.5 py-1 rounded-full bg-white/[0.04] hover:bg-teal-400/15 border border-white/10 hover:border-teal-400/40 text-slate-300 hover:text-teal-200 transition-all cursor-pointer"
+                      className="text-xs px-3 py-1.5 rounded-full bg-white/[0.04] hover:bg-teal-400/20 border border-white/10 hover:border-teal-400/40 text-slate-300 hover:text-teal-200 transition-all cursor-pointer font-medium"
                     >
                       {prompt}
                     </button>
@@ -525,40 +528,40 @@ export default function AssistantHud() {
 
                 {/* Pending HUD Action Confirmation Cards */}
                 {pendingActions.length > 0 && (
-                  <div className="space-y-2">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-amber-300 flex items-center gap-1">
-                      <Layers className="w-3 h-3" /> Pending HUD Action Proposals (Confirm to Execute)
+                  <div className="space-y-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
+                      <Layers className="w-3.5 h-3.5" /> Pending HUD Action Proposals (Confirm to Execute)
                     </p>
                     {pendingActions.map((act) => (
                       <div
                         key={act.id}
-                        className="p-3 rounded-xl bg-amber-400/[0.09] border border-amber-400/40 space-y-2"
+                        className="p-4 rounded-2xl bg-gradient-to-br from-amber-500/10 via-[#0E1214] to-teal-500/10 border border-amber-400/40 space-y-3 shadow-lg"
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div>
-                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-200 font-semibold uppercase">
+                            <span className="text-[10px] sm:text-xs px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-200 font-semibold uppercase border border-amber-400/30">
                               ⚡ {act.action_type.replace("_", " ")}
                             </span>
-                            <h4 className="text-xs font-semibold text-white mt-1">
+                            <h4 className="font-fraunces text-sm sm:text-base font-semibold text-white mt-1.5">
                               {act.title}
                             </h4>
-                            <p className="text-[11px] text-slate-300 mt-0.5">
+                            <p className="text-xs sm:text-sm text-slate-300 mt-1 leading-relaxed">
                               {act.description}
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 pt-1">
+                        <div className="flex items-center gap-2.5 pt-1">
                           <button
                             onClick={() => handleResolveAction(act, "confirm")}
-                            className="flex-1 py-1.5 px-3 rounded-lg bg-[#E5A93C] hover:bg-amber-400 text-[#0D0F0E] font-semibold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-sm"
+                            className="flex-1 py-2 sm:py-2.5 px-4 rounded-xl bg-[#E5A93C] hover:bg-amber-300 text-[#0D0F0E] font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-md"
                           >
-                            <Check className="w-3.5 h-3.5" /> Confirm & Apply
+                            <Check className="w-4 h-4" /> Confirm & Apply to Canvas
                           </button>
                           <button
                             onClick={() => handleResolveAction(act, "dismiss")}
-                            className="py-1.5 px-2.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 text-xs flex items-center justify-center gap-1 cursor-pointer"
+                            className="py-2 sm:py-2.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 text-xs sm:text-sm flex items-center justify-center gap-1 cursor-pointer transition-colors"
                           >
-                            <X className="w-3.5 h-3.5" /> Dismiss
+                            <X className="w-4 h-4" /> Dismiss
                           </button>
                         </div>
                       </div>
@@ -568,11 +571,11 @@ export default function AssistantHud() {
 
                 {/* Chat Messages */}
                 {messages.length === 0 ? (
-                  <div className="p-4 rounded-xl bg-white/[0.025] border border-white/10 text-xs text-slate-300 space-y-1.5">
-                    <p className="font-semibold text-teal-300">
+                  <div className="p-4 sm:p-5 rounded-2xl bg-white/[0.025] border border-white/10 text-xs sm:text-sm text-slate-300 space-y-2">
+                    <p className="font-fraunces text-sm sm:text-base font-semibold text-teal-300">
                       🛰️ Connected to Normalized Supabase Life OS
                     </p>
-                    <p className="text-[11px] text-slate-400 leading-relaxed">
+                    <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
                       Ask anything about your planets, missions, strain flags, or 3-metric history. I dynamically query Supabase JSONs based on your question and queue actionable buttons right on your HUD.
                     </p>
                   </div>
@@ -585,10 +588,10 @@ export default function AssistantHud() {
                       }`}
                     >
                       <div
-                        className={`max-w-[90%] rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed whitespace-pre-wrap select-text ${
+                        className={`max-w-[90%] rounded-2xl px-4 py-3 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap select-text ${
                           m.role === "user"
-                            ? "bg-teal-500/20 border border-teal-400/40 text-white"
-                            : "bg-white/[0.04] border border-white/10 text-slate-200"
+                            ? "bg-gradient-to-br from-teal-500/25 to-teal-600/15 border border-teal-400/40 text-slate-100 shadow-sm"
+                            : "bg-[#0D1113]/90 border border-white/10 text-slate-200 shadow-sm"
                         }`}
                       >
                         {m.content}
@@ -596,14 +599,14 @@ export default function AssistantHud() {
 
                       {/* Dynamic Supabase JSON Tool Traces */}
                       {m.tool_traces && m.tool_traces.length > 0 && (
-                        <div className="mt-1.5 flex flex-wrap gap-1 max-w-[92%]">
+                        <div className="mt-1.5 flex flex-wrap gap-1.5 max-w-[92%]">
                           {m.tool_traces.map((tr, i) => (
                             <span
                               key={i}
                               title={tr.reason}
-                              className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-md bg-teal-950/70 border border-teal-400/25 text-teal-300"
+                              className="inline-flex items-center gap-1 text-[10px] sm:text-xs px-2.5 py-1 rounded-full bg-teal-950/70 border border-teal-400/30 text-teal-300 font-mono"
                             >
-                              <Database className="w-2.5 h-2.5" />
+                              <Database className="w-3 h-3" />
                               {tr.table} ({tr.rowsFetched} JSON{tr.rowsFetched === 1 ? "" : "s"})
                             </span>
                           ))}
@@ -614,8 +617,8 @@ export default function AssistantHud() {
                 )}
 
                 {isLoading && (
-                  <div className="text-xs text-teal-300 flex items-center gap-2 px-2">
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  <div className="text-xs sm:text-sm text-teal-300 flex items-center gap-2 px-2">
+                    <RefreshCw className="w-4 h-4 animate-spin" />
                     <span>Querying Supabase JSONs & synthesizing...</span>
                   </div>
                 )}
@@ -623,7 +626,7 @@ export default function AssistantHud() {
               </div>
 
               {/* Input Bar */}
-              <div className="p-3 border-t border-white/10 bg-[#090C0D] flex items-center gap-2">
+              <div className="p-3.5 sm:p-4 border-t border-white/10 bg-[#090C0D] flex items-center gap-2.5">
                 <input
                   type="text"
                   value={inputQuery}
@@ -632,14 +635,14 @@ export default function AssistantHud() {
                     if (e.key === "Enter") sendMessage();
                   }}
                   placeholder="Ask your Life Architect or propose a task..."
-                  className="flex-1 bg-[#121719] border border-white/15 rounded-xl px-3 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-teal-400"
+                  className="flex-1 bg-[#121719] border border-white/15 focus:border-teal-400 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-white placeholder:text-slate-500 focus:outline-none transition-all shadow-inner"
                 />
                 <button
                   onClick={() => sendMessage()}
                   disabled={isLoading || !inputQuery.trim()}
-                  className="p-2 rounded-xl bg-teal-400 hover:bg-teal-300 disabled:opacity-40 text-[#0D0F0E] font-semibold cursor-pointer transition-all"
+                  className="p-2.5 sm:p-3 rounded-xl bg-teal-400 hover:bg-teal-300 disabled:opacity-40 text-[#0D0F0E] font-bold cursor-pointer transition-all shadow-[0_0_15px_rgba(45,212,191,0.25)]"
                 >
-                  <Send className="w-4 h-4" />
+                  <Send className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
               </div>
             </div>
@@ -647,40 +650,40 @@ export default function AssistantHud() {
 
           {/* TAB 2: ASYNCHRONOUS MORNING & NIGHT BRIEFINGS */}
           {activeTab === "briefings" && (
-            <div className="flex-1 overflow-y-auto p-3.5 space-y-3">
-              <div className="grid grid-cols-2 gap-2">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 hud-scroll">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
                 <button
                   onClick={() => handleGenerateBriefing("morning")}
                   disabled={isLoading}
-                  className="p-2.5 rounded-xl bg-amber-400/15 hover:bg-amber-400/25 border border-amber-400/40 text-left cursor-pointer transition-all"
+                  className="p-3.5 sm:p-4 rounded-2xl bg-amber-400/15 hover:bg-amber-400/25 border border-amber-400/40 text-left cursor-pointer transition-all shadow-md group"
                 >
-                  <div className="flex items-center gap-1.5 text-amber-300 text-xs font-semibold">
-                    <Sun className="w-4 h-4" /> Morning Plan
+                  <div className="flex items-center gap-2 text-amber-300 text-xs sm:text-sm font-semibold">
+                    <Sun className="w-4 h-4 sm:w-5 sm:h-5" /> Morning Plan
                   </div>
-                  <p className="text-[10px] text-slate-300 mt-0.5">
+                  <p className="text-[11px] sm:text-xs text-slate-300 mt-1">
                     Calibrate today from last night&apos;s Trio
                   </p>
                 </button>
                 <button
                   onClick={() => handleGenerateBriefing("night")}
                   disabled={isLoading}
-                  className="p-2.5 rounded-xl bg-teal-400/15 hover:bg-teal-400/25 border border-teal-400/40 text-left cursor-pointer transition-all"
+                  className="p-3.5 sm:p-4 rounded-2xl bg-teal-400/15 hover:bg-teal-400/25 border border-teal-400/40 text-left cursor-pointer transition-all shadow-md group"
                 >
-                  <div className="flex items-center gap-1.5 text-teal-300 text-xs font-semibold">
-                    <Moon className="w-4 h-4" /> Night Debrief
+                  <div className="flex items-center gap-2 text-teal-300 text-xs sm:text-sm font-semibold">
+                    <Moon className="w-4 h-4 sm:w-5 sm:h-5" /> Night Debrief
                   </div>
-                  <p className="text-[10px] text-slate-300 mt-0.5">
+                  <p className="text-[11px] sm:text-xs text-slate-300 mt-1">
                     Review wins & strategy for tomorrow
                   </p>
                 </button>
               </div>
 
               {briefings.length === 0 ? (
-                <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10 text-center space-y-2">
-                  <p className="text-xs text-slate-300 font-medium">
+                <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 text-center space-y-2">
+                  <p className="font-fraunces text-sm sm:text-base text-slate-300 font-semibold">
                     No Morning or Night Briefings generated for today yet.
                   </p>
-                  <p className="text-[11px] text-slate-400">
+                  <p className="text-xs sm:text-sm text-slate-400">
                     Click <b>Morning Plan</b> or <b>Night Debrief</b> above (or let the n8n 07:00 AM / 10:00 PM cron trigger them automatically).
                   </p>
                 </div>
@@ -688,33 +691,33 @@ export default function AssistantHud() {
                 briefings.map((b) => (
                   <div
                     key={b.id}
-                    className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2.5"
+                    className="p-4 sm:p-5 rounded-2xl bg-white/[0.03] border border-white/10 space-y-3 shadow-md"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-white">
+                      <span className="font-fraunces text-sm sm:text-base font-semibold text-white">
                         {b.title}
                       </span>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-slate-300">
+                      <span className="text-[10px] sm:text-xs px-2.5 py-1 rounded-full bg-white/10 text-slate-300 font-medium">
                         {b.briefing_date}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-300 leading-relaxed select-text">
+                    <p className="text-xs sm:text-sm text-slate-300 leading-relaxed select-text">
                       {b.summary}
                     </p>
                     {Array.isArray(b.sections) && b.sections.length > 0 && (
-                      <div className="space-y-2 pt-1">
+                      <div className="space-y-2.5 pt-1">
                         {b.sections.map((sec, idx) => (
                           <div
                             key={idx}
-                            className="p-2.5 rounded-xl bg-[#090C0D]/90 border border-white/10 space-y-1"
+                            className="p-3 sm:p-3.5 rounded-xl bg-[#090C0D]/90 border border-white/10 space-y-1"
                           >
-                            <span className="text-[10px] font-semibold uppercase tracking-wider text-teal-300">
+                            <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-teal-300">
                               {sec.badge}
                             </span>
-                            <h5 className="text-xs font-semibold text-white">
+                            <h5 className="font-fraunces text-xs sm:text-sm font-semibold text-white">
                               {sec.title}
                             </h5>
-                            <p className="text-[11px] text-slate-300 leading-relaxed">
+                            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
                               {sec.body}
                             </p>
                           </div>
@@ -729,7 +732,7 @@ export default function AssistantHud() {
 
           {/* TAB 3: DAILY NIGHT 3-METRIC TRACKER (1-5 SCALE) + 7-DAY AVERAGES DASHBOARD */}
           {activeTab === "metrics" && (
-            <div className="flex-1 overflow-y-auto p-3.5 space-y-3.5">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 hud-scroll">
               {/* 7-Day Averages Dashboard */}
               {(() => {
                 const last7 = metricsHistory.slice(0, 7);
@@ -748,12 +751,12 @@ export default function AssistantHud() {
                   3
                 ).toFixed(1);
                 return (
-                  <div className="p-3.5 sm:p-5 rounded-2xl bg-gradient-to-br from-teal-500/10 via-[#090C0D] to-amber-500/10 border border-teal-400/35 space-y-3">
+                  <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-teal-500/10 via-[#090C0D] to-amber-500/10 border border-teal-400/35 space-y-3.5 shadow-lg">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] sm:text-xs lg:text-sm font-semibold uppercase tracking-wider text-teal-300">
+                      <span className="font-fraunces text-xs sm:text-sm lg:text-base font-semibold uppercase tracking-wider text-teal-300">
                         📊 7-Day Trio Averages
                       </span>
-                      <span className="px-2.5 py-1 rounded-full bg-amber-400/20 border border-amber-400/40 text-[10px] sm:text-xs font-bold text-amber-200">
+                      <span className="px-3 py-1 rounded-full bg-amber-400/20 border border-amber-400/40 text-xs sm:text-sm font-bold text-amber-200">
                         Composite {comp} / 5.0
                       </span>
                     </div>
@@ -780,7 +783,7 @@ export default function AssistantHud() {
                       ].map((c) => (
                         <div
                           key={c.lbl}
-                          className="p-2.5 sm:p-3.5 rounded-xl bg-white/[0.03] border border-white/10 space-y-1.5"
+                          className="p-3 sm:p-3.5 rounded-xl bg-white/[0.03] border border-white/10 space-y-1.5 shadow-sm"
                         >
                           <div className="flex items-center justify-between text-xs sm:text-sm">
                             <span className="text-slate-300 truncate font-medium">
@@ -803,19 +806,19 @@ export default function AssistantHud() {
                 );
               })()}
 
-              <div className="p-3.5 sm:p-5 rounded-2xl bg-white/[0.03] border border-white/10 space-y-3.5 sm:space-y-4">
+              <div className="p-4 sm:p-5 rounded-2xl bg-white/[0.03] border border-white/10 space-y-4 shadow-md">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs sm:text-sm lg:text-base font-semibold uppercase tracking-wider text-teal-300">
+                  <span className="font-fraunces text-sm sm:text-base font-semibold text-teal-300">
                     🌙 Night Trio Metric Check-In (1–5)
                   </span>
                 </div>
 
                 {/* Active Trio Indicator */}
-                <div className="flex items-center justify-between p-2.5 sm:p-3 rounded-xl bg-teal-400/10 border border-teal-400/30">
+                <div className="flex items-center justify-between p-3 rounded-xl bg-teal-400/10 border border-teal-400/30">
                   <span className="text-xs sm:text-sm font-semibold text-teal-200">
                     🔮 Clarity · 👑 Sovereignty · ⚡ Vitality
                   </span>
-                  <span className="text-[10px] sm:text-xs px-2 py-0.5 rounded-full bg-teal-400/20 text-teal-300 font-medium">
+                  <span className="text-[10px] sm:text-xs px-2.5 py-0.5 rounded-full bg-teal-400/20 text-teal-300 font-semibold">
                     Standard Life Trio
                   </span>
                 </div>
@@ -853,7 +856,7 @@ export default function AssistantHud() {
                         <button
                           key={num}
                           onClick={() => m.setVal(num)}
-                          className={`py-2 sm:py-3 rounded-xl text-xs sm:text-base font-bold border transition-all cursor-pointer ${
+                          className={`py-2.5 sm:py-3 rounded-xl text-xs sm:text-base font-bold border transition-all cursor-pointer ${
                             m.val >= num
                               ? "bg-teal-400/30 border-teal-400 text-teal-100 shadow-sm"
                               : "bg-white/5 border-white/10 text-slate-500 hover:text-slate-300"
@@ -867,8 +870,8 @@ export default function AssistantHud() {
                 ))}
 
                 {/* Evening Reflection */}
-                <div className="space-y-1">
-                  <label className="block text-[11px] sm:text-xs text-slate-400">
+                <div className="space-y-1.5">
+                  <label className="block text-xs sm:text-sm text-slate-400 font-medium">
                     Evening Note & Reflection (feeds tomorrow&apos;s Morning Plan)
                   </label>
                   <textarea
@@ -876,14 +879,14 @@ export default function AssistantHud() {
                     value={reflection}
                     onChange={(e) => setReflection(e.target.value)}
                     placeholder="What gave or drained energy today?"
-                    className="w-full bg-[#121719] border border-white/15 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-teal-400"
+                    className="w-full bg-[#121719] border border-white/15 focus:border-teal-400 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-white placeholder:text-slate-500 focus:outline-none transition-all shadow-inner"
                   />
                 </div>
 
                 <button
                   onClick={handleSaveMetrics}
                   disabled={savingMetrics}
-                  className="w-full py-3 sm:py-3.5 px-4 rounded-xl bg-[#E5A93C] hover:bg-amber-400 text-[#0D0F0E] font-bold text-xs sm:text-sm cursor-pointer transition-all shadow-md"
+                  className="w-full py-3 sm:py-3.5 px-4 rounded-xl bg-[#E5A93C] hover:bg-amber-300 text-[#0D0F0E] font-bold text-xs sm:text-sm cursor-pointer transition-all shadow-md"
                 >
                   {savingMetrics
                     ? "Saving & Computing Strategy..."
@@ -892,31 +895,31 @@ export default function AssistantHud() {
               </div>
 
               {/* Historical 3-Metric Log */}
-              <div className="space-y-2">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+              <div className="space-y-2.5">
+                <p className="font-fraunces text-xs sm:text-sm font-semibold uppercase tracking-wider text-slate-300">
                   📊 Recent Trio History ({metricsHistory.length} Days)
                 </p>
                 {metricsHistory.map((row) => (
                   <div
                     key={row.date}
-                    className="p-2.5 rounded-xl bg-white/[0.03] border border-white/10 space-y-1"
+                    className="p-3 sm:p-3.5 rounded-xl bg-white/[0.03] border border-white/10 space-y-1.5 shadow-sm"
                   >
-                    <div className="flex items-center justify-between text-xs">
+                    <div className="flex items-center justify-between text-xs sm:text-sm">
                       <span className="font-semibold text-white">{row.date}</span>
-                      <div className="flex items-center gap-2 text-[11px]">
-                        <span className="px-2 py-0.5 rounded-full bg-teal-400/15 text-teal-200">
+                      <div className="flex items-center gap-2 text-xs">
+                        <span className="px-2.5 py-0.5 rounded-full bg-teal-400/15 text-teal-200 border border-teal-400/30">
                           {row.label_1}: <b>{row.score_1}</b>
                         </span>
-                        <span className="px-2 py-0.5 rounded-full bg-amber-400/15 text-amber-200">
+                        <span className="px-2.5 py-0.5 rounded-full bg-amber-400/15 text-amber-200 border border-amber-400/30">
                           {row.label_2}: <b>{row.score_2}</b>
                         </span>
-                        <span className="px-2 py-0.5 rounded-full bg-purple-400/15 text-purple-200">
+                        <span className="px-2.5 py-0.5 rounded-full bg-purple-400/15 text-purple-200 border border-purple-400/30">
                           {row.label_3}: <b>{row.score_3}</b>
                         </span>
                       </div>
                     </div>
                     {row.reflection && (
-                      <p className="text-[11px] text-slate-400 italic">
+                      <p className="text-xs sm:text-sm text-slate-400 italic">
                         “{row.reflection}”
                       </p>
                     )}
@@ -928,24 +931,24 @@ export default function AssistantHud() {
 
           {/* TAB 4: N8N & AI PROVIDER SETTINGS */}
           {activeTab === "settings" && (
-            <div className="flex-1 overflow-y-auto p-3.5 space-y-3">
-              <div className="p-3 rounded-xl bg-teal-400/10 border border-teal-400/30 space-y-1.5">
-                <p className="text-xs font-semibold text-teal-200">
-                  ⚡ Dual-Engine Architecture Active
+            <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 hud-scroll">
+              <div className="p-4 rounded-2xl bg-teal-400/10 border border-teal-400/30 space-y-2">
+                <p className="font-fraunces text-xs sm:text-sm font-semibold text-teal-200">
+                  ⚡ Autonomous Dual-Engine Architecture
                 </p>
-                <p className="text-[11px] text-slate-300 leading-relaxed">
-                  Your normalized Supabase schema (10 tables) and local Docker n8n workflows (`n8n/workflows/*.json`) are ready. Add your OpenRouter key or Google AI Pro key below.
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                  Your normalized Supabase tables and local Docker n8n workflows (`n8n/workflows/*.json`) are active. When no external API key is entered, IdeMap runs on a <b>built-in Supabase heuristic engine</b> that directly analyzes your live database JSONs. Adding an OpenRouter or Gemini key enables deep generative reasoning.
                 </p>
               </div>
 
-              <div className="space-y-2.5">
-                <label className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.03] border border-white/10 cursor-pointer">
+              <div className="space-y-3.5">
+                <label className="flex items-center justify-between p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 cursor-pointer hover:border-teal-400/30 transition-all">
                   <div>
-                    <p className="text-xs font-semibold text-white">
+                    <p className="text-xs sm:text-sm font-semibold text-white">
                       Route via Local n8n Container
                     </p>
-                    <p className="text-[10px] text-slate-400">
-                      Forwards to http://localhost:5678/webhook/idemap-assistant (auto-falls back if container is stopped)
+                    <p className="text-[11px] sm:text-xs text-slate-400">
+                      Forwards to http://localhost:5678/webhook/idemap-assistant (auto-falls back if container is offline)
                     </p>
                   </div>
                   <input
@@ -957,7 +960,7 @@ export default function AssistantHud() {
                 </label>
 
                 <div>
-                  <label className="block text-[11px] font-medium text-slate-300 mb-1">
+                  <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-1.5">
                     OpenRouter API Key (Optional — uses OpenRouter credits)
                   </label>
                   <input
@@ -965,18 +968,18 @@ export default function AssistantHud() {
                     value={openRouterKey}
                     onChange={(e) => setOpenRouterKey(e.target.value)}
                     placeholder="sk-or-v1-..."
-                    className="w-full bg-[#121719] border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-teal-400"
+                    className="w-full bg-[#121719] border border-white/15 focus:border-teal-400 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-white focus:outline-none transition-all shadow-inner"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-medium text-slate-300 mb-1">
+                  <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-1.5">
                     OpenRouter Model
                   </label>
                   <select
                     value={selectedModel}
                     onChange={(e) => setSelectedModel(e.target.value)}
-                    className="w-full bg-[#121719] border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-teal-400"
+                    className="w-full bg-[#121719] border border-white/15 focus:border-teal-400 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-white focus:outline-none transition-all"
                   >
                     <option value="google/gemini-2.5-flash">
                       google/gemini-2.5-flash (Fast & Low Cost)
@@ -992,7 +995,7 @@ export default function AssistantHud() {
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-medium text-slate-300 mb-1">
+                  <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-1.5">
                     Google AI Studio / Gemini API Key (Optional)
                   </label>
                   <input
@@ -1000,13 +1003,13 @@ export default function AssistantHud() {
                     value={geminiKey}
                     onChange={(e) => setGeminiKey(e.target.value)}
                     placeholder="AIzaSy..."
-                    className="w-full bg-[#121719] border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-teal-400"
+                    className="w-full bg-[#121719] border border-white/15 focus:border-teal-400 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-white focus:outline-none transition-all shadow-inner"
                   />
                 </div>
 
                 <button
                   onClick={saveSettings}
-                  className="w-full py-2 px-4 rounded-xl bg-teal-400 hover:bg-teal-300 text-[#0D0F0E] font-semibold text-xs cursor-pointer transition-all"
+                  className="w-full py-3 px-4 rounded-xl bg-teal-400 hover:bg-teal-300 text-[#0D0F0E] font-bold text-xs sm:text-sm cursor-pointer transition-all shadow-[0_0_15px_rgba(45,212,191,0.25)]"
                 >
                   Save AI & n8n Configuration
                 </button>
